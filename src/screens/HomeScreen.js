@@ -2,13 +2,23 @@ import React from 'react';
 import { COLORS, FONTS } from '../theme';
 import { Avatar, Card, SectionLabel } from '../components';
 
-const DAYS = [
-  { name: 'Lun', num: '31' }, { name: 'Mar', num: '1' },
-  { name: 'Mer', num: '2' },  { name: 'Jeu', num: '3' },
-  { name: 'Ven', num: '4' },  { name: 'Sam', num: '5' },
-  { name: 'Dim', num: '6' },
-];
-const TODAY = 5;
+const DAY_NAMES = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
+
+function getCurrentWeek() {
+  const today = new Date();
+  const dow = today.getDay();
+  const monday = new Date(today);
+  monday.setDate(today.getDate() - (dow === 0 ? 6 : dow - 1));
+  return Array.from({ length: 7 }, (_, i) => {
+    const d = new Date(monday);
+    d.setDate(monday.getDate() + i);
+    return {
+      name: DAY_NAMES[i],
+      num: d.getDate().toString(),
+      isToday: d.toDateString() === today.toDateString(),
+    };
+  });
+}
 
 const MEMBERS = [
   { initials: 'SP', color: COLORS.sophieColor },
@@ -22,15 +32,13 @@ function MrHappy() {
 }
 
 export default function HomeScreen({ navigate }) {
+  const week = getCurrentWeek();
   return (
     <div style={{ height: '100%', overflowY: 'auto', padding: '8px 20px 24px' }}>
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 18 }}>
           <div>
-            <p style={{ fontSize: 13, fontWeight: 700, color: COLORS.textMuted, marginBottom: 4, fontFamily: FONTS.body }}>
-              Dimanche 5 avril
-            </p>
             <h1 style={{ fontSize: 32, fontWeight: 800, fontFamily: FONTS.title, color: COLORS.text, lineHeight: 1.2, letterSpacing: -0.5 }}>
               Bonjour,<br />Sophie !
             </h1>
@@ -42,18 +50,18 @@ export default function HomeScreen({ navigate }) {
 
       {/* Semaine */}
       <Card>
-        <div style={{ display: 'flex', gap: 6, overflowX: 'auto', paddingBottom: 2 }}>
-          {DAYS.map((d, i) => (
+        <div style={{ display: 'flex', gap: 4 }}>
+          {week.map((d, i) => (
             <button key={i} style={{
-              flexShrink: 0, width: 46, display: 'flex', flexDirection: 'column',
-              alignItems: 'center', gap: 4, padding: '10px 4px', borderRadius: 16,
+              flex: 1, display: 'flex', flexDirection: 'column',
+              alignItems: 'center', gap: 4, padding: '10px 2px', borderRadius: 16,
               border: 'none', cursor: 'pointer',
-              background: i === TODAY ? COLORS.purple : 'transparent',
+              background: d.isToday ? COLORS.purple : 'transparent',
             }}>
-              <span style={{ fontSize: 10, fontWeight: 700, fontFamily: FONTS.body, textTransform: 'uppercase', color: i === TODAY ? 'rgba(255,255,255,0.85)' : COLORS.textMuted }}>
+              <span style={{ fontSize: 9, fontWeight: 700, fontFamily: FONTS.body, textTransform: 'uppercase', color: d.isToday ? 'rgba(255,255,255,0.85)' : COLORS.textMuted }}>
                 {d.name}
               </span>
-              <span style={{ fontSize: 17, fontWeight: 800, fontFamily: FONTS.title, color: i === TODAY ? '#fff' : COLORS.text }}>
+              <span style={{ fontSize: 15, fontWeight: 800, fontFamily: FONTS.title, color: d.isToday ? '#fff' : COLORS.text }}>
                 {d.num}
               </span>
             </button>
