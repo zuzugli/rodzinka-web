@@ -90,7 +90,7 @@ export default function HomeScreen({ navigate }) {
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 10 }}>
         {[
           { label: 'Courses', sub: '8 articles', bg: COLORS.pink, color: COLORS.pinkDark, tab: 'shopping' },
-          { label: 'Repas', sub: '2 absences', bg: COLORS.blue, color: COLORS.blueDark, tab: 'calendar' },
+          { label: 'Repas', sub: '2 absences', bg: COLORS.blueMid, color: '#fff', tab: 'calendar' },
         ].map(q => (
           <button key={q.label} onClick={() => navigate(q.tab)} style={{
             background: q.bg, borderRadius: 20, padding: 16, border: 'none',
