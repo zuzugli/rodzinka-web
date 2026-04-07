@@ -19,20 +19,48 @@ function getMembers(userName, userColor, userPhoto) {
   );
 }
 
+const MONTH_NAMES = ['jan','fév','mar','avr','mai','juin','juil','aoû','sep','oct','nov','déc'];
+
 const MEAL_DATA = {
   0: { 0:{p:['SP','MA','LU','TH'],a:[]}, 1:{p:['SP','LU','TH'],a:['MA']}, 2:{p:['SP','MA','LU','TH'],a:[]} },
+  1: { 0:{p:['SP','MA','LU','TH'],a:[]}, 1:{p:['SP','MA','LU','TH'],a:[]}, 2:{p:['SP','LU'],a:['MA','TH']} },
+  2: { 0:{p:['SP','MA','LU','TH'],a:[]}, 1:{p:['SP','MA','TH'],a:['LU']}, 2:{p:['SP','MA','LU','TH'],a:[]} },
+  3: { 0:{p:['SP','MA','LU','TH'],a:[]}, 1:{p:['SP','MA','LU','TH'],a:[]}, 2:{p:['SP','MA','LU','TH'],a:[]} },
+  4: { 0:{p:['SP','LU','TH'],a:['MA']}, 1:{p:['SP','MA','LU','TH'],a:[]}, 2:{p:['SP','MA','LU','TH'],a:[]} },
   5: { 0:{p:['SP','MA','LU'],a:['TH']}, 1:{p:['SP','MA','LU','TH'],a:[]}, 2:{p:['SP','MA','LU','TH'],a:[],note:'Pizza ce soir'} },
   6: { 0:{p:['SP','MA','LU','TH'],a:[]}, 1:{p:['SP','MA'],a:['LU','TH']}, 2:{p:['SP','MA','LU','TH'],a:[]} },
 };
 
 function getMeal(d, m) { return MEAL_DATA[d]?.[m] ?? { p: ['SP','MA','LU','TH'], a: [] }; }
 
+function getWeek(offset) {
+  const today = new Date();
+  const dow = today.getDay();
+  const monday = new Date(today);
+  monday.setDate(today.getDate() - (dow === 0 ? 6 : dow - 1) + offset * 7);
+  return Array.from({ length: 7 }, (_, i) => {
+    const d = new Date(monday);
+    d.setDate(monday.getDate() + i);
+    return { dayIndex: i, date: d, isToday: d.toDateString() === today.toDateString() };
+  });
+}
+
+function formatRange(week) {
+  const first = week[0].date;
+  const last  = week[6].date;
+  const sameMonth = first.getMonth() === last.getMonth();
+  return sameMonth
+    ? `${first.getDate()} – ${last.getDate()} ${MONTH_NAMES[last.getMonth()]} ${last.getFullYear()}`
+    : `${first.getDate()} ${MONTH_NAMES[first.getMonth()]} – ${last.getDate()} ${MONTH_NAMES[last.getMonth()]} ${last.getFullYear()}`;
+}
+
 export function CalendarScreen({ userName = 'Sophie', userColor = COLORS.sophieColor, userPhoto = null }) {
   const MEMBERS = getMembers(userName, userColor, userPhoto);
-  const NAMES = Object.fromEntries(MEMBERS.map(m => [m.initials, m.name]));
+  const [weekOffset, setWeekOffset] = useState(0);
   const [selected, setSelected] = useState(null);
   const [absentModal, setAbsentModal] = useState(false);
   const [selMeal, setSelMeal] = useState(1);
+  const week = getWeek(weekOffset);
   const data = selected ? getMeal(selected.d, selected.m) : null;
 
   return (
@@ -41,57 +69,56 @@ export function CalendarScreen({ userName = 'Sophie', userColor = COLORS.sophieC
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
           <h2 style={{ fontSize: 32, fontWeight: 800, fontFamily: FONTS.title, color: COLORS.text, letterSpacing: -0.5 }}>Repas</h2>
           <div style={{ display: 'flex', gap: 8 }}>
-            {['‹','›'].map(a => (
-              <button key={a} style={{ width: 36, height: 36, borderRadius: 18, border: `1.5px solid ${COLORS.border}`, background: COLORS.surface, cursor: 'pointer', fontSize: 16, display:'flex', alignItems:'center', justifyContent:'center' }}>{a}</button>
-            ))}
+            <button onClick={() => setWeekOffset(o => o - 1)} style={{ width: 36, height: 36, borderRadius: 18, border: `1.5px solid ${COLORS.border}`, background: COLORS.surface, cursor: 'pointer', fontSize: 16, display:'flex', alignItems:'center', justifyContent:'center' }}>‹</button>
+            <button onClick={() => setWeekOffset(o => o + 1)} style={{ width: 36, height: 36, borderRadius: 18, border: `1.5px solid ${COLORS.border}`, background: COLORS.surface, cursor: 'pointer', fontSize: 16, display:'flex', alignItems:'center', justifyContent:'center' }}>›</button>
           </div>
         </div>
-        <p style={{ fontSize: 13, fontFamily: FONTS.body, color: COLORS.textMuted, marginBottom: 16 }}>31 mars – 6 avr 2025</p>
+        <p style={{ fontSize: 13, fontFamily: FONTS.body, color: COLORS.textMuted, marginBottom: 16 }}>{formatRange(week)}</p>
 
-        <Card style={{ padding: 10 }}>
-          {/* Day headers */}
-          <div style={{ display: 'grid', gridTemplateColumns: '52px 1fr 1fr 1fr', gap: 4, marginBottom: 8 }}>
-            <div />
-            {[0, 5, 6].map(d => (
-              <div key={d} style={{ textAlign: 'center', fontSize: 11, fontWeight: 700, fontFamily: FONTS.body, textTransform: 'uppercase', padding: '4px 0', background: d === 5 ? COLORS.purpleLight : 'transparent', borderRadius: d === 5 ? 8 : 0, color: d === 5 ? COLORS.purpleDark : COLORS.textMuted }}>
-                {DAYS[d]}{d === 5 ? ' ✦' : ''}
+        <Card style={{ padding: 10, overflowX: 'auto' }}>
+          <div style={{ minWidth: 420 }}>
+            {/* Day headers */}
+            <div style={{ display: 'grid', gridTemplateColumns: '36px repeat(7, 1fr)', gap: 3, marginBottom: 6 }}>
+              <div />
+              {week.map(({ dayIndex, date, isToday }) => (
+                <div key={dayIndex} style={{ textAlign: 'center', padding: '4px 2px', borderRadius: 8, background: isToday ? COLORS.purple : 'transparent' }}>
+                  <div style={{ fontSize: 9, fontWeight: 700, fontFamily: FONTS.body, textTransform: 'uppercase', color: isToday ? '#fff' : COLORS.textMuted }}>{DAYS[dayIndex]}</div>
+                  <div style={{ fontSize: 12, fontWeight: 800, fontFamily: FONTS.title, color: isToday ? '#fff' : COLORS.text }}>{date.getDate()}</div>
+                </div>
+              ))}
+            </div>
+            {/* Meal rows */}
+            {MEALS.map((meal, mi) => (
+              <div key={mi} style={{ display: 'grid', gridTemplateColumns: '36px repeat(7, 1fr)', gap: 3, marginBottom: 4, alignItems: 'center' }}>
+                <div style={{ fontSize: 8, fontWeight: 700, fontFamily: FONTS.body, color: COLORS.textMuted, textTransform: 'uppercase', writingMode: 'vertical-rl', transform: 'rotate(180deg)', textAlign: 'center' }}>{meal}</div>
+                {week.map(({ dayIndex, isToday }) => {
+                  const m = getMeal(dayIndex, mi);
+                  const bg = isToday ? COLORS.purpleLight : m.note ? COLORS.yellow : COLORS.surface;
+                  return (
+                    <div key={dayIndex} onClick={() => setSelected({ d: dayIndex, m: mi, date: week[dayIndex].date })} style={{ background: bg, borderRadius: 10, padding: '5px 3px', minHeight: 48, border: `1.5px solid ${isToday ? COLORS.purple : COLORS.border}`, cursor: 'pointer' }}>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 2, justifyContent: 'center' }}>
+                        {m.p.map(p => { const mb = MEMBERS.find(x => x.initials === p); return mb ? <Avatar key={p} initials={mb.initials} color={mb.color} size="xs" photo={mb.photo} /> : null; })}
+                      </div>
+                      {m.a.length > 0 && (
+                        <p style={{ fontSize: 8, fontWeight: 700, color: COLORS.pinkDark, marginTop: 2, textAlign: 'center', fontFamily: FONTS.body }}>{m.a.length} abs.</p>
+                      )}
+                      {m.note && (
+                        <p style={{ fontSize: 8, fontWeight: 700, color: COLORS.yellowDark, marginTop: 2, textAlign: 'center', fontFamily: FONTS.body }}>🍕</p>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             ))}
           </div>
-          {/* Meal rows */}
-          {MEALS.map((meal, mi) => (
-            <div key={mi} style={{ display: 'grid', gridTemplateColumns: '52px 1fr 1fr 1fr', gap: 4, marginBottom: 5, alignItems: 'center' }}>
-              <div style={{ fontSize: 10, fontWeight: 700, fontFamily: FONTS.body, color: COLORS.textMuted, textTransform: 'uppercase' }}>{meal}</div>
-              {[0, 5, 6].map(d => {
-                const m = getMeal(d, mi);
-                const bg = d === 5 ? COLORS.purpleLight : m.note ? COLORS.yellow : COLORS.surface;
-                return (
-                  <div key={d} onClick={() => setSelected({ d, m: mi })} style={{ background: bg, borderRadius: 12, padding: '8px 6px', minHeight: 54, border: `1.5px solid ${COLORS.border}`, cursor: 'pointer' }}>
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
-                      {m.p.map(p => { const mb = MEMBERS.find(x => x.initials === p); return mb ? <Avatar key={p} initials={mb.initials} color={mb.color} size="xs" photo={mb.photo} /> : null; })}
-                    </div>
-                    {m.a.length > 0 ? (
-                      <div style={{ background: COLORS.pink, borderRadius: 6, padding: '2px 5px', marginTop: 3, display: 'inline-block' }}>
-                        <span style={{ fontSize: 9, fontWeight: 700, color: COLORS.pinkDark, fontFamily: FONTS.body }}>{m.a.join(', ')} absent{m.a.length > 1 ? 's' : ''}</span>
-                      </div>
-                    ) : m.note ? (
-                      <p style={{ fontSize: 10, fontWeight: 700, color: COLORS.yellowDark, marginTop: 3, fontFamily: FONTS.body }}>{m.note}</p>
-                    ) : (
-                      <p style={{ fontSize: 10, color: COLORS.textMuted, marginTop: 3, fontFamily: FONTS.body }}>{m.p.length} présents</p>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          ))}
         </Card>
         <PrimaryButton label="Me marquer absent·e…" onClick={() => setAbsentModal(true)} />
       </div>
 
       {/* Detail modal */}
-      <Modal visible={!!selected} onClose={() => setSelected(null)} title={selected ? `${MEALS[selected.m]} · ${DAYS[selected.d]}` : ''}>
+      <Modal visible={!!selected} onClose={() => setSelected(null)} title={selected ? `${MEALS[selected.m]} · ${DAYS[selected.d]} ${selected.date?.getDate()} ${MONTH_NAMES[selected.date?.getMonth()]}` : ''}>
         {data && MEMBERS.map(m => {
-          const present = data.p.includes(m.initials);
+          const present = data.p.includes(m.initials === userName.charAt(0).toUpperCase() ? 'SP' : m.initials) || data.p.includes(m.initials);
           return (
             <div key={m.initials} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 0', borderBottom: `1px solid ${COLORS.border}` }}>
               <Avatar initials={m.initials} color={m.color} size="sm" photo={m.photo} />
