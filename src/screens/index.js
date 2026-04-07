@@ -4,13 +4,20 @@ import { Avatar, Card, Modal, PrimaryButton } from '../components';
 
 const DAYS = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
 const MEALS = ['Matin', 'Midi', 'Soir'];
-const MEMBERS = [
-  { initials: 'SP', color: COLORS.sophieColor },
-  { initials: 'MA', color: COLORS.marcColor },
-  { initials: 'LU', color: COLORS.lucieColor },
-  { initials: 'TH', color: COLORS.thomasColor },
+const BASE_MEMBERS = [
+  { initials: 'SP', color: COLORS.sophieColor, name: 'Sophie' },
+  { initials: 'MA', color: COLORS.marcColor,   name: 'Marc'   },
+  { initials: 'LU', color: COLORS.lucieColor,  name: 'Lucie'  },
+  { initials: 'TH', color: COLORS.thomasColor, name: 'Thomas' },
 ];
-const NAMES = { SP: 'Sophie', MA: 'Marc', LU: 'Lucie', TH: 'Thomas' };
+
+function getMembers(userName, userColor, userPhoto) {
+  return BASE_MEMBERS.map(m =>
+    m.initials === 'SP'
+      ? { ...m, initials: userName.charAt(0).toUpperCase(), color: userColor, photo: userPhoto, name: userName }
+      : m
+  );
+}
 
 const MEAL_DATA = {
   0: { 0:{p:['SP','MA','LU','TH'],a:[]}, 1:{p:['SP','LU','TH'],a:['MA']}, 2:{p:['SP','MA','LU','TH'],a:[]} },
@@ -20,7 +27,9 @@ const MEAL_DATA = {
 
 function getMeal(d, m) { return MEAL_DATA[d]?.[m] ?? { p: ['SP','MA','LU','TH'], a: [] }; }
 
-export function CalendarScreen() {
+export function CalendarScreen({ userName = 'Sophie', userColor = COLORS.sophieColor, userPhoto = null }) {
+  const MEMBERS = getMembers(userName, userColor, userPhoto);
+  const NAMES = Object.fromEntries(MEMBERS.map(m => [m.initials, m.name]));
   const [selected, setSelected] = useState(null);
   const [absentModal, setAbsentModal] = useState(false);
   const [selMeal, setSelMeal] = useState(1);
@@ -59,7 +68,7 @@ export function CalendarScreen() {
                 return (
                   <div key={d} onClick={() => setSelected({ d, m: mi })} style={{ background: bg, borderRadius: 12, padding: '8px 6px', minHeight: 54, border: `1.5px solid ${COLORS.border}`, cursor: 'pointer' }}>
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
-                      {m.p.map(p => { const mb = MEMBERS.find(x => x.initials === p); return mb ? <Avatar key={p} initials={p} color={mb.color} size="xs" /> : null; })}
+                      {m.p.map(p => { const mb = MEMBERS.find(x => x.initials === p); return mb ? <Avatar key={p} initials={mb.initials} color={mb.color} size="xs" photo={mb.photo} /> : null; })}
                     </div>
                     {m.a.length > 0 ? (
                       <div style={{ background: COLORS.pink, borderRadius: 6, padding: '2px 5px', marginTop: 3, display: 'inline-block' }}>
@@ -85,8 +94,8 @@ export function CalendarScreen() {
           const present = data.p.includes(m.initials);
           return (
             <div key={m.initials} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 0', borderBottom: `1px solid ${COLORS.border}` }}>
-              <Avatar initials={m.initials} color={m.color} size="sm" />
-              <span style={{ flex: 1, fontSize: 15, fontWeight: 700, fontFamily: FONTS.body, color: COLORS.text }}>{NAMES[m.initials]}</span>
+              <Avatar initials={m.initials} color={m.color} size="sm" photo={m.photo} />
+              <span style={{ flex: 1, fontSize: 15, fontWeight: 700, fontFamily: FONTS.body, color: COLORS.text }}>{m.name}</span>
               <span style={{ background: present ? COLORS.green : COLORS.pink, color: present ? COLORS.greenDark : COLORS.pinkDark, fontSize: 12, fontWeight: 700, padding: '4px 12px', borderRadius: 999, fontFamily: FONTS.body }}>
                 {present ? 'Présent·e' : 'Absent·e'}
               </span>
@@ -125,7 +134,7 @@ const CAT = {
   other:    { dot: '#999',            bg: '#EEEEEE',          c: '#555',            label: 'autre' },
 };
 
-function ReminderItem({ item }) {
+function ReminderItem({ item, members }) {
   const cat = CAT[item.cat];
   return (
     <div style={{ display: 'flex', gap: 12, padding: '13px 0', alignItems: 'flex-start' }}>
@@ -138,7 +147,7 @@ function ReminderItem({ item }) {
         <p style={{ fontSize: 12, fontFamily: FONTS.body, color: COLORS.textMuted }}>{item.meta}</p>
         {item.members.length > 0 && (
           <div style={{ display: 'flex', gap: 4, marginTop: 6 }}>
-            {item.members.map(initials => { const m = MEMBERS.find(x => x.initials === initials); return m ? <Avatar key={initials} initials={initials} color={m.color} size="xs" /> : null; })}
+            {item.members.map(initials => { const m = members.find(x => x.initials === initials); return m ? <Avatar key={initials} initials={m.initials} color={m.color} size="xs" photo={m.photo} /> : null; })}
           </div>
         )}
       </div>
@@ -146,7 +155,8 @@ function ReminderItem({ item }) {
   );
 }
 
-export function RemindersScreen() {
+export function RemindersScreen({ userName = 'Sophie', userColor = COLORS.sophieColor, userPhoto = null }) {
+  const MEMBERS = getMembers(userName, userColor, userPhoto);
   const [modal, setModal] = useState(false);
   return (
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column', position: 'relative' }}>
@@ -155,11 +165,11 @@ export function RemindersScreen() {
         <p style={{ fontSize: 13, fontFamily: FONTS.body, color: COLORS.textMuted, marginBottom: 4 }}>2 cette semaine</p>
         <div style={{ fontSize: 11, fontWeight: 700, color: COLORS.textMuted, textTransform: 'uppercase', letterSpacing: 0.8, margin: '18px 0 10px', fontFamily: FONTS.body }}>Cette semaine</div>
         <Card style={{ padding: '4px 16px' }}>
-          {REMINDERS.map((r, i) => <div key={r.id} style={{ borderBottom: i < REMINDERS.length - 1 ? `1px solid ${COLORS.border}` : 'none' }}><ReminderItem item={r} /></div>)}
+          {REMINDERS.map((r, i) => <div key={r.id} style={{ borderBottom: i < REMINDERS.length - 1 ? `1px solid ${COLORS.border}` : 'none' }}><ReminderItem item={r} members={MEMBERS} /></div>)}
         </Card>
         <div style={{ fontSize: 11, fontWeight: 700, color: COLORS.textMuted, textTransform: 'uppercase', letterSpacing: 0.8, margin: '18px 0 10px', fontFamily: FONTS.body }}>À venir</div>
         <Card style={{ padding: '4px 16px' }}>
-          {UPCOMING.map((r, i) => <div key={r.id} style={{ borderBottom: i < UPCOMING.length - 1 ? `1px solid ${COLORS.border}` : 'none' }}><ReminderItem item={r} /></div>)}
+          {UPCOMING.map((r, i) => <div key={r.id} style={{ borderBottom: i < UPCOMING.length - 1 ? `1px solid ${COLORS.border}` : 'none' }}><ReminderItem item={r} members={MEMBERS} /></div>)}
         </Card>
       </div>
       <button onClick={() => setModal(true)} style={{ position: 'absolute', bottom: 24, right: 20, width: 52, height: 52, borderRadius: 26, background: COLORS.purple, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: `0 4px 16px ${COLORS.purple}66` }}>

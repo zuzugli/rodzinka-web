@@ -51,8 +51,8 @@ export default function App() {
   const screens = {
     home:      <HomeScreen navigate={setActiveTab} userName={userName} userPhoto={userPhoto} userColor={userColor} />,
     shopping:  <ShoppingScreen userName={userName} userPhoto={userPhoto} userColor={userColor} />,
-    calendar:  <CalendarScreen />,
-    reminders: <RemindersScreen />,
+    calendar:  <CalendarScreen userName={userName} userPhoto={userPhoto} userColor={userColor} />,
+    reminders: <RemindersScreen userName={userName} userPhoto={userPhoto} userColor={userColor} />,
     profile:   <ProfileScreen userName={userName} setUserName={handleSetUserName} userPhoto={userPhoto} setUserPhoto={handleSetUserPhoto} userColor={userColor} setUserColor={handleSetUserColor} />,
   };
 
