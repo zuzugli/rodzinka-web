@@ -18,35 +18,7 @@ const MEMBERS = [
 ];
 
 function MrHappy() {
-  return (
-    <svg width="80" height="86" viewBox="-18 -2 116 116" fill="none">
-      {/* Bras gauche */}
-      <path d="M10 52 C-4 46 -10 38 -8 28" stroke="#FFD740" strokeWidth="13" strokeLinecap="round"/>
-      <path d="M10 52 C-4 46 -10 38 -8 28" stroke="#222" strokeWidth="2.5" strokeLinecap="round" fill="none"/>
-      <circle cx="-10" cy="22" r="7" fill="#FFD740" stroke="#222" strokeWidth="2.5"/>
-      <circle cx="-16" cy="14" r="6" fill="#FFD740" stroke="#222" strokeWidth="2.5"/>
-      <circle cx="-3"  cy="14" r="6" fill="#FFD740" stroke="#222" strokeWidth="2.5"/>
-      {/* Bras droit */}
-      <path d="M70 52 C84 46 90 38 88 28" stroke="#FFD740" strokeWidth="13" strokeLinecap="round"/>
-      <path d="M70 52 C84 46 90 38 88 28" stroke="#222" strokeWidth="2.5" strokeLinecap="round" fill="none"/>
-      <circle cx="90" cy="22" r="7" fill="#FFD740" stroke="#222" strokeWidth="2.5"/>
-      <circle cx="96" cy="14" r="6" fill="#FFD740" stroke="#222" strokeWidth="2.5"/>
-      <circle cx="83" cy="14" r="6" fill="#FFD740" stroke="#222" strokeWidth="2.5"/>
-      {/* Corps */}
-      <circle cx="40" cy="44" r="40" fill="#FFD740" stroke="#222" strokeWidth="3"/>
-      {/* Yeux */}
-      <circle cx="29" cy="33" r="5" fill="#222"/>
-      <circle cx="37" cy="33" r="5" fill="#222"/>
-      {/* Bouche grande ouverte */}
-      <path d="M13 50 Q40 84 67 50" fill="#222"/>
-      {/* Jambe gauche */}
-      <path d="M26 82 C22 92 22 100 28 106" stroke="#FFD740" strokeWidth="12" strokeLinecap="round"/>
-      <path d="M26 82 C22 92 22 100 28 106" stroke="#222" strokeWidth="2.5" strokeLinecap="round" fill="none"/>
-      {/* Jambe droite */}
-      <path d="M54 82 C58 92 58 100 52 106" stroke="#FFD740" strokeWidth="12" strokeLinecap="round"/>
-      <path d="M54 82 C58 92 58 100 52 106" stroke="#222" strokeWidth="2.5" strokeLinecap="round" fill="none"/>
-    </svg>
-  );
+  return <img src="/mascot.png" alt="mascotte" style={{ width: 80, height: 80, objectFit: 'contain' }} />;
 }
 
 export default function HomeScreen({ navigate }) {
