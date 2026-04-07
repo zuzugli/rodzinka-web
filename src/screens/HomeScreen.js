@@ -19,32 +19,32 @@ const MEMBERS = [
 
 function MrHappy() {
   return (
-    <svg width="110" height="110" viewBox="-18 -2 116 116" fill="none">
+    <svg width="80" height="86" viewBox="-18 -2 116 116" fill="none">
       {/* Bras gauche */}
-      <path d="M12 54 C0 50 -8 44 -10 34" stroke="#FFD740" strokeWidth="13" strokeLinecap="round"/>
-      <path d="M12 54 C0 50 -8 44 -10 34" stroke="#222" strokeWidth="2.5" strokeLinecap="round" fill="none"/>
-      <circle cx="-12" cy="28" r="7"  fill="#FFD740" stroke="#222" strokeWidth="2.5"/>
-      <circle cx="-17" cy="20" r="6"  fill="#FFD740" stroke="#222" strokeWidth="2.5"/>
-      <circle cx="-5"  cy="20" r="6"  fill="#FFD740" stroke="#222" strokeWidth="2.5"/>
+      <path d="M10 52 C-4 46 -10 38 -8 28" stroke="#FFD740" strokeWidth="13" strokeLinecap="round"/>
+      <path d="M10 52 C-4 46 -10 38 -8 28" stroke="#222" strokeWidth="2.5" strokeLinecap="round" fill="none"/>
+      <circle cx="-10" cy="22" r="7" fill="#FFD740" stroke="#222" strokeWidth="2.5"/>
+      <circle cx="-16" cy="14" r="6" fill="#FFD740" stroke="#222" strokeWidth="2.5"/>
+      <circle cx="-3"  cy="14" r="6" fill="#FFD740" stroke="#222" strokeWidth="2.5"/>
       {/* Bras droit */}
-      <path d="M68 54 C80 50 88 44 90 34" stroke="#FFD740" strokeWidth="13" strokeLinecap="round"/>
-      <path d="M68 54 C80 50 88 44 90 34" stroke="#222" strokeWidth="2.5" strokeLinecap="round" fill="none"/>
-      <circle cx="92" cy="28" r="7"  fill="#FFD740" stroke="#222" strokeWidth="2.5"/>
-      <circle cx="97" cy="20" r="6"  fill="#FFD740" stroke="#222" strokeWidth="2.5"/>
-      <circle cx="85" cy="20" r="6"  fill="#FFD740" stroke="#222" strokeWidth="2.5"/>
+      <path d="M70 52 C84 46 90 38 88 28" stroke="#FFD740" strokeWidth="13" strokeLinecap="round"/>
+      <path d="M70 52 C84 46 90 38 88 28" stroke="#222" strokeWidth="2.5" strokeLinecap="round" fill="none"/>
+      <circle cx="90" cy="22" r="7" fill="#FFD740" stroke="#222" strokeWidth="2.5"/>
+      <circle cx="96" cy="14" r="6" fill="#FFD740" stroke="#222" strokeWidth="2.5"/>
+      <circle cx="83" cy="14" r="6" fill="#FFD740" stroke="#222" strokeWidth="2.5"/>
       {/* Corps */}
-      <circle cx="40" cy="44" r="42" fill="#FFD740" stroke="#222" strokeWidth="3"/>
+      <circle cx="40" cy="44" r="40" fill="#FFD740" stroke="#222" strokeWidth="3"/>
       {/* Yeux */}
-      <circle cx="30" cy="32" r="5" fill="#222"/>
-      <circle cx="38" cy="32" r="5" fill="#222"/>
-      {/* Bouche ouverte */}
-      <path d="M14 50 Q40 82 66 50" fill="#222"/>
+      <circle cx="29" cy="33" r="5" fill="#222"/>
+      <circle cx="37" cy="33" r="5" fill="#222"/>
+      {/* Bouche grande ouverte */}
+      <path d="M13 50 Q40 84 67 50" fill="#222"/>
       {/* Jambe gauche */}
-      <path d="M27 83 C23 94 22 102 27 108" stroke="#FFD740" strokeWidth="12" strokeLinecap="round"/>
-      <path d="M27 83 C23 94 22 102 27 108" stroke="#222" strokeWidth="2.5" strokeLinecap="round" fill="none"/>
+      <path d="M26 82 C22 92 22 100 28 106" stroke="#FFD740" strokeWidth="12" strokeLinecap="round"/>
+      <path d="M26 82 C22 92 22 100 28 106" stroke="#222" strokeWidth="2.5" strokeLinecap="round" fill="none"/>
       {/* Jambe droite */}
-      <path d="M53 83 C57 94 58 102 53 108" stroke="#FFD740" strokeWidth="12" strokeLinecap="round"/>
-      <path d="M53 83 C57 94 58 102 53 108" stroke="#222" strokeWidth="2.5" strokeLinecap="round" fill="none"/>
+      <path d="M54 82 C58 92 58 100 52 106" stroke="#FFD740" strokeWidth="12" strokeLinecap="round"/>
+      <path d="M54 82 C58 92 58 100 52 106" stroke="#222" strokeWidth="2.5" strokeLinecap="round" fill="none"/>
     </svg>
   );
 }
@@ -62,13 +62,9 @@ export default function HomeScreen({ navigate }) {
             Bonjour,<br />Sophie !
           </h1>
         </div>
-        <div style={{ position: 'relative', width: 100, height: 110, flexShrink: 0 }}>
-          <div style={{ position: 'absolute', bottom: 0, left: '50%', transform: 'translateX(-50%)', pointerEvents: 'none' }}>
-            <MrHappy />
-          </div>
-          <div style={{ position: 'absolute', top: 0, right: 0, zIndex: 2 }}>
-            <Avatar initials="SP" color={COLORS.sophieColor} size="md" />
-          </div>
+        <div style={{ flexShrink: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
+          <Avatar initials="SP" color={COLORS.sophieColor} size="md" />
+          <MrHappy />
         </div>
       </div>
 
