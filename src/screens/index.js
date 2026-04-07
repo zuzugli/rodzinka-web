@@ -75,32 +75,28 @@ export function CalendarScreen({ userName = 'Sophie', userColor = COLORS.sophieC
         </div>
         <p style={{ fontSize: 13, fontFamily: FONTS.body, color: COLORS.textMuted, marginBottom: 16 }}>{formatRange(week)}</p>
 
-        <Card style={{ padding: 10, overflowX: 'auto' }}>
+        <Card style={{ padding: 12, overflowX: 'auto' }}>
           <div style={{ minWidth: 420 }}>
             {/* Day headers */}
-            <div style={{ display: 'grid', gridTemplateColumns: '36px repeat(7, 1fr)', gap: 3, marginBottom: 6 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '40px repeat(7, 1fr)', gap: 4, marginBottom: 8 }}>
               <div />
               {week.map(({ dayIndex, date, isToday }) => (
-                <div key={dayIndex} style={{ textAlign: 'center', padding: '4px 2px', borderRadius: 8, background: isToday ? COLORS.purple : 'transparent' }}>
-                  <div style={{ fontSize: 9, fontWeight: 700, fontFamily: FONTS.body, textTransform: 'uppercase', color: isToday ? '#fff' : COLORS.textMuted }}>{DAYS[dayIndex]}</div>
-                  <div style={{ fontSize: 12, fontWeight: 800, fontFamily: FONTS.title, color: isToday ? '#fff' : COLORS.text }}>{date.getDate()}</div>
+                <div key={dayIndex} style={{ textAlign: 'center', padding: '6px 2px', borderRadius: 10, background: isToday ? COLORS.purple : 'transparent' }}>
+                  <div style={{ fontSize: 10, fontWeight: 700, fontFamily: FONTS.body, textTransform: 'uppercase', color: isToday ? '#fff' : COLORS.textMuted }}>{DAYS[dayIndex]}</div>
+                  <div style={{ fontSize: 15, fontWeight: 800, fontFamily: FONTS.title, color: isToday ? '#fff' : COLORS.text }}>{date.getDate()}</div>
                 </div>
               ))}
             </div>
             {/* Meal rows */}
             {MEALS.map((meal, mi) => (
-              <div key={mi} style={{ display: 'grid', gridTemplateColumns: '36px repeat(7, 1fr)', gap: 3, marginBottom: 4, alignItems: 'center' }}>
-                <div style={{ fontSize: 8, fontWeight: 700, fontFamily: FONTS.body, color: COLORS.textMuted, textTransform: 'uppercase', writingMode: 'vertical-rl', transform: 'rotate(180deg)', textAlign: 'center' }}>{meal}</div>
+              <div key={mi} style={{ display: 'grid', gridTemplateColumns: '40px repeat(7, 1fr)', gap: 4, marginBottom: 6, alignItems: 'stretch' }}>
+                <div style={{ fontSize: 9, fontWeight: 700, fontFamily: FONTS.body, color: COLORS.textMuted, textTransform: 'uppercase', writingMode: 'vertical-rl', transform: 'rotate(180deg)', textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{meal}</div>
                 {week.map(({ dayIndex, isToday }) => {
                   const m = getMeal(dayIndex, mi);
                   const bg = isToday ? COLORS.purpleLight : COLORS.surface;
                   return (
-                    <div key={dayIndex} onClick={() => setSelected({ d: dayIndex, m: mi, date: week[dayIndex].date })} style={{ background: bg, borderRadius: 10, padding: '5px 3px', minHeight: 48, border: `1.5px solid ${isToday ? COLORS.purple : COLORS.border}`, cursor: 'pointer' }}>
-                        {m.a.length > 0 && (
-                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 2, justifyContent: 'center' }}>
-                          {m.a.map(p => { const mb = MEMBERS.find(x => x.initials === p); return mb ? <Avatar key={p} initials={mb.initials} color={mb.color} size="xs" photo={mb.photo} /> : null; })}
-                        </div>
-                      )}
+                    <div key={dayIndex} onClick={() => setSelected({ d: dayIndex, m: mi, date: week[dayIndex].date })} style={{ background: bg, borderRadius: 12, padding: '10px 4px', minHeight: 80, border: `1.5px solid ${isToday ? COLORS.purple : COLORS.border}`, cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 3 }}>
+                      {m.a.length > 0 && m.a.map(p => { const mb = MEMBERS.find(x => x.initials === p); return mb ? <Avatar key={p} initials={mb.initials} color={mb.color} size="xs" photo={mb.photo} /> : null; })}
                     </div>
                   );
                 })}
