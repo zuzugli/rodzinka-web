@@ -195,18 +195,32 @@ const SWATCHES = [
   '#FF7043', // orange
 ];
 
-export function ProfileScreen({ userName = 'Sophie', setUserName }) {
+export function ProfileScreen({ userName = 'Sophie', setUserName, userPhoto, setUserPhoto }) {
   const [color, setColor] = useState(COLORS.sophieColor);
   const [editingName, setEditingName] = useState(false);
   const [nameInput, setNameInput] = useState(userName);
   const [notifs, setNotifs] = useState({ shopping: true, meals: true, reminders: true });
   const [copied, setCopied] = useState(false);
 
+  function handlePhotoChange(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = ev => setUserPhoto?.(ev.target.result);
+    reader.readAsDataURL(file);
+  }
+
   return (
     <div style={{ height: '100%', overflowY: 'auto', padding: '8px 20px 40px' }}>
       <h2 style={{ fontSize: 32, fontWeight: 800, fontFamily: FONTS.title, color: COLORS.text, letterSpacing: -0.5, marginBottom: 16 }}>Profil</h2>
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, padding: '16px 0 20px' }}>
-        <Avatar initials="SP" color={color} size="lg" />
+        <div style={{ position: 'relative', display: 'inline-block' }}>
+          <Avatar initials="SP" color={color} size="lg" photo={userPhoto} />
+          <label style={{ position: 'absolute', bottom: 0, right: 0, width: 26, height: 26, borderRadius: '50%', background: COLORS.text, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', border: '2px solid #fff' }}>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+            <input type="file" accept="image/*" onChange={handlePhotoChange} style={{ display: 'none' }} />
+          </label>
+        </div>
         {editingName ? (
           <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
             <input

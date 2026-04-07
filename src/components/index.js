@@ -1,9 +1,18 @@
 import React from 'react';
 import { COLORS, FONTS } from '../theme';
 
-export function Avatar({ initials, color, size = 'sm' }) {
+export function Avatar({ initials, color, size = 'sm', photo }) {
   const dim = { xs: 24, sm: 32, md: 46, lg: 72 }[size];
   const fs  = { xs: 9,  sm: 11, md: 15, lg: 24 }[size];
+  if (photo) {
+    return (
+      <div style={{
+        width: dim, height: dim, borderRadius: '50%', flexShrink: 0, overflow: 'hidden',
+      }}>
+        <img src={photo} alt="avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+      </div>
+    );
+  }
   return (
     <div style={{
       width: dim, height: dim, borderRadius: '50%',

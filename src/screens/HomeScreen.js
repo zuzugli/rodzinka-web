@@ -33,21 +33,17 @@ function MrHappy() {
   return <img src="/mascot.png" alt="mascotte" style={{ width: 92, height: 92, objectFit: 'contain' }} />;
 }
 
-export default function HomeScreen({ navigate, userName = 'Sophie' }) {
+export default function HomeScreen({ navigate, userName = 'Sophie', userPhoto }) {
   const week = getCurrentWeek();
   return (
     <div style={{ height: '100%', overflowY: 'auto', padding: '8px 20px 24px' }}>
       {/* Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 36 }}>
-          <div>
-            <h1 style={{ fontSize: 28, fontWeight: 800, fontFamily: FONTS.title, color: COLORS.text, lineHeight: 1.2, letterSpacing: -0.5 }}>
-              Bonjour,<br /><span style={{ whiteSpace: 'nowrap' }}>{userName} !</span>
-            </h1>
-          </div>
-          <MrHappy />
-        </div>
-        <Avatar initials="SP" color={COLORS.sophieColor} size="lg" />
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
+        <h1 style={{ fontSize: 28, fontWeight: 800, fontFamily: FONTS.title, color: COLORS.text, lineHeight: 1.2, letterSpacing: -0.5, flex: 1 }}>
+          Bonjour,<br /><span style={{ whiteSpace: 'nowrap' }}>{userName} !</span>
+        </h1>
+        <MrHappy />
+        <Avatar initials="SP" color={COLORS.sophieColor} size="lg" photo={userPhoto} />
       </div>
 
       {/* Semaine */}

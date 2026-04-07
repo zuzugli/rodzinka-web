@@ -31,18 +31,25 @@ function UserIcon({ color }) {
 export default function App() {
   const [activeTab, setActiveTab] = useState('home');
   const [userName, setUserName] = useState(() => localStorage.getItem('userName') || 'Sophie');
+  const [userPhoto, setUserPhoto] = useState(() => localStorage.getItem('userPhoto') || null);
 
   function handleSetUserName(name) {
     setUserName(name);
     localStorage.setItem('userName', name);
   }
 
+  function handleSetUserPhoto(photo) {
+    setUserPhoto(photo);
+    if (photo) localStorage.setItem('userPhoto', photo);
+    else localStorage.removeItem('userPhoto');
+  }
+
   const screens = {
-    home:      <HomeScreen navigate={setActiveTab} userName={userName} />,
+    home:      <HomeScreen navigate={setActiveTab} userName={userName} userPhoto={userPhoto} />,
     shopping:  <ShoppingScreen />,
     calendar:  <CalendarScreen />,
     reminders: <RemindersScreen />,
-    profile:   <ProfileScreen userName={userName} setUserName={handleSetUserName} />,
+    profile:   <ProfileScreen userName={userName} setUserName={handleSetUserName} userPhoto={userPhoto} setUserPhoto={handleSetUserPhoto} />,
   };
 
   return (
