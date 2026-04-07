@@ -39,7 +39,7 @@ export default function HomeScreen({ navigate }) {
     <div style={{ height: '100%', overflowY: 'auto', padding: '8px 20px 24px' }}>
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 52 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 36 }}>
           <div>
             <h1 style={{ fontSize: 32, fontWeight: 800, fontFamily: FONTS.title, color: COLORS.text, lineHeight: 1.2, letterSpacing: -0.5 }}>
               Bonjour,<br />Sophie !
