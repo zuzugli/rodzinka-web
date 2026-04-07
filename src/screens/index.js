@@ -180,7 +180,20 @@ export function RemindersScreen() {
 }
 
 // ── PROFILE ──────────────────────────────────────────────────
-const SWATCHES = [COLORS.sophieColor, COLORS.marcColor, COLORS.lucieColor, COLORS.thomasColor, '#5BB8FF', '#FFD740'];
+const SWATCHES = [
+  '#FFD740', // jaune
+  '#F07A4E', // corail
+  '#F48FB1', // rose
+  '#E53935', // rouge
+  '#AB47BC', // violet
+  '#5C6BC0', // indigo
+  '#00AFBE', // turquoise
+  '#26A69A', // vert menthe
+  '#66BB6A', // vert
+  '#8D6E63', // marron
+  '#78909C', // gris bleu
+  '#FF7043', // orange
+];
 
 export function ProfileScreen({ userName = 'Sophie', setUserName }) {
   const [color, setColor] = useState(COLORS.sophieColor);
