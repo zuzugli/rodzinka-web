@@ -191,8 +191,7 @@ const SWATCHES = [
   '#66BB6A', // vert
 ];
 
-export function ProfileScreen({ userName = 'Sophie', setUserName, userPhoto, setUserPhoto }) {
-  const [color, setColor] = useState(COLORS.sophieColor);
+export function ProfileScreen({ userName = 'Sophie', setUserName, userPhoto, setUserPhoto, userColor = '#FFD740', setUserColor }) {
   const [editingName, setEditingName] = useState(false);
   const [nameInput, setNameInput] = useState(userName);
   const [notifs, setNotifs] = useState({ shopping: true, meals: true, reminders: true });
@@ -211,7 +210,7 @@ export function ProfileScreen({ userName = 'Sophie', setUserName, userPhoto, set
       <h2 style={{ fontSize: 32, fontWeight: 800, fontFamily: FONTS.title, color: COLORS.text, letterSpacing: -0.5, marginBottom: 16 }}>Profil</h2>
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, padding: '16px 0 20px' }}>
         <div style={{ position: 'relative', display: 'inline-block' }}>
-          <Avatar initials={userName.charAt(0).toUpperCase()} color={color} size="lg" photo={userPhoto} />
+          <Avatar initials={userName.charAt(0).toUpperCase()} color={userColor} size="lg" photo={userPhoto} />
           <label style={{ position: 'absolute', bottom: 0, right: 0, width: 26, height: 26, borderRadius: '50%', background: COLORS.text, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', border: '2px solid #fff' }}>
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
             <input type="file" accept="image/*" onChange={handlePhotoChange} style={{ display: 'none' }} />
@@ -239,7 +238,7 @@ export function ProfileScreen({ userName = 'Sophie', setUserName, userPhoto, set
       <div style={{ fontSize: 11, fontWeight: 700, color: COLORS.textMuted, textTransform: 'uppercase', letterSpacing: 0.8, margin: '0 0 10px', fontFamily: FONTS.body }}>Couleur d'avatar</div>
       <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 20 }}>
         {SWATCHES.map(c => (
-          <div key={c} onClick={() => setColor(c)} style={{ width: 34, height: 34, borderRadius: '50%', background: c, cursor: 'pointer', border: `3px solid ${color === c ? COLORS.text : 'transparent'}` }} />
+          <div key={c} onClick={() => setUserColor?.(c)} style={{ width: 34, height: 34, borderRadius: '50%', background: c, cursor: 'pointer', border: `3px solid ${userColor === c ? COLORS.text : 'transparent'}` }} />
         ))}
       </div>
 

@@ -33,7 +33,7 @@ function MrHappy() {
   return <img src="/mascot.png" alt="mascotte" style={{ width: 68, height: 68, objectFit: 'contain', marginRight: 8 }} />;
 }
 
-export default function HomeScreen({ navigate, userName = 'Sophie', userPhoto }) {
+export default function HomeScreen({ navigate, userName = 'Sophie', userPhoto, userColor = '#FFD740' }) {
   const week = getCurrentWeek();
   return (
     <div style={{ height: '100%', overflowY: 'auto', padding: '8px 20px 24px' }}>
@@ -43,7 +43,7 @@ export default function HomeScreen({ navigate, userName = 'Sophie', userPhoto })
           Bonjour,<br /><span style={{ whiteSpace: 'nowrap' }}>{userName} !</span>
         </h1>
         <MrHappy />
-        <Avatar initials={userName.charAt(0).toUpperCase()} color={COLORS.sophieColor} size="md" photo={userPhoto} />
+        <Avatar initials={userName.charAt(0).toUpperCase()} color={userColor} size="md" photo={userPhoto} />
       </div>
 
       {/* Semaine */}
