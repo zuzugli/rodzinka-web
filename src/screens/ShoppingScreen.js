@@ -47,7 +47,7 @@ export default function ShoppingScreen({ userName = 'Sophie', userPhoto, userCol
   const toggle = id => setItems(prev => prev.map(it => it.id === id ? { ...it, done: !it.done } : it));
   const addItem = () => {
     if (!newName.trim()) return;
-    setItems(prev => [...prev, { id: Date.now(), name: newName.trim(), by: userName, addedAt: Date.now(), done: false }]);
+    setItems(prev => [{ id: Date.now(), name: newName.trim(), by: userName, addedAt: Date.now(), done: false }, ...prev]);
     setNewName(''); setModal(false);
   };
 
