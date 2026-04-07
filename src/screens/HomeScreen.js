@@ -1,5 +1,5 @@
 import React from 'react';
-import { COLORS, FONTS, SHADOWS } from '../theme';
+import { COLORS, FONTS } from '../theme';
 
 const DAYS = [
   { name: 'LUN', num: '31' }, { name: 'MAR', num: '1' },
@@ -72,7 +72,7 @@ export default function HomeScreen({ navigate }) {
         </div>
 
         {/* Semaine — tous les jours sur une ligne */}
-        <div style={{ background: COLORS.card, borderRadius: 24, padding: '12px 8px', boxShadow: SHADOWS.card, marginBottom: 14 }}>
+        <div style={{ background: COLORS.card, borderRadius: 24, padding: '12px 8px', boxShadow: '0 4px 20px rgba(0,0,0,0.08)', marginBottom: 14 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between' }}>
             {DAYS.map((d, i) => (
               <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5, padding: '8px 2px', borderRadius: 14, background: i === TODAY ? COLORS.pink : 'transparent' }}>
@@ -84,7 +84,7 @@ export default function HomeScreen({ navigate }) {
         </div>
 
         {/* Notif */}
-        <div style={{ background: COLORS.pinkLight, borderRadius: 20, padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20, boxShadow: SHADOWS.card }}>
+        <div style={{ background: COLORS.pinkLight, borderRadius: 20, padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20, boxShadow: '0 4px 20px rgba(0,0,0,0.08)' }}>
           <div style={{ width: 42, height: 42, borderRadius: 14, background: COLORS.pink, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
           </div>
@@ -102,7 +102,7 @@ export default function HomeScreen({ navigate }) {
             { label: 'Courses', sub: '8 articles', bg: COLORS.pinkLight, color: COLORS.pinkDark, accent: COLORS.pink, emoji: '🛒', tab: 'shopping' },
             { label: 'Repas', sub: '2 absences', bg: COLORS.tealLight, color: COLORS.tealDark, accent: COLORS.teal, emoji: '🍽️', tab: 'calendar' },
           ].map(q => (
-            <button key={q.label} onClick={() => navigate(q.tab)} style={{ background: q.bg, borderRadius: 24, padding: '18px 14px', border: 'none', textAlign: 'left', boxShadow: SHADOWS.card, transition: 'transform 0.15s', position: 'relative', overflow: 'hidden' }}
+            <button key={q.label} onClick={() => navigate(q.tab)} style={{ background: q.bg, borderRadius: 24, padding: '18px 14px', border: 'none', textAlign: 'left', boxShadow: '0 4px 20px rgba(0,0,0,0.08)', transition: 'transform 0.15s', position: 'relative', overflow: 'hidden' }}
               onMouseEnter={e => e.currentTarget.style.transform = 'rotate(-1deg) scale(1.02)'}
               onMouseLeave={e => e.currentTarget.style.transform = 'none'}>
               <div style={{ fontSize: 26, marginBottom: 8 }}>{q.emoji}</div>
@@ -111,7 +111,7 @@ export default function HomeScreen({ navigate }) {
             </button>
           ))}
         </div>
-        <button onClick={() => navigate('reminders')} style={{ background: COLORS.lavenderLight, borderRadius: 24, padding: '14px 18px', border: 'none', width: '100%', textAlign: 'left', boxShadow: SHADOWS.card, display: 'flex', alignItems: 'center', gap: 14, marginBottom: 20 }}>
+        <button onClick={() => navigate('reminders')} style={{ background: COLORS.lavenderLight, borderRadius: 24, padding: '14px 18px', border: 'none', width: '100%', textAlign: 'left', boxShadow: '0 4px 20px rgba(0,0,0,0.08)', display: 'flex', alignItems: 'center', gap: 14, marginBottom: 20 }}>
           <span style={{ fontSize: 26 }}>⏰</span>
           <div>
             <div style={{ fontSize: 15, fontWeight: 900, fontFamily: FONTS.title, color: COLORS.lavenderDark }}>Rappels</div>
@@ -122,7 +122,7 @@ export default function HomeScreen({ navigate }) {
 
         {/* Famille */}
         <p style={{ fontSize: 12, fontWeight: 800, color: COLORS.textMuted, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 12, fontFamily: FONTS.body }}>La famille</p>
-        <div style={{ background: COLORS.card, borderRadius: 24, padding: '16px', boxShadow: SHADOWS.card, position: 'relative', overflow: 'hidden' }}>
+        <div style={{ background: COLORS.card, borderRadius: 24, padding: '16px', boxShadow: '0 4px 20px rgba(0,0,0,0.08)', position: 'relative', overflow: 'hidden' }}>
           <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
             {MEMBERS.map(m => (
               <div key={m.initials} style={{ position: 'relative', width: 40, height: 40, flexShrink: 0 }}>
