@@ -59,8 +59,9 @@ export function CalendarScreen({ userName = 'Sophie', userColor = COLORS.sophieC
   const [weekOffset, setWeekOffset] = useState(0);
   const [selected, setSelected] = useState(null);
   const [absentModal, setAbsentModal] = useState(false);
-  const [selDay, setSelDay] = useState(null);
+  const [selDate, setSelDate] = useState(null);
   const [selMeal, setSelMeal] = useState(null);
+  const [calMonth, setCalMonth] = useState(() => { const d = new Date(); return { y: d.getFullYear(), m: d.getMonth() }; });
   const week = getWeek(weekOffset);
   const data = selected ? getMeal(selected.d, selected.m) : null;
 
@@ -126,27 +127,64 @@ export function CalendarScreen({ userName = 'Sophie', userColor = COLORS.sophieC
       </Modal>
 
       {/* Absent modal */}
-      <Modal visible={absentModal} onClose={() => { setAbsentModal(false); setSelDay(null); setSelMeal(null); }} title="Me marquer absent·e">
-        <p style={{ fontSize: 11, fontWeight: 700, color: COLORS.textMuted, textTransform: 'uppercase', letterSpacing: 0.8, fontFamily: FONTS.body, marginBottom: 8 }}>1. Choisir le jour</p>
-        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 16 }}>
-          {week.map(({ dayIndex, date }) => {
-            const active = selDay === dayIndex;
+      <Modal visible={absentModal} onClose={() => { setAbsentModal(false); setSelDate(null); setSelMeal(null); }} title="Me marquer absent·e">
+        {/* Mini calendar */}
+        <div style={{ marginBottom: 14 }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+            <button onClick={() => setCalMonth(p => { const d = new Date(p.y, p.m - 1); return { y: d.getFullYear(), m: d.getMonth() }; })} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 18, color: COLORS.text, padding: '0 6px' }}>‹</button>
+            <span style={{ fontSize: 14, fontWeight: 700, fontFamily: FONTS.body, color: COLORS.text, textTransform: 'capitalize' }}>
+              {new Date(calMonth.y, calMonth.m).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })}
+            </span>
+            <button onClick={() => setCalMonth(p => { const d = new Date(p.y, p.m + 1); return { y: d.getFullYear(), m: d.getMonth() }; })} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 18, color: COLORS.text, padding: '0 6px' }}>›</button>
+          </div>
+          {/* Day labels */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 3, marginBottom: 4 }}>
+            {['L','M','M','J','V','S','D'].map((d, i) => (
+              <div key={i} style={{ textAlign: 'center', fontSize: 10, fontWeight: 700, color: COLORS.textMuted, fontFamily: FONTS.body }}>{d}</div>
+            ))}
+          </div>
+          {/* Days grid */}
+          {(() => {
+            const today = new Date(); today.setHours(0,0,0,0);
+            const firstDay = new Date(calMonth.y, calMonth.m, 1);
+            const startOffset = (firstDay.getDay() + 6) % 7;
+            const daysInMonth = new Date(calMonth.y, calMonth.m + 1, 0).getDate();
+            const cells = [];
+            for (let i = 0; i < startOffset; i++) cells.push(null);
+            for (let d = 1; d <= daysInMonth; d++) cells.push(d);
             return (
-              <div key={dayIndex} onClick={() => setSelDay(dayIndex)} style={{ flex: '1 0 auto', textAlign: 'center', padding: '8px 4px', borderRadius: 12, border: `2px solid ${active ? COLORS.purple : COLORS.border}`, background: active ? COLORS.purpleLight : COLORS.surface, cursor: 'pointer', minWidth: 36 }}>
-                <div style={{ fontSize: 9, fontWeight: 700, fontFamily: FONTS.body, textTransform: 'uppercase', color: active ? COLORS.purpleDark : COLORS.textMuted }}>{DAYS[dayIndex]}</div>
-                <div style={{ fontSize: 14, fontWeight: 800, fontFamily: FONTS.title, color: active ? COLORS.purpleDark : COLORS.text }}>{date.getDate()}</div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 3 }}>
+                {cells.map((d, i) => {
+                  if (!d) return <div key={i} />;
+                  const date = new Date(calMonth.y, calMonth.m, d); date.setHours(0,0,0,0);
+                  const isPast = date < today;
+                  const isSelected = selDate && selDate.toDateString() === date.toDateString();
+                  const isToday = date.toDateString() === today.toDateString();
+                  return (
+                    <div key={i} onClick={() => !isPast && setSelDate(date)} style={{
+                      textAlign: 'center', padding: '7px 2px', borderRadius: 10, cursor: isPast ? 'default' : 'pointer',
+                      background: isSelected ? COLORS.purple : isToday ? COLORS.purpleLight : 'transparent',
+                      opacity: isPast ? 0.3 : 1,
+                    }}>
+                      <span style={{ fontSize: 13, fontWeight: 700, fontFamily: FONTS.body, color: isSelected ? '#fff' : isToday ? COLORS.purpleDark : COLORS.text }}>{d}</span>
+                    </div>
+                  );
+                })}
               </div>
             );
-          })}
+          })()}
         </div>
-        <p style={{ fontSize: 11, fontWeight: 700, color: selDay === null ? COLORS.border : COLORS.textMuted, textTransform: 'uppercase', letterSpacing: 0.8, fontFamily: FONTS.body, marginBottom: 8 }}>2. Choisir le repas</p>
-        {MEALS.map((m, i) => (
-          <div key={i} onClick={() => selDay !== null && setSelMeal(i)} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: 14, borderRadius: 14, border: `2px solid ${selMeal === i ? COLORS.purple : COLORS.border}`, background: selMeal === i ? COLORS.purpleLight : COLORS.surface, marginBottom: 10, cursor: selDay !== null ? 'pointer' : 'default', opacity: selDay === null ? 0.4 : 1 }}>
-            <div style={{ width: 20, height: 20, borderRadius: 10, border: `2px solid ${selMeal === i ? COLORS.purple : COLORS.border}`, background: selMeal === i ? COLORS.purple : 'transparent' }} />
-            <span style={{ fontSize: 15, fontWeight: 700, fontFamily: FONTS.body, color: selMeal === i ? COLORS.purpleDark : COLORS.text }}>{m}</span>
-          </div>
-        ))}
-        <PrimaryButton label="Confirmer l'absence" onClick={() => { setAbsentModal(false); setSelDay(null); setSelMeal(null); }} />
+
+        {/* Meal choice */}
+        <p style={{ fontSize: 11, fontWeight: 700, color: !selDate ? COLORS.border : COLORS.textMuted, textTransform: 'uppercase', letterSpacing: 0.8, fontFamily: FONTS.body, marginBottom: 8 }}>Choisir le repas</p>
+        <div style={{ display: 'flex', gap: 8, marginBottom: 12, opacity: !selDate ? 0.4 : 1 }}>
+          {MEALS.map((m, i) => (
+            <div key={i} onClick={() => selDate && setSelMeal(i)} style={{ flex: 1, textAlign: 'center', padding: '12px 8px', borderRadius: 14, border: `2px solid ${selMeal === i ? COLORS.purple : COLORS.border}`, background: selMeal === i ? COLORS.purpleLight : COLORS.surface, cursor: selDate ? 'pointer' : 'default' }}>
+              <span style={{ fontSize: 14, fontWeight: 700, fontFamily: FONTS.body, color: selMeal === i ? COLORS.purpleDark : COLORS.text }}>{m}</span>
+            </div>
+          ))}
+        </div>
+        <PrimaryButton label="Confirmer l'absence" onClick={() => { setAbsentModal(false); setSelDate(null); setSelMeal(null); }} />
       </Modal>
     </div>
   );
