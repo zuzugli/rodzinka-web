@@ -17,35 +17,34 @@ const MEMBERS = [
   { initials: 'TH', color: COLORS.thomasColor },
 ];
 
-function SunMascot() {
+function MrHappy() {
   return (
-    <svg width="100" height="112" viewBox="-5 -14 110 126" fill="none">
-      {/* Rayons */}
-      <line x1="50" y1="26"  x2="50" y2="8"   stroke="#FFD740" strokeWidth="5" strokeLinecap="round"/>
-      <line x1="86" y1="54"  x2="72" y2="54"  stroke="#FFD740" strokeWidth="5" strokeLinecap="round"/>
-      <line x1="76" y1="84"  x2="66" y2="74"  stroke="#FFD740" strokeWidth="5" strokeLinecap="round"/>
-      <line x1="50" y1="82"  x2="50" y2="98"  stroke="#FFD740" strokeWidth="5" strokeLinecap="round"/>
-      <line x1="24" y1="84"  x2="34" y2="74"  stroke="#FFD740" strokeWidth="5" strokeLinecap="round"/>
-      <line x1="14" y1="54"  x2="28" y2="54"  stroke="#FFD740" strokeWidth="5" strokeLinecap="round"/>
-      <line x1="24" y1="26"  x2="34" y2="36"  stroke="#FFD740" strokeWidth="5" strokeLinecap="round"/>
-      {/* Bras qui fait coucou */}
-      <path d="M70 32 C85 16 90 0 78 -6" stroke="#FFD740" strokeWidth="7" strokeLinecap="round"/>
-      <circle cx="76" cy="-8"  r="8" fill="#FFD740"/>
-      <circle cx="68" cy="-13" r="5" fill="#FFD740"/>
-      <circle cx="84" cy="-13" r="5" fill="#FFD740"/>
-      <circle cx="76" cy="-17" r="5" fill="#FFD740"/>
+    <svg width="110" height="110" viewBox="-18 -2 116 116" fill="none">
+      {/* Bras gauche */}
+      <path d="M12 54 C0 50 -8 44 -10 34" stroke="#FFD740" strokeWidth="13" strokeLinecap="round"/>
+      <path d="M12 54 C0 50 -8 44 -10 34" stroke="#222" strokeWidth="2.5" strokeLinecap="round" fill="none"/>
+      <circle cx="-12" cy="28" r="7"  fill="#FFD740" stroke="#222" strokeWidth="2.5"/>
+      <circle cx="-17" cy="20" r="6"  fill="#FFD740" stroke="#222" strokeWidth="2.5"/>
+      <circle cx="-5"  cy="20" r="6"  fill="#FFD740" stroke="#222" strokeWidth="2.5"/>
+      {/* Bras droit */}
+      <path d="M68 54 C80 50 88 44 90 34" stroke="#FFD740" strokeWidth="13" strokeLinecap="round"/>
+      <path d="M68 54 C80 50 88 44 90 34" stroke="#222" strokeWidth="2.5" strokeLinecap="round" fill="none"/>
+      <circle cx="92" cy="28" r="7"  fill="#FFD740" stroke="#222" strokeWidth="2.5"/>
+      <circle cx="97" cy="20" r="6"  fill="#FFD740" stroke="#222" strokeWidth="2.5"/>
+      <circle cx="85" cy="20" r="6"  fill="#FFD740" stroke="#222" strokeWidth="2.5"/>
       {/* Corps */}
-      <circle cx="50" cy="54" r="28" fill="#FFD740"/>
-      {/* Joues */}
-      <circle cx="34" cy="60" r="7" fill="#FFB830" opacity="0.4"/>
-      <circle cx="66" cy="60" r="7" fill="#FFB830" opacity="0.4"/>
+      <circle cx="40" cy="44" r="42" fill="#FFD740" stroke="#222" strokeWidth="3"/>
       {/* Yeux */}
-      <circle cx="40" cy="48" r="5" fill="#7A5000"/>
-      <circle cx="60" cy="48" r="5" fill="#7A5000"/>
-      <circle cx="41.5" cy="46.5" r="2" fill="white"/>
-      <circle cx="61.5" cy="46.5" r="2" fill="white"/>
-      {/* Sourire */}
-      <path d="M37 62 Q50 76 63 62" stroke="#7A5000" strokeWidth="3.5" strokeLinecap="round" fill="none"/>
+      <circle cx="30" cy="32" r="5" fill="#222"/>
+      <circle cx="38" cy="32" r="5" fill="#222"/>
+      {/* Bouche ouverte */}
+      <path d="M14 50 Q40 82 66 50" fill="#222"/>
+      {/* Jambe gauche */}
+      <path d="M27 83 C23 94 22 102 27 108" stroke="#FFD740" strokeWidth="12" strokeLinecap="round"/>
+      <path d="M27 83 C23 94 22 102 27 108" stroke="#222" strokeWidth="2.5" strokeLinecap="round" fill="none"/>
+      {/* Jambe droite */}
+      <path d="M53 83 C57 94 58 102 53 108" stroke="#FFD740" strokeWidth="12" strokeLinecap="round"/>
+      <path d="M53 83 C57 94 58 102 53 108" stroke="#222" strokeWidth="2.5" strokeLinecap="round" fill="none"/>
     </svg>
   );
 }
@@ -64,8 +63,8 @@ export default function HomeScreen({ navigate }) {
           </h1>
         </div>
         <div style={{ position: 'relative', width: 100, height: 110, flexShrink: 0 }}>
-          <div style={{ position: 'absolute', bottom: 0, right: -6, pointerEvents: 'none' }}>
-            <SunMascot />
+          <div style={{ position: 'absolute', bottom: 0, left: '50%', transform: 'translateX(-50%)', pointerEvents: 'none' }}>
+            <MrHappy />
           </div>
           <div style={{ position: 'absolute', top: 0, right: 0, zIndex: 2 }}>
             <Avatar initials="SP" color={COLORS.sophieColor} size="md" />
