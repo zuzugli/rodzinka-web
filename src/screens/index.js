@@ -59,7 +59,8 @@ export function CalendarScreen({ userName = 'Sophie', userColor = COLORS.sophieC
   const [weekOffset, setWeekOffset] = useState(0);
   const [selected, setSelected] = useState(null);
   const [absentModal, setAbsentModal] = useState(false);
-  const [selMeal, setSelMeal] = useState(1);
+  const [selDay, setSelDay] = useState(null);
+  const [selMeal, setSelMeal] = useState(null);
   const week = getWeek(weekOffset);
   const data = selected ? getMeal(selected.d, selected.m) : null;
 
@@ -125,14 +126,27 @@ export function CalendarScreen({ userName = 'Sophie', userColor = COLORS.sophieC
       </Modal>
 
       {/* Absent modal */}
-      <Modal visible={absentModal} onClose={() => setAbsentModal(false)} title="Me marquer absent·e">
+      <Modal visible={absentModal} onClose={() => { setAbsentModal(false); setSelDay(null); setSelMeal(null); }} title="Me marquer absent·e">
+        <p style={{ fontSize: 11, fontWeight: 700, color: COLORS.textMuted, textTransform: 'uppercase', letterSpacing: 0.8, fontFamily: FONTS.body, marginBottom: 8 }}>1. Choisir le jour</p>
+        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 16 }}>
+          {week.map(({ dayIndex, date }) => {
+            const active = selDay === dayIndex;
+            return (
+              <div key={dayIndex} onClick={() => setSelDay(dayIndex)} style={{ flex: '1 0 auto', textAlign: 'center', padding: '8px 4px', borderRadius: 12, border: `2px solid ${active ? COLORS.purple : COLORS.border}`, background: active ? COLORS.purpleLight : COLORS.surface, cursor: 'pointer', minWidth: 36 }}>
+                <div style={{ fontSize: 9, fontWeight: 700, fontFamily: FONTS.body, textTransform: 'uppercase', color: active ? COLORS.purpleDark : COLORS.textMuted }}>{DAYS[dayIndex]}</div>
+                <div style={{ fontSize: 14, fontWeight: 800, fontFamily: FONTS.title, color: active ? COLORS.purpleDark : COLORS.text }}>{date.getDate()}</div>
+              </div>
+            );
+          })}
+        </div>
+        <p style={{ fontSize: 11, fontWeight: 700, color: selDay === null ? COLORS.border : COLORS.textMuted, textTransform: 'uppercase', letterSpacing: 0.8, fontFamily: FONTS.body, marginBottom: 8 }}>2. Choisir le repas</p>
         {MEALS.map((m, i) => (
-          <div key={i} onClick={() => setSelMeal(i)} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: 14, borderRadius: 14, border: `2px solid ${selMeal === i ? COLORS.purple : COLORS.border}`, background: selMeal === i ? COLORS.purpleLight : COLORS.surface, marginBottom: 10, cursor: 'pointer' }}>
+          <div key={i} onClick={() => selDay !== null && setSelMeal(i)} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: 14, borderRadius: 14, border: `2px solid ${selMeal === i ? COLORS.purple : COLORS.border}`, background: selMeal === i ? COLORS.purpleLight : COLORS.surface, marginBottom: 10, cursor: selDay !== null ? 'pointer' : 'default', opacity: selDay === null ? 0.4 : 1 }}>
             <div style={{ width: 20, height: 20, borderRadius: 10, border: `2px solid ${selMeal === i ? COLORS.purple : COLORS.border}`, background: selMeal === i ? COLORS.purple : 'transparent' }} />
             <span style={{ fontSize: 15, fontWeight: 700, fontFamily: FONTS.body, color: selMeal === i ? COLORS.purpleDark : COLORS.text }}>{m}</span>
           </div>
         ))}
-        <PrimaryButton label="Confirmer l'absence" onClick={() => setAbsentModal(false)} />
+        <PrimaryButton label="Confirmer l'absence" onClick={() => { setAbsentModal(false); setSelDay(null); setSelMeal(null); }} />
       </Modal>
     </div>
   );
