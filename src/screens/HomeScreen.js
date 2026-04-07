@@ -2,7 +2,8 @@ import React from 'react';
 import { COLORS, FONTS } from '../theme';
 import { Avatar, Card, SectionLabel } from '../components';
 
-const DAY_NAMES = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
+const DAY_NAMES   = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
+const MONTH_NAMES = ['jan', 'fév', 'mar', 'avr', 'mai', 'juin', 'juil', 'aoû', 'sep', 'oct', 'nov', 'déc'];
 
 function getCurrentWeek() {
   const today = new Date();
@@ -15,6 +16,7 @@ function getCurrentWeek() {
     return {
       name: DAY_NAMES[i],
       num: d.getDate().toString(),
+      month: MONTH_NAMES[d.getMonth()],
       isToday: d.toDateString() === today.toDateString(),
     };
   });
@@ -63,6 +65,9 @@ export default function HomeScreen({ navigate }) {
               </span>
               <span style={{ fontSize: 15, fontWeight: 800, fontFamily: FONTS.title, color: d.isToday ? '#fff' : COLORS.text }}>
                 {d.num}
+              </span>
+              <span style={{ fontSize: 8, fontWeight: 600, fontFamily: FONTS.body, color: d.isToday ? 'rgba(255,255,255,0.75)' : COLORS.textMuted }}>
+                {d.month}
               </span>
             </button>
           ))}
