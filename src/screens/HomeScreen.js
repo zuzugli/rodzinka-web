@@ -43,7 +43,7 @@ export default function HomeScreen({ navigate, userName = 'Sophie', userPhoto })
           Bonjour,<br /><span style={{ whiteSpace: 'nowrap' }}>{userName} !</span>
         </h1>
         <MrHappy />
-        <Avatar initials="SP" color={COLORS.sophieColor} size="lg" photo={userPhoto} />
+        <Avatar initials={userName.charAt(0).toUpperCase()} color={COLORS.sophieColor} size="lg" photo={userPhoto} />
       </div>
 
       {/* Semaine */}
