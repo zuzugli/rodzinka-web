@@ -89,11 +89,11 @@ export default function HomeScreen({ navigate }) {
         ))}
       </div>
       <button onClick={() => navigate('reminders')} style={{
-        background: COLORS.purpleLight, borderRadius: 20, padding: 16,
+        background: COLORS.green, borderRadius: 20, padding: 16,
         border: 'none', cursor: 'pointer', width: '100%', textAlign: 'left', marginBottom: 10,
       }}>
-        <div style={{ fontSize: 15, fontWeight: 800, fontFamily: FONTS.title, color: COLORS.purpleDark }}>Rappels</div>
-        <div style={{ fontSize: 12, fontWeight: 700, fontFamily: FONTS.body, color: COLORS.purpleDark, opacity: 0.8 }}>2 cette semaine</div>
+        <div style={{ fontSize: 15, fontWeight: 800, fontFamily: FONTS.title, color: COLORS.greenDark }}>Rappels</div>
+        <div style={{ fontSize: 12, fontWeight: 700, fontFamily: FONTS.body, color: COLORS.greenDark, opacity: 0.8 }}>2 cette semaine</div>
       </button>
 
       {/* Famille */}
