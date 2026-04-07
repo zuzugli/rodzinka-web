@@ -43,7 +43,7 @@ export default function HomeScreen({ navigate, userName = 'Sophie', userPhoto })
           Bonjour,<br /><span style={{ whiteSpace: 'nowrap' }}>{userName} !</span>
         </h1>
         <MrHappy />
-        <Avatar initials={userName.charAt(0).toUpperCase()} color={COLORS.sophieColor} size="lg" photo={userPhoto} />
+        <Avatar initials={userName.charAt(0).toUpperCase()} color={COLORS.sophieColor} size="md" photo={userPhoto} />
       </div>
 
       {/* Semaine */}
@@ -57,13 +57,13 @@ export default function HomeScreen({ navigate, userName = 'Sophie', userPhoto })
               border: 'none', cursor: 'pointer',
               background: d.isToday ? COLORS.purple : 'transparent',
             }}>
-              <span style={{ fontSize: 9, fontWeight: 700, fontFamily: FONTS.body, textTransform: 'uppercase', color: d.isToday ? 'rgba(255,255,255,0.85)' : COLORS.textMuted }}>
+              <span style={{ fontSize: 11, fontWeight: 700, fontFamily: FONTS.body, textTransform: 'uppercase', color: d.isToday ? 'rgba(255,255,255,0.85)' : COLORS.textMuted }}>
                 {d.name}
               </span>
-              <span style={{ fontSize: 15, fontWeight: 800, fontFamily: FONTS.title, color: d.isToday ? '#fff' : COLORS.text }}>
+              <span style={{ fontSize: 19, fontWeight: 800, fontFamily: FONTS.title, color: d.isToday ? '#fff' : COLORS.text }}>
                 {d.num}
               </span>
-              <span style={{ fontSize: 8, fontWeight: 600, fontFamily: FONTS.body, color: d.isToday ? 'rgba(255,255,255,0.75)' : COLORS.textMuted }}>
+              <span style={{ fontSize: 10, fontWeight: 600, fontFamily: FONTS.body, color: d.isToday ? 'rgba(255,255,255,0.75)' : COLORS.textMuted }}>
                 {d.month}
               </span>
             </button>
