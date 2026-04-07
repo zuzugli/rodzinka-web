@@ -3,7 +3,7 @@ import { COLORS, FONTS } from '../theme';
 
 export function Avatar({ initials, color, size = 'sm', photo }) {
   const dim = { xs: 24, sm: 32, md: 46, lg: 72 }[size];
-  const fs  = { xs: 9,  sm: 11, md: 15, lg: 24 }[size];
+  const fs  = { xs: 9,  sm: 11, md: 15, lg: 32 }[size];
   if (photo) {
     return (
       <div style={{
