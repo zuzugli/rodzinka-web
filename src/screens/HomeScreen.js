@@ -18,7 +18,7 @@ const MEMBERS = [
 ];
 
 function MrHappy() {
-  return <img src="/mascot.png" alt="mascotte" style={{ width: 80, height: 80, objectFit: 'contain' }} />;
+  return <img src="/mascot.png" alt="mascotte" style={{ width: 64, height: 64, objectFit: 'contain' }} />;
 }
 
 export default function HomeScreen({ navigate }) {
@@ -26,7 +26,7 @@ export default function HomeScreen({ navigate }) {
     <div style={{ height: '100%', overflowY: 'auto', padding: '8px 20px 24px' }}>
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 0 }}>
           <div>
             <p style={{ fontSize: 13, fontWeight: 700, color: COLORS.textMuted, marginBottom: 4, fontFamily: FONTS.body }}>
               Dimanche 5 avril
@@ -35,7 +35,9 @@ export default function HomeScreen({ navigate }) {
               Bonjour,<br />Sophie !
             </h1>
           </div>
-          <MrHappy />
+          <div style={{ marginLeft: 18 }}>
+            <MrHappy />
+          </div>
         </div>
         <Avatar initials="SP" color={COLORS.sophieColor} size="md" />
       </div>
