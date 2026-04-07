@@ -16,16 +16,6 @@ const MEMBERS = [
   { initials: 'TH', color: COLORS.thomasColor },
 ];
 
-function BgBlobs() {
-  return (
-    <svg width="390" height="300" viewBox="0 0 390 300" fill="none"
-      style={{ position: 'absolute', top: 0, left: 0, pointerEvents: 'none', zIndex: 0 }}>
-      <path d="M-20 -10 C40 -30 120 20 100 80 C80 140 -10 120 -30 70 Z" fill="#F472B6" opacity="0.12"/>
-      <path d="M300 -20 C370 10 410 80 370 130 C330 180 260 140 270 80 Z" fill="#5ECFCF" opacity="0.12"/>
-      <path d="M150 -40 C220 -20 250 40 210 80 C170 120 100 90 110 40 Z" fill="#FCD34D" opacity="0.1"/>
-    </svg>
-  );
-}
 
 function Mascot() {
   return (
@@ -49,7 +39,6 @@ function Mascot() {
 export default function HomeScreen({ navigate }) {
   return (
     <div style={{ height: '100%', overflowY: 'auto', background: COLORS.background, position: 'relative' }}>
-      <BgBlobs />
       <div style={{ padding: '12px 20px 100px', position: 'relative', zIndex: 1 }}>
 
         {/* Header */}
@@ -59,7 +48,6 @@ export default function HomeScreen({ navigate }) {
             <h1 style={{ fontSize: 28, fontWeight: 900, fontFamily: FONTS.title, color: COLORS.text, whiteSpace: 'nowrap', letterSpacing: -0.5 }}>
               Bonjour, Sophie !
             </h1>
-            <p style={{ fontSize: 16, fontFamily: FONTS.accent, color: COLORS.pink, marginTop: 2 }}>Bonne journée ✨</p>
           </div>
           <div style={{ position: 'relative', marginLeft: 12, width: 60, height: 60, flexShrink: 0 }}>
             <svg width="60" height="60" viewBox="0 0 60 60" style={{ position: 'absolute', inset: 0 }}>
