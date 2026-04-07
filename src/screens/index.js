@@ -182,8 +182,10 @@ export function RemindersScreen() {
 // ── PROFILE ──────────────────────────────────────────────────
 const SWATCHES = [COLORS.sophieColor, COLORS.marcColor, COLORS.lucieColor, COLORS.thomasColor, '#5BB8FF', '#FFD740'];
 
-export function ProfileScreen() {
+export function ProfileScreen({ userName = 'Sophie', setUserName }) {
   const [color, setColor] = useState(COLORS.sophieColor);
+  const [editingName, setEditingName] = useState(false);
+  const [nameInput, setNameInput] = useState(userName);
   const [notifs, setNotifs] = useState({ shopping: true, meals: true, reminders: true });
   const [copied, setCopied] = useState(false);
 
@@ -192,7 +194,20 @@ export function ProfileScreen() {
       <h2 style={{ fontSize: 32, fontWeight: 800, fontFamily: FONTS.title, color: COLORS.text, letterSpacing: -0.5, marginBottom: 16 }}>Profil</h2>
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, padding: '16px 0 20px' }}>
         <Avatar initials="SP" color={color} size="lg" />
-        <p style={{ fontSize: 22, fontWeight: 800, fontFamily: FONTS.title, color: COLORS.text }}>Sophie Martin</p>
+        {editingName ? (
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+            <input
+              value={nameInput}
+              onChange={e => setNameInput(e.target.value)}
+              onKeyDown={e => { if (e.key === 'Enter') { setUserName?.(nameInput); setEditingName(false); } if (e.key === 'Escape') setEditingName(false); }}
+              autoFocus
+              style={{ fontSize: 20, fontWeight: 800, fontFamily: FONTS.title, color: COLORS.text, border: `2px solid ${COLORS.purple}`, borderRadius: 10, padding: '4px 10px', outline: 'none', width: 160 }}
+            />
+            <button onClick={() => { setUserName?.(nameInput); setEditingName(false); }} style={{ background: COLORS.purple, color: '#fff', border: 'none', borderRadius: 8, padding: '6px 12px', fontWeight: 700, fontFamily: FONTS.body, cursor: 'pointer' }}>OK</button>
+          </div>
+        ) : (
+          <p onClick={() => { setNameInput(userName); setEditingName(true); }} style={{ fontSize: 22, fontWeight: 800, fontFamily: FONTS.title, color: COLORS.text, cursor: 'pointer' }}>{userName} Martin ✎</p>
+        )}
         <div style={{ background: COLORS.purpleLight, borderRadius: 999, padding: '5px 16px' }}>
           <span style={{ fontSize: 13, fontWeight: 700, color: COLORS.purpleDark, fontFamily: FONTS.body }}>Admin · Les Martin</span>
         </div>

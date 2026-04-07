@@ -30,13 +30,19 @@ function UserIcon({ color }) {
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('home');
+  const [userName, setUserName] = useState(() => localStorage.getItem('userName') || 'Sophie');
+
+  function handleSetUserName(name) {
+    setUserName(name);
+    localStorage.setItem('userName', name);
+  }
 
   const screens = {
-    home:      <HomeScreen navigate={setActiveTab} />,
+    home:      <HomeScreen navigate={setActiveTab} userName={userName} />,
     shopping:  <ShoppingScreen />,
     calendar:  <CalendarScreen />,
     reminders: <RemindersScreen />,
-    profile:   <ProfileScreen />,
+    profile:   <ProfileScreen userName={userName} setUserName={handleSetUserName} />,
   };
 
   return (

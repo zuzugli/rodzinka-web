@@ -23,17 +23,17 @@ function getCurrentWeek() {
 }
 
 const MEMBERS = [
-  { initials: 'SP', color: COLORS.sophieColor },
-  { initials: 'MA', color: COLORS.marcColor },
-  { initials: 'LU', color: COLORS.lucieColor },
-  { initials: 'TH', color: COLORS.thomasColor },
+  { initials: 'SP', color: COLORS.sophieColor, name: 'Sophie' },
+  { initials: 'MA', color: COLORS.marcColor,   name: 'Marc'   },
+  { initials: 'LU', color: COLORS.lucieColor,  name: 'Lucie'  },
+  { initials: 'TH', color: COLORS.thomasColor, name: 'Thomas' },
 ];
 
 function MrHappy() {
   return <img src="/mascot.png" alt="mascotte" style={{ width: 92, height: 92, objectFit: 'contain' }} />;
 }
 
-export default function HomeScreen({ navigate }) {
+export default function HomeScreen({ navigate, userName = 'Sophie' }) {
   const week = getCurrentWeek();
   return (
     <div style={{ height: '100%', overflowY: 'auto', padding: '8px 20px 24px' }}>
@@ -42,7 +42,7 @@ export default function HomeScreen({ navigate }) {
         <div style={{ display: 'flex', alignItems: 'center', gap: 36 }}>
           <div>
             <h1 style={{ fontSize: 32, fontWeight: 800, fontFamily: FONTS.title, color: COLORS.text, lineHeight: 1.2, letterSpacing: -0.5 }}>
-              Bonjour,<br />Sophie !
+              Bonjour,<br />{userName} !
             </h1>
           </div>
           <MrHappy />
@@ -96,7 +96,7 @@ export default function HomeScreen({ navigate }) {
       <SectionLabel>Accès rapide</SectionLabel>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 10 }}>
         {[
-          { label: 'Courses', sub: '8 articles', bg: COLORS.pink, color: COLORS.pinkDark, tab: 'shopping' },
+          { label: 'Courses', sub: '8 articles', bg: '#FFD740', color: '#fff', tab: 'shopping' },
           { label: 'Repas', sub: '2 absences', bg: '#F48FB1', color: '#fff', tab: 'calendar' },
         ].map(q => (
           <button key={q.label} onClick={() => navigate(q.tab)} style={{
@@ -109,21 +109,26 @@ export default function HomeScreen({ navigate }) {
         ))}
       </div>
       <button onClick={() => navigate('reminders')} style={{
-        background: COLORS.green, borderRadius: 20, padding: 16,
+        background: '#00AFBE', borderRadius: 20, padding: 16,
         border: 'none', cursor: 'pointer', width: '100%', textAlign: 'left', marginBottom: 10,
       }}>
-        <div style={{ fontSize: 15, fontWeight: 800, fontFamily: FONTS.title, color: COLORS.greenDark }}>Rappels</div>
-        <div style={{ fontSize: 12, fontWeight: 700, fontFamily: FONTS.body, color: COLORS.greenDark, opacity: 0.8 }}>2 cette semaine</div>
+        <div style={{ fontSize: 15, fontWeight: 800, fontFamily: FONTS.title, color: '#fff' }}>Rappels</div>
+        <div style={{ fontSize: 12, fontWeight: 700, fontFamily: FONTS.body, color: '#fff', opacity: 0.85 }}>2 cette semaine</div>
       </button>
 
       {/* Famille */}
       <SectionLabel>Famille</SectionLabel>
       <Card>
-        <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-          {MEMBERS.map(m => <Avatar key={m.initials} initials={m.initials} color={m.color} size="sm" />)}
-          <span style={{ fontSize: 13, fontFamily: FONTS.body, color: COLORS.textMuted, marginLeft: 4 }}>
-            4 membres · Les Martin
-          </span>
+        <p style={{ fontSize: 13, fontWeight: 700, fontFamily: FONTS.body, color: COLORS.textMuted, marginBottom: 12 }}>
+          Les Tchenio-Gaubert · 4 membres
+        </p>
+        <div style={{ display: 'flex', justifyContent: 'space-around' }}>
+          {MEMBERS.map(m => (
+            <div key={m.initials} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
+              <Avatar initials={m.initials} color={m.color} size="md" />
+              <span style={{ fontSize: 11, fontWeight: 700, fontFamily: FONTS.body, color: COLORS.text }}>{m.name}</span>
+            </div>
+          ))}
         </div>
       </Card>
     </div>
