@@ -47,7 +47,7 @@ export default function HomeScreen({ navigate }) {
           </div>
           <MrHappy />
         </div>
-        <Avatar initials="SP" color={COLORS.sophieColor} size="md" />
+        <Avatar initials="SP" color={COLORS.sophieColor} size="lg" />
       </div>
 
       {/* Semaine */}
