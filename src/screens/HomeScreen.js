@@ -17,6 +17,34 @@ const MEMBERS = [
   { initials: 'TH', color: COLORS.thomasColor },
 ];
 
+function Mascot() {
+  return (
+    <svg width="96" height="104" viewBox="0 0 96 104" fill="none">
+      {/* Corps */}
+      <ellipse cx="48" cy="74" rx="28" ry="24" fill="#D4DCF0"/>
+      {/* Tête */}
+      <circle cx="48" cy="38" r="28" fill="#D4DCF0"/>
+      {/* Joues */}
+      <circle cx="31" cy="44" r="8" fill="#E8A8C0" opacity="0.55"/>
+      <circle cx="65" cy="44" r="8" fill="#E8A8C0" opacity="0.55"/>
+      {/* Yeux */}
+      <ellipse cx="38" cy="33" rx="5" ry="6" fill="#3D5A8A"/>
+      <ellipse cx="58" cy="33" rx="5" ry="6" fill="#3D5A8A"/>
+      <circle cx="40" cy="31" r="2" fill="white"/>
+      <circle cx="60" cy="31" r="2" fill="white"/>
+      {/* Sourire */}
+      <path d="M36 46 Q48 58 60 46" stroke="#3D5A8A" strokeWidth="3" strokeLinecap="round" fill="none"/>
+      {/* Bras qui fait coucou */}
+      <path d="M74 55 C84 40 90 26 80 16" stroke="#D4DCF0" strokeWidth="10" strokeLinecap="round"/>
+      {/* Main */}
+      <circle cx="78" cy="13" r="9" fill="#D4DCF0"/>
+      <circle cx="70" cy="7"  r="6" fill="#D4DCF0"/>
+      <circle cx="86" cy="7"  r="6" fill="#D4DCF0"/>
+      <circle cx="78" cy="4"  r="6" fill="#D4DCF0"/>
+    </svg>
+  );
+}
+
 export default function HomeScreen({ navigate }) {
   return (
     <div style={{ height: '100%', overflowY: 'auto', padding: '8px 20px 24px' }}>
@@ -30,7 +58,14 @@ export default function HomeScreen({ navigate }) {
             Bonjour,<br />Sophie !
           </h1>
         </div>
-        <Avatar initials="SP" color={COLORS.sophieColor} size="md" />
+        <div style={{ position: 'relative', width: 100, height: 110, flexShrink: 0 }}>
+          <div style={{ position: 'absolute', bottom: 0, right: -6, pointerEvents: 'none' }}>
+            <Mascot />
+          </div>
+          <div style={{ position: 'absolute', top: 0, right: 0, zIndex: 2 }}>
+            <Avatar initials="SP" color={COLORS.sophieColor} size="md" />
+          </div>
+        </div>
       </div>
 
       {/* Semaine */}
