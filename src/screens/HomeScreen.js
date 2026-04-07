@@ -51,6 +51,7 @@ export default function HomeScreen({ navigate }) {
       </div>
 
       {/* Semaine */}
+      <SectionLabel>Cette semaine</SectionLabel>
       <Card>
         <div style={{ display: 'flex', gap: 4 }}>
           {week.map((d, i) => (
