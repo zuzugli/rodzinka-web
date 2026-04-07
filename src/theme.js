@@ -17,9 +17,9 @@ export const COLORS = {
 };
 
 export const FONTS = {
-  title:  "'Inter', sans-serif",
-  accent: "'Inter', sans-serif",
-  body:   "'Inter', sans-serif",
+  title:  "'Archivo Black', sans-serif",
+  accent: "'Caveat', cursive",
+  body:   "'Nunito', sans-serif",
 };
 
 export const SHADOWS = {
