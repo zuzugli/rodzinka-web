@@ -111,15 +111,15 @@ export default function ShoppingScreen({ userName = 'Sophie', userPhoto, userCol
                   </p>
                   <p style={{ fontSize: 11, fontFamily: FONTS.body, color: COLORS.textMuted, marginTop: 2 }}>{relativeDate(item.addedAt)}</p>
                 </div>
-                <Avatar initials={av.initials} color={av.color} size="xs" photo={av.photo} />
+                <Avatar initials={av.initials} color={av.color} size="sm" photo={av.photo} />
                 <button onClick={e => deleteItem(e, item.id)} style={{
                   background: confirmDelete === item.id ? '#E53935' : 'transparent',
                   border: 'none', cursor: 'pointer', padding: '4px 6px', borderRadius: 8,
                   display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
                 }}>
                   {confirmDelete === item.id
-                    ? <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3"><polyline points="20 6 9 17 4 12"/></svg>
-                    : <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={COLORS.textMuted} strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+                    ? <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3"><polyline points="20 6 9 17 4 12"/></svg>
+                    : <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={COLORS.textMuted} strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
                   }
                 </button>
               </div>
