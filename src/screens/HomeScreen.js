@@ -63,7 +63,7 @@ export default function HomeScreen({ navigate }) {
         <div style={{ background: COLORS.card, borderRadius: 24, padding: '12px 8px', boxShadow: '0 4px 20px rgba(0,0,0,0.08)', marginBottom: 14 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between' }}>
             {DAYS.map((d, i) => (
-              <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5, padding: '8px 2px', borderRadius: 14, background: i === TODAY ? COLORS.pink : 'transparent' }}>
+              <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5, padding: '8px 2px', borderRadius: 14, background: i === TODAY ? COLORS.purple : 'transparent' }}>
                 <span style={{ fontSize: 9, fontWeight: 800, fontFamily: FONTS.body, textTransform: 'uppercase', color: i === TODAY ? '#fff' : COLORS.textMuted }}>{d.name}</span>
                 <span style={{ fontSize: 15, fontWeight: 900, fontFamily: FONTS.title, color: i === TODAY ? '#fff' : COLORS.text }}>{d.num}</span>
               </div>
@@ -72,15 +72,14 @@ export default function HomeScreen({ navigate }) {
         </div>
 
         {/* Notif */}
-        <div style={{ background: COLORS.pinkLight, borderRadius: 20, padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20, boxShadow: '0 4px 20px rgba(0,0,0,0.08)' }}>
-          <div style={{ width: 42, height: 42, borderRadius: 14, background: COLORS.pink, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+        <div style={{ background: COLORS.purpleLight, borderRadius: 20, padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20, boxShadow: '0 4px 20px rgba(0,0,0,0.08)' }}>
+          <div style={{ width: 42, height: 42, borderRadius: 14, background: COLORS.purple, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
           </div>
           <div style={{ flex: 1 }}>
-            <p style={{ fontSize: 14, fontWeight: 800, color: COLORS.pinkDark, fontFamily: FONTS.body }}>Sortir les poubelles</p>
-            <p style={{ fontSize: 12, color: COLORS.pinkDark, opacity: 0.7, fontFamily: FONTS.body }}>Rappel · Aujourd'hui à 19h00</p>
+            <p style={{ fontSize: 14, fontWeight: 800, color: COLORS.purpleDark, fontFamily: FONTS.body }}>Sortir les poubelles</p>
+            <p style={{ fontSize: 12, color: COLORS.purpleDark, opacity: 0.7, fontFamily: FONTS.body }}>Rappel · Aujourd'hui à 19h00</p>
           </div>
-          <span style={{ fontSize: 24 }}>🔔</span>
         </div>
 
         {/* Accès rapide */}

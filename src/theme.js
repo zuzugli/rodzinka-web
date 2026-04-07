@@ -1,5 +1,5 @@
 export const COLORS = {
-  background: '#F5F0EA',
+  background: '#FFFFFF',
   card: '#FFFFFF',
   surface: '#FAF7F3',
   pink: '#F472B6', pinkLight: '#FDE8F4', pinkDark: '#BE185D',
@@ -9,7 +9,7 @@ export const COLORS = {
   lavender: '#A78BFA', lavenderLight: '#EDE9FE', lavenderDark: '#5B21B6',
   yellow: '#FCD34D', yellowLight: '#FEF9C3', yellowDark: '#92400E',
   text: '#1A1A1A', textMuted: '#6B6B6B', border: '#EDE8E0',
-  sophieColor: '#F472B6', marcColor: '#5ECFCF', lucieColor: '#7EC8A4', thomasColor: '#FBBF97',
+  sophieColor: '#9B72F5', marcColor: '#5ECFCF', lucieColor: '#7EC8A4', thomasColor: '#FBBF97',
   purple: '#A78BFA', purpleLight: '#EDE9FE', purpleDark: '#5B21B6',
   green: '#DCFAEC', greenMid: '#7EC8A4', greenDark: '#065F46',
   blue: '#D8F5F5', blueMid: '#5ECFCF', blueDark: '#0E7490',
