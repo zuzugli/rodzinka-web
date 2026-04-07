@@ -45,7 +45,7 @@ export default function HomeScreen({ navigate }) {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
           <div style={{ flex: 1 }}>
             <p style={{ fontSize: 13, fontWeight: 600, color: COLORS.textMuted, fontFamily: FONTS.body, marginBottom: 2 }}>Dimanche 5 avril</p>
-            <h1 style={{ fontSize: 28, fontWeight: 900, fontFamily: FONTS.title, color: COLORS.text, whiteSpace: 'nowrap', letterSpacing: -0.5 }}>
+            <h1 style={{ fontSize: 22, fontWeight: 900, fontFamily: FONTS.title, color: COLORS.text, whiteSpace: 'nowrap', letterSpacing: -0.5 }}>
               Bonjour, Sophie !
             </h1>
           </div>
