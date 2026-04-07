@@ -3,7 +3,7 @@ import { COLORS, FONTS } from '../theme';
 import { Avatar, Card, Modal, PrimaryButton } from '../components';
 
 const DAYS = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
-const MEALS = ['Matin', 'Midi', 'Soir'];
+const MEALS = ['Midi', 'Soir'];
 const BASE_MEMBERS = [
   { initials: 'SP', color: COLORS.sophieColor, name: 'Sophie' },
   { initials: 'MA', color: COLORS.marcColor,   name: 'Marc'   },
@@ -22,13 +22,13 @@ function getMembers(userName, userColor, userPhoto) {
 const MONTH_NAMES = ['jan','fév','mar','avr','mai','juin','juil','aoû','sep','oct','nov','déc'];
 
 const MEAL_DATA = {
-  0: { 0:{p:['SP','MA','LU','TH'],a:[]}, 1:{p:['SP','LU','TH'],a:['MA']}, 2:{p:['SP','MA','LU','TH'],a:[]} },
-  1: { 0:{p:['SP','MA','LU','TH'],a:[]}, 1:{p:['SP','MA','LU','TH'],a:[]}, 2:{p:['SP','LU'],a:['MA','TH']} },
-  2: { 0:{p:['SP','MA','LU','TH'],a:[]}, 1:{p:['SP','MA','TH'],a:['LU']}, 2:{p:['SP','MA','LU','TH'],a:[]} },
-  3: { 0:{p:['SP','MA','LU','TH'],a:[]}, 1:{p:['SP','MA','LU','TH'],a:[]}, 2:{p:['SP','MA','LU','TH'],a:[]} },
-  4: { 0:{p:['SP','LU','TH'],a:['MA']}, 1:{p:['SP','MA','LU','TH'],a:[]}, 2:{p:['SP','MA','LU','TH'],a:[]} },
-  5: { 0:{p:['SP','MA','LU'],a:['TH']}, 1:{p:['SP','MA','LU','TH'],a:[]}, 2:{p:['SP','MA','LU','TH'],a:[],note:'Pizza ce soir'} },
-  6: { 0:{p:['SP','MA','LU','TH'],a:[]}, 1:{p:['SP','MA'],a:['LU','TH']}, 2:{p:['SP','MA','LU','TH'],a:[]} },
+  0: { 0:{p:['SP','MA','LU','TH'],a:[]}, 1:{p:['SP','MA','LU','TH'],a:[]} },
+  1: { 0:{p:['SP','MA','LU','TH'],a:[]}, 1:{p:['SP','LU'],a:['MA','TH']} },
+  2: { 0:{p:['SP','MA','TH'],a:['LU']}, 1:{p:['SP','MA','LU','TH'],a:[]} },
+  3: { 0:{p:['SP','MA','LU','TH'],a:[]}, 1:{p:['SP','MA','LU','TH'],a:[]} },
+  4: { 0:{p:['SP','MA','LU','TH'],a:[]}, 1:{p:['SP','MA','LU','TH'],a:[]} },
+  5: { 0:{p:['SP','MA','LU','TH'],a:[]}, 1:{p:['SP','MA','LU','TH'],a:[],note:'Pizza ce soir'} },
+  6: { 0:{p:['SP','MA'],a:['LU','TH']}, 1:{p:['SP','MA','LU','TH'],a:[]} },
 };
 
 function getMeal(d, m) { return MEAL_DATA[d]?.[m] ?? { p: ['SP','MA','LU','TH'], a: [] }; }
