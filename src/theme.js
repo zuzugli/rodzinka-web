@@ -18,8 +18,8 @@ export const COLORS = {
 
 export const FONTS = {
   title:  "'Archivo Black', sans-serif",
-  accent: "'Caveat', cursive",
-  body:   "'Nunito', sans-serif",
+  accent: "'Archivo Black', sans-serif",
+  body:   "'Archivo Black', sans-serif",
 };
 
 export const SHADOWS = {
