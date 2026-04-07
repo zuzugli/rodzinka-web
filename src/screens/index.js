@@ -230,7 +230,7 @@ export function ProfileScreen({ userName = 'Sophie', setUserName, userPhoto, set
         ) : (
           <p onClick={() => { setNameInput(userName); setEditingName(true); }} style={{ fontSize: 22, fontWeight: 800, fontFamily: FONTS.title, color: COLORS.text, cursor: 'pointer' }}>{userName} ✎</p>
         )}
-        <div style={{ background: COLORS.purpleLight, borderRadius: 999, padding: '8px 20px', textAlign: 'center' }}>
+        <div style={{ background: COLORS.purpleLight, borderRadius: 999, padding: '4px 14px', textAlign: 'center' }}>
           <span style={{ fontSize: 11, fontWeight: 600, color: COLORS.purpleDark, fontFamily: FONTS.body }}>Famille Tchenio-Gaubert</span>
         </div>
       </div>
