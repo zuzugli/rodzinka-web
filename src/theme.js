@@ -7,10 +7,10 @@ export const COLORS = {
   purple: '#F07A4E',
   purpleLight: '#FDDDD0',
   purpleDark: '#C04820',
-  // Pêche
-  pink: '#FEF0DC',
-  pinkMid: '#F5C99A',
-  pinkDark: '#9A6830',
+  // Jaune
+  pink: '#FFF9C4',
+  pinkMid: '#FFD740',
+  pinkDark: '#B8860B',
   // Turquoise
   blue: '#C0EEF0',
   blueMid: '#00AFBE',
@@ -19,16 +19,16 @@ export const COLORS = {
   green: '#C8EEE4',
   greenMid: '#6DC4A8',
   greenDark: '#2A7860',
-  // Pêche (alias jaune)
-  yellow: '#FEF0DC',
-  yellowMid: '#F5C99A',
-  yellowDark: '#9A6830',
-  // Corail (alias orange)
+  // Jaune (alias)
+  yellow: '#FFF9C4',
+  yellowMid: '#FFD740',
+  yellowDark: '#B8860B',
+  // Corail
   orange: '#FDDDD0',
   orangeMid: '#F07A4E',
   orangeDark: '#C04820',
   // Couleurs membres
-  sophieColor: '#F07A4E',
+  sophieColor: '#FFD740',
   marcColor: '#00AFBE',
   lucieColor: '#6DC4A8',
   thomasColor: '#F5C99A',
