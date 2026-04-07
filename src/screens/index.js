@@ -96,11 +96,10 @@ export function CalendarScreen({ userName = 'Sophie', userColor = COLORS.sophieC
                   const bg = isToday ? COLORS.purpleLight : m.note ? COLORS.yellow : COLORS.surface;
                   return (
                     <div key={dayIndex} onClick={() => setSelected({ d: dayIndex, m: mi, date: week[dayIndex].date })} style={{ background: bg, borderRadius: 10, padding: '5px 3px', minHeight: 48, border: `1.5px solid ${isToday ? COLORS.purple : COLORS.border}`, cursor: 'pointer' }}>
-                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 2, justifyContent: 'center' }}>
-                        {m.p.map(p => { const mb = MEMBERS.find(x => x.initials === p); return mb ? <Avatar key={p} initials={mb.initials} color={mb.color} size="xs" photo={mb.photo} /> : null; })}
-                      </div>
-                      {m.a.length > 0 && (
-                        <p style={{ fontSize: 8, fontWeight: 700, color: COLORS.pinkDark, marginTop: 2, textAlign: 'center', fontFamily: FONTS.body }}>{m.a.length} abs.</p>
+                        {m.a.length > 0 && (
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 2, justifyContent: 'center' }}>
+                          {m.a.map(p => { const mb = MEMBERS.find(x => x.initials === p); return mb ? <Avatar key={p} initials={mb.initials} color={mb.color} size="xs" photo={mb.photo} /> : null; })}
+                        </div>
                       )}
                       {m.note && (
                         <p style={{ fontSize: 8, fontWeight: 700, color: COLORS.yellowDark, marginTop: 2, textAlign: 'center', fontFamily: FONTS.body }}>🍕</p>
