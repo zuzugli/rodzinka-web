@@ -97,18 +97,14 @@ export function CalendarScreen({ userName = 'Sophie', userColor = COLORS.sophieC
                 {week.map(({ dayIndex, isToday }) => {
                   const m = getMeal(dayIndex, mi);
                   const bg = isToday ? COLORS.purpleLight : COLORS.surface;
+                  const cellDate = week[dayIndex].date;
+                  const userAbsent = absences.find(a => a.dateStr === cellDate.toDateString() && a.meal === mi);
+                  const staticAbsents = m.a.map(p => MEMBERS.find(x => x.initials === p)).filter(Boolean);
+                  const allAbsents = userAbsent ? [userAbsent, ...staticAbsents.filter(x => x.initials !== userAbsent.initials)] : staticAbsents;
                   return (
-                    {(() => {
-                      const cellDate = week[dayIndex].date;
-                      const userAbsent = absences.find(a => a.dateStr === cellDate.toDateString() && a.meal === mi);
-                      const staticAbsents = m.a.map(p => MEMBERS.find(x => x.initials === p)).filter(Boolean);
-                      const allAbsents = userAbsent ? [userAbsent, ...staticAbsents.filter(x => x.initials !== userAbsent.initials)] : staticAbsents;
-                      return (
-                        <div key={dayIndex} onClick={() => setSelected({ d: dayIndex, m: mi, date: cellDate })} style={{ background: bg, borderRadius: 12, padding: '10px 4px', minHeight: 80, border: `1.5px solid ${isToday ? COLORS.purple : COLORS.border}`, cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 3 }}>
-                          {allAbsents.map((mb, idx) => <Avatar key={idx} initials={mb.initials} color={mb.color} size="xs" photo={mb.photo} />)}
-                        </div>
-                      );
-                    })()}
+                    <div key={dayIndex} onClick={() => setSelected({ d: dayIndex, m: mi, date: cellDate })} style={{ background: bg, borderRadius: 12, padding: '10px 4px', minHeight: 80, border: `1.5px solid ${isToday ? COLORS.purple : COLORS.border}`, cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 3 }}>
+                      {allAbsents.map((mb, idx) => <Avatar key={idx} initials={mb.initials} color={mb.color} size="xs" photo={mb.photo} />)}
+                    </div>
                   );
                 })}
               </div>
