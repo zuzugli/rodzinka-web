@@ -26,18 +26,18 @@ export default function HomeScreen({ navigate }) {
     <div style={{ height: '100%', overflowY: 'auto', padding: '8px 20px 24px' }}>
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
-        <div>
-          <p style={{ fontSize: 13, fontWeight: 700, color: COLORS.textMuted, marginBottom: 4, fontFamily: FONTS.body }}>
-            Dimanche 5 avril
-          </p>
-          <h1 style={{ fontSize: 32, fontWeight: 800, fontFamily: FONTS.title, color: COLORS.text, lineHeight: 1.2, letterSpacing: -0.5 }}>
-            Bonjour,<br />Sophie !
-          </h1>
-        </div>
-        <div style={{ flexShrink: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
-          <Avatar initials="SP" color={COLORS.sophieColor} size="md" />
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <div>
+            <p style={{ fontSize: 13, fontWeight: 700, color: COLORS.textMuted, marginBottom: 4, fontFamily: FONTS.body }}>
+              Dimanche 5 avril
+            </p>
+            <h1 style={{ fontSize: 32, fontWeight: 800, fontFamily: FONTS.title, color: COLORS.text, lineHeight: 1.2, letterSpacing: -0.5 }}>
+              Bonjour,<br />Sophie !
+            </h1>
+          </div>
           <MrHappy />
         </div>
+        <Avatar initials="SP" color={COLORS.sophieColor} size="md" />
       </div>
 
       {/* Semaine */}
