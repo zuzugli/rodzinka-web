@@ -41,8 +41,8 @@ export default function HomeScreen({ navigate, userName = 'Sophie' }) {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 36 }}>
           <div>
-            <h1 style={{ fontSize: 32, fontWeight: 800, fontFamily: FONTS.title, color: COLORS.text, lineHeight: 1.2, letterSpacing: -0.5 }}>
-              Bonjour,<br />{userName} !
+            <h1 style={{ fontSize: 28, fontWeight: 800, fontFamily: FONTS.title, color: COLORS.text, lineHeight: 1.2, letterSpacing: -0.5 }}>
+              Bonjour,<br /><span style={{ whiteSpace: 'nowrap' }}>{userName} !</span>
             </h1>
           </div>
           <MrHappy />
