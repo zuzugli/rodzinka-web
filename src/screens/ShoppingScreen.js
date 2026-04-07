@@ -70,12 +70,12 @@ export default function ShoppingScreen({ userName = 'Sophie', userPhoto, userCol
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column', position: 'relative' }}>
       <div style={{ overflowY: 'auto', flex: 1, padding: '8px 20px 100px' }}>
         {/* Header */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
-          <img src="/littlemisstidy.png" alt="mascotte" style={{ width: 72, height: 72, objectFit: 'contain' }} />
-          <div>
+        <div style={{ display: 'flex', alignItems: 'center', marginBottom: 16 }}>
+          <div style={{ flex: 1 }}>
             <h2 style={{ fontSize: 32, fontWeight: 800, fontFamily: FONTS.title, color: COLORS.text, letterSpacing: -0.5 }}>Courses</h2>
             <p style={{ fontSize: 13, color: COLORS.textMuted, fontFamily: FONTS.body, marginTop: 4 }}>{remaining} articles restants</p>
           </div>
+          <img src="/littlemisstidy.png" alt="mascotte" style={{ width: 100, height: 100, objectFit: 'contain' }} />
         </div>
 
         {/* Filters */}
