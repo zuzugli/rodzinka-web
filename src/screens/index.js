@@ -62,6 +62,7 @@ export function CalendarScreen({ userName = 'Sophie', userColor = COLORS.sophieC
   const [selDate, setSelDate] = useState(null);
   const [selMeal, setSelMeal] = useState(null);
   const [calMonth, setCalMonth] = useState(() => { const d = new Date(); return { y: d.getFullYear(), m: d.getMonth() }; });
+  const [absences, setAbsences] = useState([]); // { dateStr, meal, initials, color, photo }
   const week = getWeek(weekOffset);
   const data = selected ? getMeal(selected.d, selected.m) : null;
 
@@ -97,9 +98,17 @@ export function CalendarScreen({ userName = 'Sophie', userColor = COLORS.sophieC
                   const m = getMeal(dayIndex, mi);
                   const bg = isToday ? COLORS.purpleLight : COLORS.surface;
                   return (
-                    <div key={dayIndex} onClick={() => setSelected({ d: dayIndex, m: mi, date: week[dayIndex].date })} style={{ background: bg, borderRadius: 12, padding: '10px 4px', minHeight: 80, border: `1.5px solid ${isToday ? COLORS.purple : COLORS.border}`, cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 3 }}>
-                      {m.a.length > 0 && m.a.map(p => { const mb = MEMBERS.find(x => x.initials === p); return mb ? <Avatar key={p} initials={mb.initials} color={mb.color} size="xs" photo={mb.photo} /> : null; })}
-                    </div>
+                    {(() => {
+                      const cellDate = week[dayIndex].date;
+                      const userAbsent = absences.find(a => a.dateStr === cellDate.toDateString() && a.meal === mi);
+                      const staticAbsents = m.a.map(p => MEMBERS.find(x => x.initials === p)).filter(Boolean);
+                      const allAbsents = userAbsent ? [userAbsent, ...staticAbsents.filter(x => x.initials !== userAbsent.initials)] : staticAbsents;
+                      return (
+                        <div key={dayIndex} onClick={() => setSelected({ d: dayIndex, m: mi, date: cellDate })} style={{ background: bg, borderRadius: 12, padding: '10px 4px', minHeight: 80, border: `1.5px solid ${isToday ? COLORS.purple : COLORS.border}`, cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 3 }}>
+                          {allAbsents.map((mb, idx) => <Avatar key={idx} initials={mb.initials} color={mb.color} size="xs" photo={mb.photo} />)}
+                        </div>
+                      );
+                    })()}
                   );
                 })}
               </div>
@@ -184,7 +193,13 @@ export function CalendarScreen({ userName = 'Sophie', userColor = COLORS.sophieC
             </div>
           ))}
         </div>
-        <PrimaryButton label="Confirmer l'absence" onClick={() => { setAbsentModal(false); setSelDate(null); setSelMeal(null); }} />
+        <PrimaryButton label="Confirmer l'absence" onClick={() => {
+          if (selDate && selMeal !== null) {
+            const me = MEMBERS[0];
+            setAbsences(prev => [...prev.filter(a => !(a.dateStr === selDate.toDateString() && a.meal === selMeal)), { dateStr: selDate.toDateString(), meal: selMeal, initials: me.initials, color: me.color, photo: me.photo }]);
+          }
+          setAbsentModal(false); setSelDate(null); setSelMeal(null);
+        }} />
       </Modal>
     </div>
   );
