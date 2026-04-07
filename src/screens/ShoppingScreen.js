@@ -9,15 +9,33 @@ const FAMILY = {
   Thomas: { initials: 'TH', color: COLORS.thomasColor },
 };
 
+function daysAgo(n) {
+  const d = new Date();
+  d.setDate(d.getDate() - n);
+  d.setHours(10, 0, 0, 0);
+  return d.getTime();
+}
+
+function relativeDate(ts) {
+  const now = new Date();
+  const then = new Date(ts);
+  const todayStart = new Date(now); todayStart.setHours(0,0,0,0);
+  const thenStart  = new Date(then); thenStart.setHours(0,0,0,0);
+  const diff = Math.round((todayStart - thenStart) / 86400000);
+  if (diff === 0) return "aujourd'hui";
+  if (diff === 1) return 'hier';
+  return `il y a ${diff} jours`;
+}
+
 const INITIAL = [
-  { id:1, name:"Huile d'olive",   by:'Sophie', time:'il y a 2 jours', done:false },
-  { id:2, name:'Pâtes (x3)',      by:'Marc',   time:'hier',           done:false },
-  { id:3, name:'Yaourt grec',     by:'Lucie',  time:"aujourd'hui",    done:false },
-  { id:4, name:'Pain au levain',  by:'Thomas', time:"aujourd'hui",    done:false },
-  { id:5, name:"Lait d'amande",   by:'Sophie', time:"aujourd'hui",    done:false },
-  { id:6, name:'Parmesan',        by:'Marc',   time:'il y a 3 jours', done:false },
-  { id:7, name:'Tomates cerises', by:'Lucie',  time:'hier',           done:false },
-  { id:8, name:"Jus d'orange",    by:'Thomas', time:"aujourd'hui",    done:false },
+  { id:1, name:"Huile d'olive",   by:'Sophie', addedAt: daysAgo(2), done:false },
+  { id:2, name:'Pâtes (x3)',      by:'Marc',   addedAt: daysAgo(1), done:false },
+  { id:3, name:'Yaourt grec',     by:'Lucie',  addedAt: daysAgo(0), done:false },
+  { id:4, name:'Pain au levain',  by:'Thomas', addedAt: daysAgo(0), done:false },
+  { id:5, name:"Lait d'amande",   by:'Sophie', addedAt: daysAgo(0), done:false },
+  { id:6, name:'Parmesan',        by:'Marc',   addedAt: daysAgo(3), done:false },
+  { id:7, name:'Tomates cerises', by:'Lucie',  addedAt: daysAgo(1), done:false },
+  { id:8, name:"Jus d'orange",    by:'Thomas', addedAt: daysAgo(0), done:false },
 ];
 
 export default function ShoppingScreen({ userName = 'Sophie', userPhoto, userColor = COLORS.sophieColor }) {
@@ -29,7 +47,7 @@ export default function ShoppingScreen({ userName = 'Sophie', userPhoto, userCol
   const toggle = id => setItems(prev => prev.map(it => it.id === id ? { ...it, done: !it.done } : it));
   const addItem = () => {
     if (!newName.trim()) return;
-    setItems(prev => [...prev, { id: Date.now(), name: newName.trim(), by: userName, time: "à l'instant", done: false }]);
+    setItems(prev => [...prev, { id: Date.now(), name: newName.trim(), by: userName, addedAt: Date.now(), done: false }]);
     setNewName(''); setModal(false);
   };
 
@@ -85,7 +103,7 @@ export default function ShoppingScreen({ userName = 'Sophie', userPhoto, userCol
                   <p style={{ fontSize: 15, fontWeight: 700, fontFamily: FONTS.body, color: item.done ? COLORS.textMuted : COLORS.text, textDecoration: item.done ? 'line-through' : 'none' }}>
                     {item.name}
                   </p>
-                  <p style={{ fontSize: 11, fontFamily: FONTS.body, color: COLORS.textMuted, marginTop: 2 }}>{item.time}</p>
+                  <p style={{ fontSize: 11, fontFamily: FONTS.body, color: COLORS.textMuted, marginTop: 2 }}>{relativeDate(item.addedAt)}</p>
                 </div>
                 <Avatar initials={av.initials} color={av.color} size="xs" photo={av.photo} />
               </div>
