@@ -74,16 +74,22 @@ export default function HomeScreen({ navigate }) {
         </div>
       </Card>
 
-      {/* Notif */}
-      <div style={{ background: COLORS.purpleLight, borderRadius: 18, padding: '13px 16px', display: 'flex', alignItems: 'center', gap: 12, marginBottom: 10 }}>
-        <div style={{ width: 40, height: 40, borderRadius: 12, background: COLORS.purple, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
-        </div>
-        <div>
-          <p style={{ fontSize: 13, fontWeight: 700, color: COLORS.purpleDark, fontFamily: FONTS.body }}>Sortir les poubelles</p>
-          <p style={{ fontSize: 12, color: COLORS.purpleDark, opacity: 0.7, fontFamily: FONTS.body }}>Rappel · Aujourd'hui à 19h00</p>
-        </div>
-      </div>
+      {/* Rappels de la semaine */}
+      <SectionLabel>Rappels de la semaine</SectionLabel>
+      <Card style={{ padding: '4px 16px', marginBottom: 10 }}>
+        {[
+          { title: 'Sortir les poubelles', meta: "Aujourd'hui · 19h00 · Hebdo", dot: COLORS.yellowMid },
+          { title: 'Anniversaire de Lucie', meta: 'Jeudi 10 avr · Annuel', dot: '#F48FB1' },
+        ].map((r, i, arr) => (
+          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 0', borderBottom: i < arr.length - 1 ? `1px solid ${COLORS.border}` : 'none' }}>
+            <div style={{ width: 10, height: 10, borderRadius: 5, background: r.dot, flexShrink: 0 }} />
+            <div style={{ flex: 1 }}>
+              <p style={{ fontSize: 13, fontWeight: 700, color: COLORS.text, fontFamily: FONTS.body }}>{r.title}</p>
+              <p style={{ fontSize: 11, color: COLORS.textMuted, fontFamily: FONTS.body, marginTop: 2 }}>{r.meta}</p>
+            </div>
+          </div>
+        ))}
+      </Card>
 
       {/* Accès rapide */}
       <SectionLabel>Accès rapide</SectionLabel>
