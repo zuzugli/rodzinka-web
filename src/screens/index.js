@@ -117,7 +117,8 @@ export function CalendarScreen({ userName = 'Sophie', userColor = COLORS.sophieC
       {/* Detail modal */}
       <Modal visible={!!selected} onClose={() => setSelected(null)} title={selected ? `${MEALS[selected.m]} · ${DAYS[selected.d]} ${selected.date?.getDate()} ${MONTH_NAMES[selected.date?.getMonth()]}` : ''}>
         {data && MEMBERS.map(m => {
-          const present = data.p.includes(m.initials === userName.charAt(0).toUpperCase() ? 'SP' : m.initials) || data.p.includes(m.initials);
+          const isUserAbsent = m === MEMBERS[0] && selected && absences.some(a => a.dateStr === selected.date?.toDateString() && a.meal === selected.m);
+          const present = !isUserAbsent && (data.p.includes(m.initials === userName.charAt(0).toUpperCase() ? 'SP' : m.initials) || data.p.includes(m.initials));
           return (
             <div key={m.initials} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 0', borderBottom: `1px solid ${COLORS.border}` }}>
               <Avatar initials={m.initials} color={m.color} size="sm" photo={m.photo} />
