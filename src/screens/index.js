@@ -206,7 +206,7 @@ export function ProfileScreen({ userName = 'Sophie', setUserName }) {
             <button onClick={() => { setUserName?.(nameInput); setEditingName(false); }} style={{ background: COLORS.purple, color: '#fff', border: 'none', borderRadius: 8, padding: '6px 12px', fontWeight: 700, fontFamily: FONTS.body, cursor: 'pointer' }}>OK</button>
           </div>
         ) : (
-          <p onClick={() => { setNameInput(userName); setEditingName(true); }} style={{ fontSize: 22, fontWeight: 800, fontFamily: FONTS.title, color: COLORS.text, cursor: 'pointer' }}>{userName} Martin ✎</p>
+          <p onClick={() => { setNameInput(userName); setEditingName(true); }} style={{ fontSize: 22, fontWeight: 800, fontFamily: FONTS.title, color: COLORS.text, cursor: 'pointer' }}>{userName} ✎</p>
         )}
         <div style={{ background: COLORS.purpleLight, borderRadius: 999, padding: '5px 16px' }}>
           <span style={{ fontSize: 13, fontWeight: 700, color: COLORS.purpleDark, fontFamily: FONTS.body }}>Admin · Les Martin</span>
