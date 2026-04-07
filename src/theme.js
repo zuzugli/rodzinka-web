@@ -44,6 +44,6 @@ export const COLORS = {
 //  (pense à aussi changer le lien Google Fonts dans index.html)
 // ============================================================
 export const FONTS = {
-  title: "'Plus Jakarta Sans', sans-serif",
+  title: "'Poppins', sans-serif",
   body: "'Plus Jakarta Sans', sans-serif",
 };

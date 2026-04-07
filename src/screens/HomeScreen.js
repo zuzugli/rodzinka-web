@@ -17,30 +17,35 @@ const MEMBERS = [
   { initials: 'TH', color: COLORS.thomasColor },
 ];
 
-function Mascot() {
+function SunMascot() {
   return (
-    <svg width="96" height="104" viewBox="0 0 96 104" fill="none">
-      {/* Corps */}
-      <ellipse cx="48" cy="74" rx="28" ry="24" fill="#D4DCF0"/>
-      {/* Tête */}
-      <circle cx="48" cy="38" r="28" fill="#D4DCF0"/>
-      {/* Joues */}
-      <circle cx="31" cy="44" r="8" fill="#E8A8C0" opacity="0.55"/>
-      <circle cx="65" cy="44" r="8" fill="#E8A8C0" opacity="0.55"/>
-      {/* Yeux */}
-      <ellipse cx="38" cy="33" rx="5" ry="6" fill="#3D5A8A"/>
-      <ellipse cx="58" cy="33" rx="5" ry="6" fill="#3D5A8A"/>
-      <circle cx="40" cy="31" r="2" fill="white"/>
-      <circle cx="60" cy="31" r="2" fill="white"/>
-      {/* Sourire */}
-      <path d="M36 46 Q48 58 60 46" stroke="#3D5A8A" strokeWidth="3" strokeLinecap="round" fill="none"/>
+    <svg width="100" height="112" viewBox="-5 -14 110 126" fill="none">
+      {/* Rayons */}
+      <line x1="50" y1="26"  x2="50" y2="8"   stroke="#FFD740" strokeWidth="5" strokeLinecap="round"/>
+      <line x1="86" y1="54"  x2="72" y2="54"  stroke="#FFD740" strokeWidth="5" strokeLinecap="round"/>
+      <line x1="76" y1="84"  x2="66" y2="74"  stroke="#FFD740" strokeWidth="5" strokeLinecap="round"/>
+      <line x1="50" y1="82"  x2="50" y2="98"  stroke="#FFD740" strokeWidth="5" strokeLinecap="round"/>
+      <line x1="24" y1="84"  x2="34" y2="74"  stroke="#FFD740" strokeWidth="5" strokeLinecap="round"/>
+      <line x1="14" y1="54"  x2="28" y2="54"  stroke="#FFD740" strokeWidth="5" strokeLinecap="round"/>
+      <line x1="24" y1="26"  x2="34" y2="36"  stroke="#FFD740" strokeWidth="5" strokeLinecap="round"/>
       {/* Bras qui fait coucou */}
-      <path d="M74 55 C84 40 90 26 80 16" stroke="#D4DCF0" strokeWidth="10" strokeLinecap="round"/>
-      {/* Main */}
-      <circle cx="78" cy="13" r="9" fill="#D4DCF0"/>
-      <circle cx="70" cy="7"  r="6" fill="#D4DCF0"/>
-      <circle cx="86" cy="7"  r="6" fill="#D4DCF0"/>
-      <circle cx="78" cy="4"  r="6" fill="#D4DCF0"/>
+      <path d="M70 32 C85 16 90 0 78 -6" stroke="#FFD740" strokeWidth="7" strokeLinecap="round"/>
+      <circle cx="76" cy="-8"  r="8" fill="#FFD740"/>
+      <circle cx="68" cy="-13" r="5" fill="#FFD740"/>
+      <circle cx="84" cy="-13" r="5" fill="#FFD740"/>
+      <circle cx="76" cy="-17" r="5" fill="#FFD740"/>
+      {/* Corps */}
+      <circle cx="50" cy="54" r="28" fill="#FFD740"/>
+      {/* Joues */}
+      <circle cx="34" cy="60" r="7" fill="#FFB830" opacity="0.4"/>
+      <circle cx="66" cy="60" r="7" fill="#FFB830" opacity="0.4"/>
+      {/* Yeux */}
+      <circle cx="40" cy="48" r="5" fill="#7A5000"/>
+      <circle cx="60" cy="48" r="5" fill="#7A5000"/>
+      <circle cx="41.5" cy="46.5" r="2" fill="white"/>
+      <circle cx="61.5" cy="46.5" r="2" fill="white"/>
+      {/* Sourire */}
+      <path d="M37 62 Q50 76 63 62" stroke="#7A5000" strokeWidth="3.5" strokeLinecap="round" fill="none"/>
     </svg>
   );
 }
@@ -60,7 +65,7 @@ export default function HomeScreen({ navigate }) {
         </div>
         <div style={{ position: 'relative', width: 100, height: 110, flexShrink: 0 }}>
           <div style={{ position: 'absolute', bottom: 0, right: -6, pointerEvents: 'none' }}>
-            <Mascot />
+            <SunMascot />
           </div>
           <div style={{ position: 'absolute', top: 0, right: 0, zIndex: 2 }}>
             <Avatar initials="SP" color={COLORS.sophieColor} size="md" />
