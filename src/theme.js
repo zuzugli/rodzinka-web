@@ -3,39 +3,39 @@
 // ============================================================
 
 export const COLORS = {
-  // Bleu ardoise — accent principal
-  purple: '#5B7DB8',
-  purpleLight: '#D6E0F0',
-  purpleDark: '#2D4D88',
-  // Rose poudré
-  pink: '#F2D6DE',
-  pinkMid: '#D4849A',
-  pinkDark: '#7A3A4A',
-  // Bleu (alias pour compatibilité)
-  blue: '#D6E0F0',
-  blueMid: '#5B7DB8',
-  blueDark: '#2D4D88',
-  // Sauge
-  green: '#D0E4D0',
-  greenMid: '#6B9968',
-  greenDark: '#3A5E38',
-  // Jaune doux
-  yellow: '#F8F0C0',
-  yellowMid: '#EDD96A',
-  yellowDark: '#8A7820',
-  // Terracotta
-  orange: '#F2D0CE',
-  orangeMid: '#C4625C',
-  orangeDark: '#7A2A26',
+  // Bleu marine — accent principal
+  purple: '#3D5A8A',
+  purpleLight: '#D4DCF0',
+  purpleDark: '#1A2D5A',
+  // Rose doux
+  pink: '#F8E8F0',
+  pinkMid: '#E8A8C0',
+  pinkDark: '#8A405A',
+  // Bleu ciel
+  blue: '#E0ECFA',
+  blueMid: '#7AAAD4',
+  blueDark: '#3D5A8A',
+  // Bleu clair (5e couleur palette)
+  green: '#D4E4F8',
+  greenMid: '#A0C0E0',
+  greenDark: '#3D5A8A',
+  // Jaune pâle
+  yellow: '#FAFAC8',
+  yellowMid: '#D8D870',
+  yellowDark: '#8A8820',
+  // Orange neutre (muted)
+  orange: '#F8EEE0',
+  orangeMid: '#D4A870',
+  orangeDark: '#8A6030',
   // Couleurs membres
-  sophieColor: '#D4849A',
-  marcColor: '#5B7DB8',
-  lucieColor: '#6B9968',
-  thomasColor: '#EDD96A',
+  sophieColor: '#E8A8C0',
+  marcColor: '#3D5A8A',
+  lucieColor: '#7AAAD4',
+  thomasColor: '#D8D870',
   text: '#1C1C1E',
   textMuted: '#8A8A8E',
-  border: '#F0F0F3',
-  surface: '#FAFAFA',
+  border: '#EEF2F8',
+  surface: '#F8FAFD',
 };
 
 // ============================================================
