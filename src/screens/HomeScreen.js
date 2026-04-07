@@ -30,7 +30,7 @@ const MEMBERS = [
 ];
 
 function MrHappy() {
-  return <img src="/mascot.png" alt="mascotte" style={{ width: 92, height: 92, objectFit: 'contain' }} />;
+  return <img src="/mascot.png" alt="mascotte" style={{ width: 68, height: 68, objectFit: 'contain', marginRight: 8 }} />;
 }
 
 export default function HomeScreen({ navigate, userName = 'Sophie', userPhoto }) {
