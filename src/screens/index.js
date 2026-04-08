@@ -99,9 +99,9 @@ export function CalendarScreen({ userName = 'Sophie', userColor = COLORS.sophieC
                   const m = getMeal(dayIndex, mi);
                   const bg = isToday ? COLORS.purpleLight : COLORS.surface;
                   const cellDate = week[dayIndex].date;
-                  const userAbsent = absences.find(a => a.dateStr === cellDate.toDateString() && a.meal === mi);
+                  const userAbsent = absences.some(a => a.dateStr === cellDate.toDateString() && a.meal === mi);
                   const staticAbsents = m.a.map(p => MEMBERS.find(x => x.initials === p)).filter(Boolean);
-                  const allAbsents = userAbsent ? [userAbsent, ...staticAbsents.filter(x => x.initials !== userAbsent.initials)] : staticAbsents;
+                  const allAbsents = userAbsent ? [MEMBERS[0], ...staticAbsents.filter(x => x.initials !== MEMBERS[0].initials)] : staticAbsents;
                   return (
                     <div key={dayIndex} onClick={() => setSelected({ d: dayIndex, m: mi, date: cellDate })} style={{ background: bg, borderRadius: 12, padding: '10px 4px', minHeight: 80, border: `1.5px solid ${isToday ? COLORS.purple : COLORS.border}`, cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 3 }}>
                       {allAbsents.map((mb, idx) => <Avatar key={idx} initials={mb.initials} color={mb.color} size="xs" photo={mb.photo} />)}
@@ -193,8 +193,7 @@ export function CalendarScreen({ userName = 'Sophie', userColor = COLORS.sophieC
         </div>
         <PrimaryButton label="Confirmer l'absence" onClick={() => {
           if (selDate && selMeal !== null) {
-            const me = MEMBERS[0];
-            setAbsences(prev => [...prev.filter(a => !(a.dateStr === selDate.toDateString() && a.meal === selMeal)), { dateStr: selDate.toDateString(), meal: selMeal, initials: me.initials, color: me.color, photo: me.photo }]);
+            setAbsences(prev => [...prev.filter(a => !(a.dateStr === selDate.toDateString() && a.meal === selMeal)), { dateStr: selDate.toDateString(), meal: selMeal }]);
           }
           setAbsentModal(false); setSelDate(null); setSelMeal(null);
         }} />
