@@ -200,9 +200,9 @@ export function CalendarScreen({ userName = 'Sophie', userColor = COLORS.sophieC
 const REMINDERS = [];
 
 const CAT = {
-  chore:    { dot: COLORS.yellowMid, bg: COLORS.yellow,  c: COLORS.yellowDark, label: 'tâche' },
+  chore:    { dot: '#00AFBE',        bg: '#E0F7FA',      c: '#006878',         label: 'tâche' },
   birthday: { dot: COLORS.pinkMid,   bg: COLORS.pink,    c: COLORS.pinkDark,   label: 'anniversaire' },
-  autre:    { dot: '#999',           bg: '#EEEEEE',      c: '#555',            label: 'autre' },
+  autre:    { dot: '#AB47BC',        bg: '#F3E5F5',      c: '#6A1B9A',         label: 'autre' },
 };
 
 function ReminderItem({ item, members }) {
@@ -226,16 +226,46 @@ function ReminderItem({ item, members }) {
   );
 }
 
-function isThisWeek(dateStr) {
-  if (!dateStr) return false;
+function getWeekBounds() {
   const today = new Date(); today.setHours(0,0,0,0);
   const dow = today.getDay();
   const mon = new Date(today); mon.setDate(today.getDate() - (dow === 0 ? 6 : dow - 1));
-  const sun = new Date(mon); sun.setDate(mon.getDate() + 6);
-  const d = new Date(dateStr);
-  if (isNaN(d)) return false;
-  d.setHours(0,0,0,0);
+  const sun = new Date(mon); sun.setDate(mon.getDate() + 6); sun.setHours(23,59,59,999);
+  return { mon, sun };
+}
+
+function nextOccurrence(r) {
+  if (!r.dateStr) return null;
+  const base = new Date(r.dateStr);
+  if (isNaN(base)) return null;
+  const today = new Date(); today.setHours(0,0,0,0);
+  if (r.recur === 'hebdo') {
+    const next = new Date(today);
+    const diff = (base.getDay() - today.getDay() + 7) % 7;
+    next.setDate(today.getDate() + diff);
+    return next;
+  }
+  if (r.recur === 'annuel') {
+    const next = new Date(today.getFullYear(), base.getMonth(), base.getDate());
+    if (next < today) next.setFullYear(next.getFullYear() + 1);
+    return next;
+  }
+  return base;
+}
+
+function isThisWeek(r) {
+  const d = nextOccurrence(r);
+  if (!d) return false;
+  const { mon, sun } = getWeekBounds();
   return d >= mon && d <= sun;
+}
+
+function isUpcoming(r) {
+  const d = nextOccurrence(r);
+  if (!d) return false;
+  const { sun } = getWeekBounds();
+  const today = new Date(); today.setHours(0,0,0,0);
+  return d > sun || (r.recur && d >= today);
 }
 
 export function RemindersScreen({ userName = 'Sophie', userColor = COLORS.sophieColor, userPhoto = null }) {
@@ -244,22 +274,24 @@ export function RemindersScreen({ userName = 'Sophie', userColor = COLORS.sophie
   const [newTitle, setNewTitle] = useState('');
   const [newDate, setNewDate] = useState('');
   const [newCat, setNewCat] = useState('autre');
+  const [newRecur, setNewRecur] = useState('none');
   const [reminders, setReminders] = useState(() => {
     try { const s = localStorage.getItem('reminders'); return s ? JSON.parse(s) : REMINDERS; }
     catch { return REMINDERS; }
   });
   useEffect(() => { localStorage.setItem('reminders', JSON.stringify(reminders)); }, [reminders]);
 
-  const thisWeek = reminders.filter(r => isThisWeek(r.dateStr));
-  const upcoming = reminders.filter(r => !isThisWeek(r.dateStr) && new Date(r.dateStr) >= new Date());
+  const thisWeek = reminders.filter(r => isThisWeek(r));
+  const upcoming = reminders.filter(r => !isThisWeek(r) && (() => { const d = nextOccurrence(r); return d && d >= new Date(); })());
 
   function addReminder() {
     if (!newTitle.trim() || !newDate.trim()) return;
     const dateObj = new Date(newDate);
     if (isNaN(dateObj)) return;
-    const meta = dateObj.toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' });
-    setReminders(prev => [...prev, { id: Date.now(), title: newTitle.trim(), meta, dateStr: dateObj.toDateString(), cat: newCat, members: [MEMBERS[0].initials] }]);
-    setNewTitle(''); setNewDate(''); setNewCat('autre'); setModal(false);
+    const recurLabel = newRecur === 'hebdo' ? ' · Hebdo' : newRecur === 'annuel' ? ' · Annuel' : '';
+    const meta = dateObj.toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' }) + recurLabel;
+    setReminders(prev => [...prev, { id: Date.now(), title: newTitle.trim(), meta, dateStr: dateObj.toDateString(), cat: newCat, recur: newRecur, members: [MEMBERS[0].initials] }]);
+    setNewTitle(''); setNewDate(''); setNewCat('autre'); setNewRecur('none'); setModal(false);
   }
 
   return (
@@ -292,9 +324,16 @@ export function RemindersScreen({ userName = 'Sophie', userColor = COLORS.sophie
       <Modal visible={modal} onClose={() => setModal(false)} title="Nouveau rappel">
         <input value={newTitle} onChange={e => setNewTitle(e.target.value)} placeholder="Titre…" style={{ width: '100%', padding: '13px 16px', border: `2px solid ${COLORS.border}`, borderRadius: 14, fontSize: 15, fontFamily: FONTS.body, marginBottom: 10, outline: 'none', boxSizing: 'border-box' }} />
         <input value={newDate} onChange={e => setNewDate(e.target.value)} type="date" style={{ width: '100%', padding: '13px 16px', border: `2px solid ${COLORS.border}`, borderRadius: 14, fontSize: 15, fontFamily: FONTS.body, marginBottom: 10, outline: 'none', boxSizing: 'border-box' }} />
-        <div style={{ display: 'flex', gap: 8, marginBottom: 14 }}>
+        <p style={{ fontSize: 11, fontWeight: 700, color: COLORS.textMuted, textTransform: 'uppercase', letterSpacing: 0.8, fontFamily: FONTS.body, marginBottom: 8 }}>Catégorie</p>
+        <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
           {[['tâche', 'chore'], ['anniversaire', 'birthday'], ['autre', 'autre']].map(([l, k]) => (
             <button key={k} onClick={() => setNewCat(k)} style={{ flex: 1, padding: 10, borderRadius: 12, border: `2px solid ${newCat === k ? COLORS.text : 'transparent'}`, background: CAT[k]?.bg || '#EEE', color: CAT[k]?.c || '#555', fontSize: 12, fontWeight: 700, fontFamily: FONTS.body, cursor: 'pointer' }}>{l}</button>
+          ))}
+        </div>
+        <p style={{ fontSize: 11, fontWeight: 700, color: COLORS.textMuted, textTransform: 'uppercase', letterSpacing: 0.8, fontFamily: FONTS.body, marginBottom: 8 }}>Récurrence</p>
+        <div style={{ display: 'flex', gap: 8, marginBottom: 14 }}>
+          {[['Aucune', 'none'], ['Hebdo', 'hebdo'], ['Annuel', 'annuel']].map(([l, k]) => (
+            <button key={k} onClick={() => setNewRecur(k)} style={{ flex: 1, padding: 10, borderRadius: 12, border: `2px solid ${newRecur === k ? COLORS.purple : COLORS.border}`, background: newRecur === k ? COLORS.purpleLight : COLORS.surface, color: newRecur === k ? COLORS.purpleDark : COLORS.textMuted, fontSize: 12, fontWeight: 700, fontFamily: FONTS.body, cursor: 'pointer' }}>{l}</button>
           ))}
         </div>
         <PrimaryButton label="Créer le rappel" onClick={addReminder} />
