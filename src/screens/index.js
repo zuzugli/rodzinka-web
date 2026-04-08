@@ -347,6 +347,11 @@ export function ProfileScreen({ userName = 'Sophie', setUserName, userPhoto, set
             <input type="file" accept="image/*" onChange={handlePhotoChange} style={{ display: 'none' }} />
           </label>
         </div>
+        {userPhoto && (
+          <button onClick={() => setUserPhoto?.(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: 700, color: COLORS.textMuted, fontFamily: FONTS.body, textDecoration: 'underline' }}>
+            Supprimer la photo
+          </button>
+        )}
         {editingName ? (
           <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
             <input
@@ -366,12 +371,14 @@ export function ProfileScreen({ userName = 'Sophie', setUserName, userPhoto, set
         </div>
       </div>
 
-      <div style={{ fontSize: 11, fontWeight: 700, color: COLORS.textMuted, textTransform: 'uppercase', letterSpacing: 0.8, margin: '0 0 10px', fontFamily: FONTS.body }}>Couleur d'avatar</div>
-      <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 20 }}>
-        {SWATCHES.map(c => (
-          <div key={c} onClick={() => setUserColor?.(c)} style={{ width: 34, height: 34, borderRadius: '50%', background: c, cursor: 'pointer', border: `3px solid ${userColor === c ? COLORS.text : 'transparent'}` }} />
-        ))}
-      </div>
+      {!userPhoto && <>
+        <div style={{ fontSize: 11, fontWeight: 700, color: COLORS.textMuted, textTransform: 'uppercase', letterSpacing: 0.8, margin: '0 0 10px', fontFamily: FONTS.body }}>Couleur d'avatar</div>
+        <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 20 }}>
+          {SWATCHES.map(c => (
+            <div key={c} onClick={() => setUserColor?.(c)} style={{ width: 34, height: 34, borderRadius: '50%', background: c, cursor: 'pointer', border: `3px solid ${userColor === c ? COLORS.text : 'transparent'}` }} />
+          ))}
+        </div>
+      </>}
 
       <div style={{ fontSize: 11, fontWeight: 700, color: COLORS.textMuted, textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 10, fontFamily: FONTS.body }}>Notifications</div>
       <Card style={{ padding: '0 16px' }}>
