@@ -197,15 +197,12 @@ export function CalendarScreen({ userName = 'Sophie', userColor = COLORS.sophieC
 }
 
 // ── REMINDERS ────────────────────────────────────────────────
-const REMINDERS = [
-  { id:1, title:'Sortir les poubelles', meta:"Aujourd'hui · 19h00 · Hebdo", cat:'chore', members:['SP','MA','LU','TH'] },
-  { id:2, title:"Anniversaire de Lucie", meta:"Jeudi 10 avr · Annuel", cat:'birthday', members:['SP','MA','TH'] },
-];
+const REMINDERS = [];
 
 const CAT = {
-  chore:    { dot: COLORS.yellowMid, bg: COLORS.yellow,      c: COLORS.yellowDark, label: 'tâche' },
-  birthday: { dot: COLORS.pinkMid,   bg: COLORS.pink,        c: COLORS.pinkDark,   label: 'anniversaire' },
-  other:    { dot: '#999',            bg: '#EEEEEE',          c: '#555',            label: 'autre' },
+  chore:    { dot: COLORS.yellowMid, bg: COLORS.yellow,  c: COLORS.yellowDark, label: 'tâche' },
+  birthday: { dot: COLORS.pinkMid,   bg: COLORS.pink,    c: COLORS.pinkDark,   label: 'anniversaire' },
+  autre:    { dot: '#999',           bg: '#EEEEEE',      c: '#555',            label: 'autre' },
 };
 
 function ReminderItem({ item, members }) {
@@ -230,11 +227,14 @@ function ReminderItem({ item, members }) {
 }
 
 function isThisWeek(dateStr) {
+  if (!dateStr) return false;
   const today = new Date(); today.setHours(0,0,0,0);
   const dow = today.getDay();
   const mon = new Date(today); mon.setDate(today.getDate() - (dow === 0 ? 6 : dow - 1));
   const sun = new Date(mon); sun.setDate(mon.getDate() + 6);
-  const d = new Date(dateStr); d.setHours(0,0,0,0);
+  const d = new Date(dateStr);
+  if (isNaN(d)) return false;
+  d.setHours(0,0,0,0);
   return d >= mon && d <= sun;
 }
 
