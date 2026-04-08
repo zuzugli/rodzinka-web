@@ -116,6 +116,14 @@ export function CalendarScreen({ userName = 'Sophie', userColor = COLORS.sophieC
             </div>
           );
         })}
+        {selected && absences.some(a => a.dateStr === selected.date?.toDateString() && a.meal === selected.m) && (
+          <button onClick={() => {
+            setAbsences(prev => prev.filter(a => !(a.dateStr === selected.date?.toDateString() && a.meal === selected.m)));
+            setSelected(null);
+          }} style={{ width: '100%', padding: '12px', borderRadius: 14, border: `2px solid ${COLORS.pinkDark}`, background: 'transparent', color: COLORS.pinkDark, fontSize: 14, fontWeight: 700, fontFamily: FONTS.body, cursor: 'pointer', marginTop: 8 }}>
+            Annuler mon absence
+          </button>
+        )}
         <PrimaryButton label="Fermer" onClick={() => setSelected(null)} />
       </Modal>
 
