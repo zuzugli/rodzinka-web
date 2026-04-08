@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { COLORS, FONTS } from '../theme';
 import { Avatar, Card, Modal, PrimaryButton } from '../components';
 
@@ -62,7 +62,8 @@ export function CalendarScreen({ userName = 'Sophie', userColor = COLORS.sophieC
   const [selDate, setSelDate] = useState(null);
   const [selMeal, setSelMeal] = useState(null);
   const [calMonth, setCalMonth] = useState(() => { const d = new Date(); return { y: d.getFullYear(), m: d.getMonth() }; });
-  const [absences, setAbsences] = useState([]); // { dateStr, meal, initials, color, photo }
+  const [absences, setAbsences] = useState(() => { try { const s = localStorage.getItem('cal_absences'); return s ? JSON.parse(s) : []; } catch { return []; } });
+  useEffect(() => localStorage.setItem('cal_absences', JSON.stringify(absences)), [absences]);
   const week = getWeek(weekOffset);
   const data = selected ? getMeal(selected.d, selected.m) : null;
 
@@ -207,10 +208,7 @@ const REMINDERS = [
   { id:1, title:'Sortir les poubelles', meta:"Aujourd'hui · 19h00 · Hebdo", cat:'chore', members:['SP','MA','LU','TH'] },
   { id:2, title:"Anniversaire de Lucie", meta:"Jeudi 10 avr · Annuel", cat:'birthday', members:['SP','MA','TH'] },
 ];
-const UPCOMING = [
-  { id:3, title:'Révision voiture', meta:"Lun 14 avr · 9h00", cat:'other', members:['MA'] },
-  { id:4, title:'Sortir les poubelles', meta:"Sam 12 avr · 19h00 · Hebdo", cat:'chore', members:[] },
-];
+
 const CAT = {
   chore:    { dot: COLORS.yellowMid, bg: COLORS.yellow,      c: COLORS.yellowDark, label: 'tâche' },
   birthday: { dot: COLORS.pinkMid,   bg: COLORS.pink,        c: COLORS.pinkDark,   label: 'anniversaire' },
@@ -238,35 +236,75 @@ function ReminderItem({ item, members }) {
   );
 }
 
+function isThisWeek(dateStr) {
+  const today = new Date(); today.setHours(0,0,0,0);
+  const dow = today.getDay();
+  const mon = new Date(today); mon.setDate(today.getDate() - (dow === 0 ? 6 : dow - 1));
+  const sun = new Date(mon); sun.setDate(mon.getDate() + 6);
+  const d = new Date(dateStr); d.setHours(0,0,0,0);
+  return d >= mon && d <= sun;
+}
+
 export function RemindersScreen({ userName = 'Sophie', userColor = COLORS.sophieColor, userPhoto = null }) {
   const MEMBERS = getMembers(userName, userColor, userPhoto);
   const [modal, setModal] = useState(false);
+  const [newTitle, setNewTitle] = useState('');
+  const [newDate, setNewDate] = useState('');
+  const [newCat, setNewCat] = useState('autre');
+  const [reminders, setReminders] = useState(() => {
+    try { const s = localStorage.getItem('reminders'); return s ? JSON.parse(s) : REMINDERS; }
+    catch { return REMINDERS; }
+  });
+  useEffect(() => { localStorage.setItem('reminders', JSON.stringify(reminders)); }, [reminders]);
+
+  const thisWeek = reminders.filter(r => isThisWeek(r.dateStr));
+  const upcoming = reminders.filter(r => !isThisWeek(r.dateStr) && new Date(r.dateStr) >= new Date());
+
+  function addReminder() {
+    if (!newTitle.trim() || !newDate.trim()) return;
+    const dateObj = new Date(newDate);
+    if (isNaN(dateObj)) return;
+    const meta = dateObj.toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' });
+    setReminders(prev => [...prev, { id: Date.now(), title: newTitle.trim(), meta, dateStr: dateObj.toDateString(), cat: newCat, members: [MEMBERS[0].initials] }]);
+    setNewTitle(''); setNewDate(''); setNewCat('autre'); setModal(false);
+  }
+
   return (
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column', position: 'relative' }}>
       <div style={{ overflowY: 'auto', flex: 1, padding: '8px 20px 100px' }}>
         <h2 style={{ fontSize: 32, fontWeight: 800, fontFamily: FONTS.title, color: COLORS.text, letterSpacing: -0.5, marginBottom: 4 }}>Rappels</h2>
-        <p style={{ fontSize: 13, fontFamily: FONTS.body, color: COLORS.textMuted, marginBottom: 4 }}>2 cette semaine</p>
-        <div style={{ fontSize: 11, fontWeight: 700, color: COLORS.textMuted, textTransform: 'uppercase', letterSpacing: 0.8, margin: '18px 0 10px', fontFamily: FONTS.body }}>Cette semaine</div>
-        <Card style={{ padding: '4px 16px' }}>
-          {REMINDERS.map((r, i) => <div key={r.id} style={{ borderBottom: i < REMINDERS.length - 1 ? `1px solid ${COLORS.border}` : 'none' }}><ReminderItem item={r} members={MEMBERS} /></div>)}
-        </Card>
-        <div style={{ fontSize: 11, fontWeight: 700, color: COLORS.textMuted, textTransform: 'uppercase', letterSpacing: 0.8, margin: '18px 0 10px', fontFamily: FONTS.body }}>À venir</div>
-        <Card style={{ padding: '4px 16px' }}>
-          {UPCOMING.map((r, i) => <div key={r.id} style={{ borderBottom: i < UPCOMING.length - 1 ? `1px solid ${COLORS.border}` : 'none' }}><ReminderItem item={r} members={MEMBERS} /></div>)}
-        </Card>
+        <p style={{ fontSize: 13, fontFamily: FONTS.body, color: COLORS.textMuted, marginBottom: 4 }}>{thisWeek.length} cette semaine</p>
+
+        {thisWeek.length > 0 && <>
+          <div style={{ fontSize: 11, fontWeight: 700, color: COLORS.textMuted, textTransform: 'uppercase', letterSpacing: 0.8, margin: '18px 0 10px', fontFamily: FONTS.body }}>Cette semaine</div>
+          <Card style={{ padding: '4px 16px' }}>
+            {thisWeek.map((r, i) => <div key={r.id} style={{ borderBottom: i < thisWeek.length - 1 ? `1px solid ${COLORS.border}` : 'none' }}><ReminderItem item={r} members={MEMBERS} /></div>)}
+          </Card>
+        </>}
+
+        {upcoming.length > 0 && <>
+          <div style={{ fontSize: 11, fontWeight: 700, color: COLORS.textMuted, textTransform: 'uppercase', letterSpacing: 0.8, margin: '18px 0 10px', fontFamily: FONTS.body }}>À venir</div>
+          <Card style={{ padding: '4px 16px' }}>
+            {upcoming.map((r, i) => <div key={r.id} style={{ borderBottom: i < upcoming.length - 1 ? `1px solid ${COLORS.border}` : 'none' }}><ReminderItem item={r} members={MEMBERS} /></div>)}
+          </Card>
+        </>}
+
+        {thisWeek.length === 0 && upcoming.length === 0 && (
+          <p style={{ textAlign: 'center', padding: 40, color: COLORS.textMuted, fontFamily: FONTS.body }}>Aucun rappel à venir</p>
+        )}
       </div>
       <button onClick={() => setModal(true)} style={{ position: 'absolute', bottom: 24, right: 20, width: 52, height: 52, borderRadius: 26, background: COLORS.purple, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: `0 4px 16px ${COLORS.purple}66` }}>
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
       </button>
       <Modal visible={modal} onClose={() => setModal(false)} title="Nouveau rappel">
-        <input placeholder="Titre…" style={{ width: '100%', padding: '13px 16px', border: `2px solid ${COLORS.border}`, borderRadius: 14, fontSize: 15, fontFamily: FONTS.body, marginBottom: 10, outline: 'none' }} />
-        <input placeholder="Date (ex: 10 avril 2025)" style={{ width: '100%', padding: '13px 16px', border: `2px solid ${COLORS.border}`, borderRadius: 14, fontSize: 15, fontFamily: FONTS.body, marginBottom: 10, outline: 'none' }} />
-        <div style={{ display: 'flex', gap: 8, marginBottom: 10 }}>
-          {[['tâche', COLORS.yellow, COLORS.yellowDark], ['anniversaire', COLORS.pink, COLORS.pinkDark], ['autre', '#EEE', '#555']].map(([l, bg, c]) => (
-            <button key={l} style={{ flex: 1, padding: 10, borderRadius: 12, border: 'none', background: bg, color: c, fontSize: 12, fontWeight: 700, fontFamily: FONTS.body, cursor: 'pointer' }}>{l}</button>
+        <input value={newTitle} onChange={e => setNewTitle(e.target.value)} placeholder="Titre…" style={{ width: '100%', padding: '13px 16px', border: `2px solid ${COLORS.border}`, borderRadius: 14, fontSize: 15, fontFamily: FONTS.body, marginBottom: 10, outline: 'none', boxSizing: 'border-box' }} />
+        <input value={newDate} onChange={e => setNewDate(e.target.value)} type="date" style={{ width: '100%', padding: '13px 16px', border: `2px solid ${COLORS.border}`, borderRadius: 14, fontSize: 15, fontFamily: FONTS.body, marginBottom: 10, outline: 'none', boxSizing: 'border-box' }} />
+        <div style={{ display: 'flex', gap: 8, marginBottom: 14 }}>
+          {[['tâche', 'chore'], ['anniversaire', 'birthday'], ['autre', 'autre']].map(([l, k]) => (
+            <button key={k} onClick={() => setNewCat(k)} style={{ flex: 1, padding: 10, borderRadius: 12, border: `2px solid ${newCat === k ? COLORS.text : 'transparent'}`, background: CAT[k]?.bg || '#EEE', color: CAT[k]?.c || '#555', fontSize: 12, fontWeight: 700, fontFamily: FONTS.body, cursor: 'pointer' }}>{l}</button>
           ))}
         </div>
-        <PrimaryButton label="Créer le rappel" onClick={() => setModal(false)} />
+        <PrimaryButton label="Créer le rappel" onClick={addReminder} />
       </Modal>
     </div>
   );
