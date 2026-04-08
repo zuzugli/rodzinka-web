@@ -205,10 +205,10 @@ const CAT = {
   autre:    { dot: '#AB47BC',        bg: '#F3E5F5',      c: '#6A1B9A',         label: 'autre' },
 };
 
-function ReminderItem({ item, members }) {
-  const cat = CAT[item.cat];
+function ReminderItem({ item, members, onPress }) {
+  const cat = CAT[item.cat] || CAT.autre;
   return (
-    <div style={{ display: 'flex', gap: 12, padding: '13px 0', alignItems: 'flex-start' }}>
+    <div onClick={onPress} style={{ display: 'flex', gap: 12, padding: '13px 0', alignItems: 'flex-start', cursor: 'pointer' }}>
       <div style={{ width: 10, height: 10, borderRadius: 5, background: cat.dot, marginTop: 5, flexShrink: 0 }} />
       <div style={{ flex: 1 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 3 }}>
@@ -271,6 +271,7 @@ function isUpcoming(r) {
 export function RemindersScreen({ userName = 'Sophie', userColor = COLORS.sophieColor, userPhoto = null }) {
   const MEMBERS = getMembers(userName, userColor, userPhoto);
   const [modal, setModal] = useState(false);
+  const [selectedReminder, setSelectedReminder] = useState(null);
   const [newTitle, setNewTitle] = useState('');
   const [newDate, setNewDate] = useState('');
   const [newCat, setNewCat] = useState('autre');
@@ -283,6 +284,19 @@ export function RemindersScreen({ userName = 'Sophie', userColor = COLORS.sophie
 
   const thisWeek = reminders.filter(r => isThisWeek(r));
   const upcoming = reminders.filter(r => !isThisWeek(r) && (() => { const d = nextOccurrence(r); return d && d >= new Date(); })());
+
+  function toggleMember(reminderId, initials) {
+    setReminders(prev => prev.map(r => {
+      if (r.id !== reminderId) return r;
+      const has = r.members.includes(initials);
+      return { ...r, members: has ? r.members.filter(i => i !== initials) : [...r.members, initials] };
+    }));
+    setSelectedReminder(prev => {
+      if (!prev || prev.id !== reminderId) return prev;
+      const has = prev.members.includes(initials);
+      return { ...prev, members: has ? prev.members.filter(i => i !== initials) : [...prev.members, initials] };
+    });
+  }
 
   function addReminder() {
     if (!newTitle.trim() || !newDate.trim()) return;
@@ -303,14 +317,14 @@ export function RemindersScreen({ userName = 'Sophie', userColor = COLORS.sophie
         {thisWeek.length > 0 && <>
           <div style={{ fontSize: 11, fontWeight: 700, color: COLORS.textMuted, textTransform: 'uppercase', letterSpacing: 0.8, margin: '18px 0 10px', fontFamily: FONTS.body }}>Cette semaine</div>
           <Card style={{ padding: '4px 16px' }}>
-            {thisWeek.map((r, i) => <div key={r.id} style={{ borderBottom: i < thisWeek.length - 1 ? `1px solid ${COLORS.border}` : 'none' }}><ReminderItem item={r} members={MEMBERS} /></div>)}
+            {thisWeek.map((r, i) => <div key={r.id} style={{ borderBottom: i < thisWeek.length - 1 ? `1px solid ${COLORS.border}` : 'none' }}><ReminderItem item={r} members={MEMBERS} onPress={() => setSelectedReminder(r)} /></div>)}
           </Card>
         </>}
 
         {upcoming.length > 0 && <>
           <div style={{ fontSize: 11, fontWeight: 700, color: COLORS.textMuted, textTransform: 'uppercase', letterSpacing: 0.8, margin: '18px 0 10px', fontFamily: FONTS.body }}>À venir</div>
           <Card style={{ padding: '4px 16px' }}>
-            {upcoming.map((r, i) => <div key={r.id} style={{ borderBottom: i < upcoming.length - 1 ? `1px solid ${COLORS.border}` : 'none' }}><ReminderItem item={r} members={MEMBERS} /></div>)}
+            {upcoming.map((r, i) => <div key={r.id} style={{ borderBottom: i < upcoming.length - 1 ? `1px solid ${COLORS.border}` : 'none' }}><ReminderItem item={r} members={MEMBERS} onPress={() => setSelectedReminder(r)} /></div>)}
           </Card>
         </>}
 
@@ -321,6 +335,28 @@ export function RemindersScreen({ userName = 'Sophie', userColor = COLORS.sophie
       <button onClick={() => setModal(true)} style={{ position: 'absolute', bottom: 24, right: 20, width: 52, height: 52, borderRadius: 26, background: COLORS.purple, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: `0 4px 16px ${COLORS.purple}66` }}>
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
       </button>
+      {/* Detail modal */}
+      <Modal visible={!!selectedReminder} onClose={() => setSelectedReminder(null)} title={selectedReminder?.title || ''}>
+        {selectedReminder && <>
+          <p style={{ fontSize: 12, fontFamily: FONTS.body, color: COLORS.textMuted, marginBottom: 16 }}>{selectedReminder.meta}</p>
+          <p style={{ fontSize: 11, fontWeight: 700, color: COLORS.textMuted, textTransform: 'uppercase', letterSpacing: 0.8, fontFamily: FONTS.body, marginBottom: 10 }}>Notifications</p>
+          {BASE_MEMBERS.map(bm => {
+            const m = MEMBERS.find(x => x.initials === bm.initials) || bm;
+            const isIn = selectedReminder.members.includes(m.initials);
+            return (
+              <div key={m.initials} onClick={() => toggleMember(selectedReminder.id, m.initials)} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 0', borderBottom: `1px solid ${COLORS.border}`, cursor: 'pointer' }}>
+                <Avatar initials={m.initials} color={m.color} size="sm" photo={m.photo} />
+                <span style={{ flex: 1, fontSize: 15, fontWeight: 700, fontFamily: FONTS.body, color: COLORS.text }}>{m.name}</span>
+                <div style={{ width: 46, height: 27, borderRadius: 14, background: isIn ? COLORS.greenMid : COLORS.border, position: 'relative', transition: 'background 0.2s' }}>
+                  <div style={{ position: 'absolute', top: 3, left: isIn ? 22 : 3, width: 21, height: 21, borderRadius: '50%', background: '#fff', transition: 'left 0.2s' }} />
+                </div>
+              </div>
+            );
+          })}
+          <PrimaryButton label="Fermer" onClick={() => setSelectedReminder(null)} />
+        </>}
+      </Modal>
+
       <Modal visible={modal} onClose={() => setModal(false)} title="Nouveau rappel">
         <input value={newTitle} onChange={e => setNewTitle(e.target.value)} placeholder="Titre…" style={{ width: '100%', padding: '13px 16px', border: `2px solid ${COLORS.border}`, borderRadius: 14, fontSize: 15, fontFamily: FONTS.body, marginBottom: 10, outline: 'none', boxSizing: 'border-box' }} />
         <input value={newDate} onChange={e => setNewDate(e.target.value)} type="date" style={{ width: '100%', padding: '13px 16px', border: `2px solid ${COLORS.border}`, borderRadius: 14, fontSize: 15, fontFamily: FONTS.body, marginBottom: 10, outline: 'none', boxSizing: 'border-box' }} />
