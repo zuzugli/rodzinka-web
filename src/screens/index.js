@@ -21,17 +21,6 @@ function getMembers(userName, userColor, userPhoto) {
 
 const MONTH_NAMES = ['jan','fév','mar','avr','mai','juin','juil','aoû','sep','oct','nov','déc'];
 
-const MEAL_DATA = {
-  0: { 0:{p:['SP','MA','LU','TH'],a:[]}, 1:{p:['SP','MA','LU','TH'],a:[]} },
-  1: { 0:{p:['SP','MA','LU','TH'],a:[]}, 1:{p:['SP','LU'],a:['MA','TH']} },
-  2: { 0:{p:['SP','MA','TH'],a:['LU']}, 1:{p:['SP','MA','LU','TH'],a:[]} },
-  3: { 0:{p:['SP','MA','LU','TH'],a:[]}, 1:{p:['SP','MA','LU','TH'],a:[]} },
-  4: { 0:{p:['SP','MA','LU','TH'],a:[]}, 1:{p:['SP','MA','LU','TH'],a:[]} },
-  5: { 0:{p:['SP','MA','LU','TH'],a:[]}, 1:{p:['SP','MA','LU','TH'],a:[],note:'Pizza ce soir'} },
-  6: { 0:{p:['SP','MA'],a:['LU','TH']}, 1:{p:['SP','MA','LU','TH'],a:[]} },
-};
-
-function getMeal(d, m) { return MEAL_DATA[d]?.[m] ?? { p: ['SP','MA','LU','TH'], a: [] }; }
 
 function getWeek(offset) {
   const today = new Date();
@@ -65,7 +54,6 @@ export function CalendarScreen({ userName = 'Sophie', userColor = COLORS.sophieC
   const [absences, setAbsences] = useState(() => { try { const s = localStorage.getItem('cal_absences'); return s ? JSON.parse(s) : []; } catch { return []; } });
   useEffect(() => localStorage.setItem('cal_absences', JSON.stringify(absences)), [absences]);
   const week = getWeek(weekOffset);
-  const data = selected ? getMeal(selected.d, selected.m) : null;
 
   return (
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column', position: 'relative' }}>
@@ -96,12 +84,10 @@ export function CalendarScreen({ userName = 'Sophie', userColor = COLORS.sophieC
               <div key={mi} style={{ display: 'grid', gridTemplateColumns: '40px repeat(7, 1fr)', gap: 4, marginBottom: 6, alignItems: 'stretch' }}>
                 <div style={{ fontSize: 9, fontWeight: 700, fontFamily: FONTS.body, color: COLORS.textMuted, textTransform: 'uppercase', writingMode: 'vertical-rl', transform: 'rotate(180deg)', textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{meal}</div>
                 {week.map(({ dayIndex, isToday }) => {
-                  const m = getMeal(dayIndex, mi);
                   const bg = isToday ? COLORS.purpleLight : COLORS.surface;
                   const cellDate = week[dayIndex].date;
                   const userAbsent = absences.some(a => a.dateStr === cellDate.toDateString() && a.meal === mi);
-                  const staticAbsents = m.a.map(p => MEMBERS.find(x => x.initials === p)).filter(Boolean);
-                  const allAbsents = userAbsent ? [MEMBERS[0], ...staticAbsents.filter(x => x.initials !== MEMBERS[0].initials)] : staticAbsents;
+                  const allAbsents = userAbsent ? [MEMBERS[0]] : [];
                   return (
                     <div key={dayIndex} onClick={() => setSelected({ d: dayIndex, m: mi, date: cellDate })} style={{ background: bg, borderRadius: 12, padding: '10px 4px', minHeight: 80, border: `1.5px solid ${isToday ? COLORS.purple : COLORS.border}`, cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 3 }}>
                       {allAbsents.map((mb, idx) => <Avatar key={idx} initials={mb.initials} color={mb.color} size="xs" photo={mb.photo} />)}
@@ -117,9 +103,9 @@ export function CalendarScreen({ userName = 'Sophie', userColor = COLORS.sophieC
 
       {/* Detail modal */}
       <Modal visible={!!selected} onClose={() => setSelected(null)} title={selected ? `${MEALS[selected.m]} · ${DAYS[selected.d]} ${selected.date?.getDate()} ${MONTH_NAMES[selected.date?.getMonth()]}` : ''}>
-        {data && MEMBERS.map(m => {
-          const isUserAbsent = m === MEMBERS[0] && selected && absences.some(a => a.dateStr === selected.date?.toDateString() && a.meal === selected.m);
-          const present = !isUserAbsent && (data.p.includes(m.initials === userName.charAt(0).toUpperCase() ? 'SP' : m.initials) || data.p.includes(m.initials));
+        {selected && MEMBERS.map(m => {
+          const isUserAbsent = m === MEMBERS[0] && absences.some(a => a.dateStr === selected.date?.toDateString() && a.meal === selected.m);
+          const present = !isUserAbsent;
           return (
             <div key={m.initials} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 0', borderBottom: `1px solid ${COLORS.border}` }}>
               <Avatar initials={m.initials} color={m.color} size="sm" photo={m.photo} />
