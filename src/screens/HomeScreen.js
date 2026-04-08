@@ -23,10 +23,10 @@ function getCurrentWeek() {
 }
 
 const MEMBERS = [
-  { initials: 'SP', color: COLORS.sophieColor, name: 'Sophie' },
-  { initials: 'MA', color: COLORS.marcColor,   name: 'Marc'   },
-  { initials: 'LU', color: COLORS.lucieColor,  name: 'Lucie'  },
-  { initials: 'TH', color: COLORS.thomasColor, name: 'Thomas' },
+  { initials: 'S', color: COLORS.sophieColor, name: 'Sophie' },
+  { initials: 'M', color: COLORS.marcColor,   name: 'Marc'   },
+  { initials: 'L', color: COLORS.lucieColor,  name: 'Lucie'  },
+  { initials: 'T', color: COLORS.thomasColor, name: 'Thomas' },
 ];
 
 function MrHappy() {

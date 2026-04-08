@@ -14,8 +14,8 @@ const BASE_MEMBERS = [
 function getMembers(userName, userColor, userPhoto) {
   return BASE_MEMBERS.map(m =>
     m.initials === 'SP'
-      ? { ...m, initials: userName.charAt(0).toUpperCase(), color: userColor, photo: userPhoto, name: userName }
-      : m
+      ? { ...m, display: userName.charAt(0).toUpperCase(), color: userColor, photo: userPhoto, name: userName }
+      : { ...m, display: m.initials }
   );
 }
 
@@ -90,7 +90,7 @@ export function CalendarScreen({ userName = 'Sophie', userColor = COLORS.sophieC
                   const allAbsents = userAbsent ? [MEMBERS[0]] : [];
                   return (
                     <div key={dayIndex} onClick={() => setSelected({ d: dayIndex, m: mi, date: cellDate })} style={{ background: bg, borderRadius: 12, padding: '10px 4px', minHeight: 80, border: `1.5px solid ${isToday ? COLORS.purple : COLORS.border}`, cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 3 }}>
-                      {allAbsents.map((mb, idx) => <Avatar key={idx} initials={mb.initials} color={mb.color} size="xs" photo={mb.photo} />)}
+                      {allAbsents.map((mb, idx) => <Avatar key={idx} initials={mb.display || mb.initials} color={mb.color} size="xs" photo={mb.photo} />)}
                     </div>
                   );
                 })}
@@ -108,7 +108,7 @@ export function CalendarScreen({ userName = 'Sophie', userColor = COLORS.sophieC
           const present = !isUserAbsent;
           return (
             <div key={m.initials} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 0', borderBottom: `1px solid ${COLORS.border}` }}>
-              <Avatar initials={m.initials} color={m.color} size="sm" photo={m.photo} />
+              <Avatar initials={m.display || m.initials} color={m.color} size="sm" photo={m.photo} />
               <span style={{ flex: 1, fontSize: 15, fontWeight: 700, fontFamily: FONTS.body, color: COLORS.text }}>{m.name}</span>
               <span style={{ background: present ? COLORS.green : COLORS.pink, color: present ? COLORS.greenDark : COLORS.pinkDark, fontSize: 12, fontWeight: 700, padding: '4px 12px', borderRadius: 999, fontFamily: FONTS.body }}>
                 {present ? 'Présent·e' : 'Absent·e'}
@@ -218,7 +218,7 @@ function ReminderItem({ item, members, onPress }) {
         <p style={{ fontSize: 12, fontFamily: FONTS.body, color: COLORS.textMuted }}>{item.meta}</p>
         {item.members.length > 0 && (
           <div style={{ display: 'flex', gap: 4, marginTop: 6 }}>
-            {item.members.map(initials => { const m = members.find(x => x.initials === initials); return m ? <Avatar key={initials} initials={m.initials} color={m.color} size="xs" photo={m.photo} /> : null; })}
+            {item.members.map(initials => { const m = members.find(x => x.initials === initials); return m ? <Avatar key={initials} initials={m.display || m.initials} color={m.color} size="xs" photo={m.photo} /> : null; })}
           </div>
         )}
       </div>
@@ -345,7 +345,7 @@ export function RemindersScreen({ userName = 'Sophie', userColor = COLORS.sophie
             const isIn = selectedReminder.members.includes(m.initials);
             return (
               <div key={m.initials} onClick={() => toggleMember(selectedReminder.id, m.initials)} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 0', borderBottom: `1px solid ${COLORS.border}`, cursor: 'pointer' }}>
-                <Avatar initials={m.initials} color={m.color} size="sm" photo={m.photo} />
+                <Avatar initials={m.display || m.initials} color={m.color} size="sm" photo={m.photo} />
                 <span style={{ flex: 1, fontSize: 15, fontWeight: 700, fontFamily: FONTS.body, color: COLORS.text }}>{m.name}</span>
                 <div style={{ width: 46, height: 27, borderRadius: 14, background: isIn ? COLORS.greenMid : COLORS.border, position: 'relative', transition: 'background 0.2s' }}>
                   <div style={{ position: 'absolute', top: 3, left: isIn ? 22 : 3, width: 21, height: 21, borderRadius: '50%', background: '#fff', transition: 'left 0.2s' }} />
