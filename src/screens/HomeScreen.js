@@ -137,7 +137,7 @@ export default function HomeScreen({ navigate, userName = 'Sophie', userPhoto, u
       <SectionLabel>Famille</SectionLabel>
       <Card>
         <p style={{ fontSize: 13, fontWeight: 700, fontFamily: FONTS.body, color: COLORS.textMuted, marginBottom: 12 }}>
-          Les Tchenio-Gaubert · 4 membres
+          Les Tchenio-Gaubert · {MEMBERS.length} membres
         </p>
         <div style={{ display: 'flex', justifyContent: 'space-around' }}>
           {MEMBERS.map(m => (
