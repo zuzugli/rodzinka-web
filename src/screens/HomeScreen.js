@@ -1,6 +1,33 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { COLORS, FONTS } from '../theme';
 import { Avatar, Card, SectionLabel } from '../components';
+
+const CAT_DOT = { chore: '#00AFBE', birthday: '#F48FB1', autre: '#AB47BC' };
+
+function getThisWeekReminders() {
+  try {
+    const reminders = JSON.parse(localStorage.getItem('reminders') || '[]');
+    const today = new Date(); today.setHours(0,0,0,0);
+    const dow = today.getDay();
+    const mon = new Date(today); mon.setDate(today.getDate() - (dow === 0 ? 6 : dow - 1));
+    const sun = new Date(mon); sun.setDate(mon.getDate() + 6); sun.setHours(23,59,59,999);
+    return reminders.filter(r => {
+      const base = new Date(r.dateStr); if (isNaN(base)) return false;
+      if (r.recur === 'weekly') {
+        const day = base.getDay();
+        const cur = new Date(mon);
+        while (cur <= sun) { if (cur.getDay() === day && cur >= today) return true; cur.setDate(cur.getDate()+1); }
+        return false;
+      }
+      if (r.recur === 'yearly') {
+        const d = new Date(base); d.setFullYear(today.getFullYear());
+        if (d < today) d.setFullYear(today.getFullYear() + 1);
+        return d >= mon && d <= sun;
+      }
+      return base >= mon && base <= sun && base >= today;
+    });
+  } catch { return []; }
+}
 
 const DAY_NAMES   = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
 const MONTH_NAMES = ['jan', 'fév', 'mar', 'avr', 'mai', 'juin', 'juil', 'aoû', 'sep', 'oct', 'nov', 'déc'];
@@ -35,6 +62,8 @@ function MrHappy() {
 
 export default function HomeScreen({ navigate, userName = 'Sophie', userPhoto, userColor = '#FFD740' }) {
   const week = getCurrentWeek();
+  const [thisWeek, setThisWeek] = useState(() => getThisWeekReminders());
+  useEffect(() => { setThisWeek(getThisWeekReminders()); }, []);
   return (
     <div style={{ height: '100%', overflowY: 'auto', padding: '8px 20px 24px' }}>
       {/* Header */}
@@ -74,18 +103,18 @@ export default function HomeScreen({ navigate, userName = 'Sophie', userPhoto, u
       {/* Rappels de la semaine */}
       <SectionLabel>Rappels de la semaine</SectionLabel>
       <Card style={{ padding: '4px 16px', marginBottom: 10 }}>
-        {[
-          { title: 'Sortir les poubelles', meta: "Aujourd'hui · 19h00 · Hebdo", dot: COLORS.yellowMid },
-          { title: 'Anniversaire de Lucie', meta: 'Jeudi 10 avr · Annuel', dot: '#F48FB1' },
-        ].map((r, i, arr) => (
-          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 0', borderBottom: i < arr.length - 1 ? `1px solid ${COLORS.border}` : 'none' }}>
-            <div style={{ width: 10, height: 10, borderRadius: 5, background: r.dot, flexShrink: 0 }} />
-            <div style={{ flex: 1 }}>
-              <p style={{ fontSize: 13, fontWeight: 700, color: COLORS.text, fontFamily: FONTS.body }}>{r.title}</p>
-              <p style={{ fontSize: 11, color: COLORS.textMuted, fontFamily: FONTS.body, marginTop: 2 }}>{r.meta}</p>
+        {thisWeek.length === 0
+          ? <p style={{ fontSize: 13, color: COLORS.textMuted, fontFamily: FONTS.body, padding: '12px 0' }}>Aucun rappel cette semaine</p>
+          : thisWeek.map((r, i, arr) => (
+            <div key={r.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 0', borderBottom: i < arr.length - 1 ? `1px solid ${COLORS.border}` : 'none' }}>
+              <div style={{ width: 10, height: 10, borderRadius: 5, background: CAT_DOT[r.cat] || '#AB47BC', flexShrink: 0 }} />
+              <div style={{ flex: 1 }}>
+                <p style={{ fontSize: 13, fontWeight: 700, color: COLORS.text, fontFamily: FONTS.body }}>{r.title}</p>
+                <p style={{ fontSize: 11, color: COLORS.textMuted, fontFamily: FONTS.body, marginTop: 2 }}>{r.meta}</p>
+              </div>
             </div>
-          </div>
-        ))}
+          ))
+        }
       </Card>
 
       {/* Accès rapide */}
@@ -109,7 +138,7 @@ export default function HomeScreen({ navigate, userName = 'Sophie', userPhoto, u
         border: 'none', cursor: 'pointer', width: '100%', textAlign: 'left', marginBottom: 10,
       }}>
         <div style={{ fontSize: 15, fontWeight: 800, fontFamily: FONTS.title, color: '#fff' }}>Rappels</div>
-        <div style={{ fontSize: 12, fontWeight: 700, fontFamily: FONTS.body, color: '#fff', opacity: 0.85 }}>2 cette semaine</div>
+        <div style={{ fontSize: 12, fontWeight: 700, fontFamily: FONTS.body, color: '#fff', opacity: 0.85 }}>{thisWeek.length} cette semaine</div>
       </button>
 
       {/* Famille */}
