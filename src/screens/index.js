@@ -418,6 +418,9 @@ export function RemindersScreen({ userName = 'Sophie', userColor = COLORS.sophie
             );
           })}
           <PrimaryButton label="Fermer" onClick={() => setSelectedReminder(null)} />
+          <button onClick={() => { setReminders(prev => prev.filter(r => r.id !== selectedReminder.id)); setSelectedReminder(null); }} style={{ width: '100%', padding: '12px', borderRadius: 14, border: `2px solid ${COLORS.pinkDark}`, background: 'transparent', color: COLORS.pinkDark, fontSize: 14, fontWeight: 700, fontFamily: FONTS.body, cursor: 'pointer', marginTop: 6 }}>
+            Supprimer ce rappel
+          </button>
         </>}
       </Modal>
 
