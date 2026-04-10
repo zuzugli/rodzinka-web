@@ -1,32 +1,29 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { COLORS, FONTS } from '../theme';
 import { Avatar, Card, SectionLabel } from '../components';
 
 const CAT_DOT = { chore: '#00AFBE', birthday: '#F48FB1', autre: '#AB47BC' };
 
-function getThisWeekReminders() {
-  try {
-    const reminders = JSON.parse(localStorage.getItem('reminders') || '[]');
-    const today = new Date(); today.setHours(0,0,0,0);
-    const dow = today.getDay();
-    const mon = new Date(today); mon.setDate(today.getDate() - (dow === 0 ? 6 : dow - 1));
-    const sun = new Date(mon); sun.setDate(mon.getDate() + 6); sun.setHours(23,59,59,999);
-    return reminders.filter(r => {
-      const base = new Date(r.dateStr); if (isNaN(base)) return false;
-      if (r.recur === 'weekly') {
-        const day = base.getDay();
-        const cur = new Date(mon);
-        while (cur <= sun) { if (cur.getDay() === day && cur >= today) return true; cur.setDate(cur.getDate()+1); }
-        return false;
-      }
-      if (r.recur === 'yearly') {
-        const d = new Date(base); d.setFullYear(today.getFullYear());
-        if (d < today) d.setFullYear(today.getFullYear() + 1);
-        return d >= mon && d <= sun;
-      }
-      return base >= mon && base <= sun && base >= today;
-    });
-  } catch { return []; }
+function getThisWeek(reminders) {
+  const today = new Date(); today.setHours(0,0,0,0);
+  const dow = today.getDay();
+  const mon = new Date(today); mon.setDate(today.getDate() - (dow === 0 ? 6 : dow - 1));
+  const sun = new Date(mon); sun.setDate(mon.getDate() + 6); sun.setHours(23,59,59,999);
+  return reminders.filter(r => {
+    const base = new Date(r.dateStr); if (isNaN(base)) return false;
+    if (r.recur === 'weekly') {
+      const day = base.getDay();
+      const cur = new Date(mon);
+      while (cur <= sun) { if (cur.getDay() === day && cur >= today) return true; cur.setDate(cur.getDate()+1); }
+      return false;
+    }
+    if (r.recur === 'yearly') {
+      const d = new Date(base); d.setFullYear(today.getFullYear());
+      if (d < today) d.setFullYear(today.getFullYear() + 1);
+      return d >= mon && d <= sun;
+    }
+    return base >= mon && base <= sun && base >= today;
+  });
 }
 
 const DAY_NAMES   = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
@@ -60,10 +57,9 @@ function MrHappy() {
   return <img src="/mascot.png" alt="mascotte" style={{ width: 68, height: 68, objectFit: 'contain', marginRight: 8 }} />;
 }
 
-export default function HomeScreen({ navigate, userName = 'Sophie', userPhoto, userColor = '#FFD740' }) {
+export default function HomeScreen({ navigate, userName = 'Sophie', userPhoto, userColor = '#FFD740', reminders = [] }) {
   const week = getCurrentWeek();
-  const [thisWeek, setThisWeek] = useState(() => getThisWeekReminders());
-  useEffect(() => { setThisWeek(getThisWeekReminders()); }, []);
+  const thisWeek = getThisWeek(reminders);
   return (
     <div style={{ height: '100%', overflowY: 'auto', padding: '8px 20px 24px' }}>
       {/* Header */}

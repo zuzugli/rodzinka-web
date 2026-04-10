@@ -33,6 +33,15 @@ export default function App() {
   const [userName, setUserName]   = useState(() => localStorage.getItem('userName')  || 'Sophie');
   const [userPhoto, setUserPhoto] = useState(() => localStorage.getItem('userPhoto') || null);
   const [userColor, setUserColor] = useState(() => localStorage.getItem('userColor') || '#FFD740');
+  const [reminders, setReminders] = useState(() => { try { const s = localStorage.getItem('reminders'); return s ? JSON.parse(s) : []; } catch { return []; } });
+
+  function handleSetReminders(fn) {
+    setReminders(prev => {
+      const next = typeof fn === 'function' ? fn(prev) : fn;
+      localStorage.setItem('reminders', JSON.stringify(next));
+      return next;
+    });
+  }
 
   function handleSetUserName(name) {
     setUserName(name);
@@ -49,10 +58,10 @@ export default function App() {
   }
 
   const screens = {
-    home:      <HomeScreen navigate={setActiveTab} userName={userName} userPhoto={userPhoto} userColor={userColor} />,
+    home:      <HomeScreen navigate={setActiveTab} userName={userName} userPhoto={userPhoto} userColor={userColor} reminders={reminders} />,
     shopping:  <ShoppingScreen userName={userName} userPhoto={userPhoto} userColor={userColor} />,
     calendar:  <CalendarScreen userName={userName} userPhoto={userPhoto} userColor={userColor} />,
-    reminders: <RemindersScreen userName={userName} userPhoto={userPhoto} userColor={userColor} />,
+    reminders: <RemindersScreen userName={userName} userPhoto={userPhoto} userColor={userColor} reminders={reminders} setReminders={handleSetReminders} />,
     profile:   <ProfileScreen userName={userName} setUserName={handleSetUserName} userPhoto={userPhoto} setUserPhoto={handleSetUserPhoto} userColor={userColor} setUserColor={handleSetUserColor} />,
   };
 

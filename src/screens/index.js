@@ -332,7 +332,7 @@ function isUpcoming(r) {
   return d > sun || (r.recur && d >= today);
 }
 
-export function RemindersScreen({ userName = 'Sophie', userColor = COLORS.sophieColor, userPhoto = null }) {
+export function RemindersScreen({ userName = 'Sophie', userColor = COLORS.sophieColor, userPhoto = null, reminders = [], setReminders }) {
   const MEMBERS = getMembers(userName, userColor, userPhoto);
   const [modal, setModal] = useState(false);
   const [selectedReminder, setSelectedReminder] = useState(null);
@@ -340,11 +340,6 @@ export function RemindersScreen({ userName = 'Sophie', userColor = COLORS.sophie
   const [newDate, setNewDate] = useState('');
   const [newCat, setNewCat] = useState('autre');
   const [newRecur, setNewRecur] = useState('none');
-  const [reminders, setReminders] = useState(() => {
-    try { const s = localStorage.getItem('reminders'); return s ? JSON.parse(s) : REMINDERS; }
-    catch { return REMINDERS; }
-  });
-  useEffect(() => { localStorage.setItem('reminders', JSON.stringify(reminders)); }, [reminders]);
 
   const thisWeek = reminders.filter(r => isThisWeek(r));
   const upcoming = reminders.filter(r => !isThisWeek(r) && (() => { const d = nextOccurrence(r); return d && d >= new Date(); })());
