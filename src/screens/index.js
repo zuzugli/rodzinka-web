@@ -380,7 +380,7 @@ export function RemindersScreen({ userName = 'Sophie', userColor = COLORS.sophie
             <h2 style={{ fontSize: 32, fontWeight: 800, fontFamily: FONTS.title, color: COLORS.text, letterSpacing: -0.5 }}>Rappels</h2>
             <p style={{ fontSize: 13, fontFamily: FONTS.body, color: COLORS.textMuted, marginTop: 4 }}>{thisWeek.length} cette semaine</p>
           </div>
-          <img src="/chatouille.png" alt="mascotte" style={{ width: 100, height: 100, objectFit: 'contain' }} />
+          <img src="/chatouille.png" alt="mascotte" style={{ width: 115, height: 115, objectFit: 'contain' }} />
         </div>
 
         {thisWeek.length > 0 && <>
