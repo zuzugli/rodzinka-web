@@ -59,17 +59,17 @@ export function CalendarScreen({ userName = 'Sophie', userColor = COLORS.sophieC
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column', position: 'relative' }}>
       <div style={{ overflowY: 'auto', flex: 1, padding: '8px 20px 24px' }}>
         <div style={{ display: 'flex', alignItems: 'center', marginBottom: 4 }}>
-          <div style={{ flex: 1, display: 'flex', alignItems: 'center' }}>
-            <div>
+          <div style={{ flex: 1 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <h2 style={{ fontSize: 32, fontWeight: 800, fontFamily: FONTS.title, color: COLORS.text, letterSpacing: -0.5 }}>Repas</h2>
-              <p style={{ fontSize: 13, fontFamily: FONTS.body, color: COLORS.textMuted, marginTop: 4 }}>{formatRange(week)}</p>
+              <div style={{ display: 'flex', gap: 8 }}>
+                <button onClick={() => setWeekOffset(o => o - 1)} style={{ width: 36, height: 36, borderRadius: 18, border: `1.5px solid ${COLORS.border}`, background: COLORS.surface, cursor: 'pointer', fontSize: 16, display:'flex', alignItems:'center', justifyContent:'center' }}>‹</button>
+                <button onClick={() => setWeekOffset(o => o + 1)} style={{ width: 36, height: 36, borderRadius: 18, border: `1.5px solid ${COLORS.border}`, background: COLORS.surface, cursor: 'pointer', fontSize: 16, display:'flex', alignItems:'center', justifyContent:'center' }}>›</button>
+              </div>
             </div>
-            <img src="/glouton.png" alt="mascotte" style={{ width: 80, height: 80, objectFit: 'contain', marginLeft: 8 }} />
+            <p style={{ fontSize: 13, fontFamily: FONTS.body, color: COLORS.textMuted, marginTop: 4 }}>{formatRange(week)}</p>
           </div>
-          <div style={{ display: 'flex', gap: 8, marginLeft: 8 }}>
-            <button onClick={() => setWeekOffset(o => o - 1)} style={{ width: 36, height: 36, borderRadius: 18, border: `1.5px solid ${COLORS.border}`, background: COLORS.surface, cursor: 'pointer', fontSize: 16, display:'flex', alignItems:'center', justifyContent:'center' }}>‹</button>
-            <button onClick={() => setWeekOffset(o => o + 1)} style={{ width: 36, height: 36, borderRadius: 18, border: `1.5px solid ${COLORS.border}`, background: COLORS.surface, cursor: 'pointer', fontSize: 16, display:'flex', alignItems:'center', justifyContent:'center' }}>›</button>
-          </div>
+          <img src="/glouton.png" alt="mascotte" style={{ width: 80, height: 80, objectFit: 'contain' }} />
         </div>
 
         <Card style={{ padding: 12, overflowX: 'auto' }}>
