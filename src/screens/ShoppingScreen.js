@@ -44,6 +44,7 @@ export default function ShoppingScreen({ userName = 'Sophie', userPhoto, userCol
   const [filter, setFilter] = useState('buy');
   const [modal, setModal] = useState(false);
   const [newName, setNewName] = useState('');
+  const [newQty, setNewQty] = useState('');
 
   const [confirmDelete, setConfirmDelete] = useState(null);
   const toggle = id => setItems(prev => prev.map(it => it.id === id ? { ...it, done: !it.done } : it));
@@ -54,8 +55,9 @@ export default function ShoppingScreen({ userName = 'Sophie', userPhoto, userCol
   };
   const addItem = () => {
     if (!newName.trim()) return;
-    setItems(prev => [{ id: Date.now(), name: newName.trim(), by: userName, addedAt: Date.now(), done: false }, ...prev]);
-    setNewName(''); setModal(false);
+    const name = newQty.trim() ? `${newName.trim()} (x${newQty.trim()})` : newName.trim();
+    setItems(prev => [{ id: Date.now(), name, by: userName, addedAt: Date.now(), done: false }, ...prev]);
+    setNewName(''); setNewQty(''); setModal(false);
   };
 
   const visible = items.filter(it => filter === 'buy' ? !it.done : it.done);
@@ -143,8 +145,9 @@ export default function ShoppingScreen({ userName = 'Sophie', userPhoto, userCol
       </button>
 
       {/* Modal */}
-      <Modal visible={modal} onClose={() => setModal(false)} title="Ajouter un article">
-        <Input placeholder="Ex : Beurre, 2 paquets…" value={newName} onChange={setNewName} />
+      <Modal visible={modal} onClose={() => { setModal(false); setNewName(''); setNewQty(''); }} title="Ajouter un article">
+        <Input placeholder="Nom de l'article (ex : Beurre)" value={newName} onChange={setNewName} />
+        <Input placeholder="Quantité (ex : 2, facultatif)" value={newQty} onChange={setNewQty} />
         <PrimaryButton label="Ajouter à la liste" onClick={addItem} />
       </Modal>
     </div>
