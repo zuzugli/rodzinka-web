@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run:*)",
+      "Read(//tmp/**)",
+      "Bash(sed -i 's/initials={m\\\\.initials} color={m\\\\.color} size=\"sm\" photo={m\\\\.photo}/initials={m.display || m.initials} color={m.color} size=\"sm\" photo={m.photo}/g' src/screens/index.js)",
+      "Bash(sed -i 's/initials={m\\\\.initials} color={m\\\\.color} size=\"xs\" photo={m\\\\.photo}/initials={m.display || m.initials} color={m.color} size=\"xs\" photo={m.photo}/g' src/screens/index.js)"
+    ]
+  }
+}
