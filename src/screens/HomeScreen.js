@@ -1,6 +1,7 @@
 import React from 'react';
 import { COLORS, FONTS } from '../theme';
 import { Avatar, Card, SectionLabel } from '../components';
+import { getMembers } from './index';
 
 const CAT_DOT = { chore: '#00AFBE', birthday: '#F48FB1', autre: '#AB47BC' };
 
@@ -46,12 +47,6 @@ function getCurrentWeek() {
   });
 }
 
-const MEMBERS = [
-  { initials: 'S', color: COLORS.sophieColor, name: 'Sophie' },
-  { initials: 'M', color: COLORS.marcColor,   name: 'Marc'   },
-  { initials: 'L', color: COLORS.lucieColor,  name: 'Lucie'  },
-  { initials: 'T', color: COLORS.thomasColor, name: 'Thomas' },
-];
 
 function MrHappy() {
   return <img src="/mascot.png" alt="mascotte" style={{ width: 68, height: 68, objectFit: 'contain', marginRight: 8 }} />;
@@ -60,6 +55,7 @@ function MrHappy() {
 export default function HomeScreen({ navigate, userName = 'Sophie', userPhoto, userColor = '#FFD740', reminders = [] }) {
   const week = getCurrentWeek();
   const thisWeek = getThisWeek(reminders);
+  const MEMBERS = getMembers(userName, userColor, userPhoto);
   return (
     <div style={{ height: '100%', overflowY: 'auto', padding: '8px 20px 24px' }}>
       {/* Header */}
@@ -146,7 +142,7 @@ export default function HomeScreen({ navigate, userName = 'Sophie', userPhoto, u
         <div style={{ display: 'flex', justifyContent: 'space-around' }}>
           {MEMBERS.map(m => (
             <div key={m.initials} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
-              <Avatar initials={m.initials} color={m.color} size="md" />
+              <Avatar initials={m.display || m.initials} color={m.color} size="md" photo={m.photo} />
               <span style={{ fontSize: 11, fontWeight: 700, fontFamily: FONTS.body, color: COLORS.text }}>{m.name}</span>
             </div>
           ))}

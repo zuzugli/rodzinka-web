@@ -11,7 +11,7 @@ const BASE_MEMBERS = [
   { initials: 'TH', color: COLORS.thomasColor, name: 'Thomas' },
 ];
 
-function getMembers(userName, userColor, userPhoto) {
+export function getMembers(userName, userColor, userPhoto) {
   return BASE_MEMBERS.map(m =>
     m.initials === 'SP'
       ? { ...m, display: userName.charAt(0).toUpperCase(), color: userColor, photo: userPhoto, name: userName }
