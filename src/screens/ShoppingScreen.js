@@ -44,7 +44,7 @@ export default function ShoppingScreen({ userName = 'Sophie', userPhoto, userCol
   const [filter, setFilter] = useState('buy');
   const [modal, setModal] = useState(false);
   const [newName, setNewName] = useState('');
-  const [newQty, setNewQty] = useState('');
+  const [newQty, setNewQty] = useState(1);
 
   const [confirmDelete, setConfirmDelete] = useState(null);
   const toggle = id => setItems(prev => prev.map(it => it.id === id ? { ...it, done: !it.done } : it));
@@ -55,9 +55,9 @@ export default function ShoppingScreen({ userName = 'Sophie', userPhoto, userCol
   };
   const addItem = () => {
     if (!newName.trim()) return;
-    const name = newQty.trim() ? `${newName.trim()} (x${newQty.trim()})` : newName.trim();
+    const name = newQty > 1 ? `${newName.trim()} (x${newQty})` : newName.trim();
     setItems(prev => [{ id: Date.now(), name, by: userName, addedAt: Date.now(), done: false }, ...prev]);
-    setNewName(''); setNewQty(''); setModal(false);
+    setNewName(''); setNewQty(1); setModal(false);
   };
 
   const visible = items.filter(it => filter === 'buy' ? !it.done : it.done);
@@ -145,9 +145,16 @@ export default function ShoppingScreen({ userName = 'Sophie', userPhoto, userCol
       </button>
 
       {/* Modal */}
-      <Modal visible={modal} onClose={() => { setModal(false); setNewName(''); setNewQty(''); }} title="Ajouter un article">
+      <Modal visible={modal} onClose={() => { setModal(false); setNewName(''); setNewQty(1); }} title="Ajouter un article">
         <Input placeholder="Nom de l'article (ex : Beurre)" value={newName} onChange={setNewName} />
-        <Input placeholder="Quantité (ex : 2, facultatif)" value={newQty} onChange={setNewQty} />
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+          <span style={{ fontSize: 13, fontWeight: 700, fontFamily: FONTS.body, color: COLORS.textMuted }}>Quantité</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+            <button onClick={() => setNewQty(q => Math.max(1, q - 1))} style={{ width: 36, height: 36, borderRadius: 12, border: `2px solid ${COLORS.border}`, background: '#fff', fontSize: 20, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: FONTS.body, color: COLORS.text }}>−</button>
+            <span style={{ fontSize: 18, fontWeight: 800, fontFamily: FONTS.title, color: COLORS.text, minWidth: 24, textAlign: 'center' }}>{newQty}</span>
+            <button onClick={() => setNewQty(q => q + 1)} style={{ width: 36, height: 36, borderRadius: 12, border: `2px solid ${COLORS.border}`, background: '#fff', fontSize: 20, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: FONTS.body, color: COLORS.text }}>+</button>
+          </div>
+        </div>
         <PrimaryButton label="Ajouter à la liste" onClick={addItem} />
       </Modal>
     </div>
