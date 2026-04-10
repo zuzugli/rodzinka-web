@@ -49,6 +49,7 @@ export function CalendarScreen({ userName = 'Sophie', userColor = COLORS.sophieC
   const [selected, setSelected] = useState(null);
   const [absentModal, setAbsentModal] = useState(false);
   const [selDate, setSelDate] = useState(null);
+  const [selDateEnd, setSelDateEnd] = useState(null);
   const [selMeal, setSelMeal] = useState(null);
   const [calMonth, setCalMonth] = useState(() => { const d = new Date(); return { y: d.getFullYear(), m: d.getMonth() }; });
   const [absences, setAbsences] = useState(() => { try { const s = localStorage.getItem('cal_absences'); return s ? JSON.parse(s) : []; } catch { return []; } });
@@ -133,8 +134,11 @@ export function CalendarScreen({ userName = 'Sophie', userColor = COLORS.sophieC
       </Modal>
 
       {/* Absent modal */}
-      <Modal visible={absentModal} onClose={() => { setAbsentModal(false); setSelDate(null); setSelMeal(null); }} title="Me marquer absent·e">
+      <Modal visible={absentModal} onClose={() => { setAbsentModal(false); setSelDate(null); setSelDateEnd(null); setSelMeal(null); }} title="Me marquer absent·e">
         {/* Mini calendar */}
+        <p style={{ fontSize: 12, color: COLORS.textMuted, fontFamily: FONTS.body, marginBottom: 10 }}>
+          {!selDate ? 'Sélectionne un jour ou une plage de dates' : !selDateEnd ? 'Sélectionne le jour de fin (ou confirme pour un seul jour)' : `Du ${selDate.toLocaleDateString('fr-FR')} au ${selDateEnd.toLocaleDateString('fr-FR')}`}
+        </p>
         <div style={{ marginBottom: 14 }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
             <button onClick={() => setCalMonth(p => { const d = new Date(p.y, p.m - 1); return { y: d.getFullYear(), m: d.getMonth() }; })} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 18, color: COLORS.text, padding: '0 6px' }}>‹</button>
@@ -164,15 +168,22 @@ export function CalendarScreen({ userName = 'Sophie', userColor = COLORS.sophieC
                   if (!d) return <div key={i} />;
                   const date = new Date(calMonth.y, calMonth.m, d); date.setHours(0,0,0,0);
                   const isPast = date < today;
-                  const isSelected = selDate && selDate.toDateString() === date.toDateString();
+                  const isStart = selDate && date.toDateString() === selDate.toDateString();
+                  const isEnd = selDateEnd && date.toDateString() === selDateEnd.toDateString();
+                  const isInRange = selDate && selDateEnd && date > selDate && date < selDateEnd;
                   const isToday = date.toDateString() === today.toDateString();
                   return (
-                    <div key={i} onClick={() => !isPast && setSelDate(date)} style={{
+                    <div key={i} onClick={() => {
+                      if (isPast) return;
+                      if (!selDate || selDateEnd) { setSelDate(date); setSelDateEnd(null); }
+                      else if (date >= selDate) { setSelDateEnd(date); }
+                      else { setSelDate(date); setSelDateEnd(null); }
+                    }} style={{
                       textAlign: 'center', padding: '7px 2px', borderRadius: 10, cursor: isPast ? 'default' : 'pointer',
-                      background: isSelected ? COLORS.purple : isToday ? COLORS.purpleLight : 'transparent',
+                      background: isStart || isEnd ? COLORS.purple : isInRange ? COLORS.purpleLight : isToday ? COLORS.purpleLight : 'transparent',
                       opacity: isPast ? 0.3 : 1,
                     }}>
-                      <span style={{ fontSize: 13, fontWeight: 700, fontFamily: FONTS.body, color: isSelected ? '#fff' : isToday ? COLORS.purpleDark : COLORS.text }}>{d}</span>
+                      <span style={{ fontSize: 13, fontWeight: 700, fontFamily: FONTS.body, color: isStart || isEnd ? '#fff' : isInRange || isToday ? COLORS.purpleDark : COLORS.text }}>{d}</span>
                     </div>
                   );
                 })}
@@ -182,7 +193,7 @@ export function CalendarScreen({ userName = 'Sophie', userColor = COLORS.sophieC
         </div>
 
         {/* Meal choice */}
-        <p style={{ fontSize: 11, fontWeight: 700, color: !selDate ? COLORS.border : COLORS.textMuted, textTransform: 'uppercase', letterSpacing: 0.8, fontFamily: FONTS.body, marginBottom: 8 }}>Choisir le repas</p>
+        <p style={{ fontSize: 11, fontWeight: 700, color: !selDate ? COLORS.border : COLORS.textMuted, textTransform: 'uppercase', letterSpacing: 0.8, fontFamily: FONTS.body, marginBottom: 8 }}>Choisir le(s) repas</p>
         <div style={{ display: 'flex', gap: 8, marginBottom: 12, opacity: !selDate ? 0.4 : 1 }}>
           {MEALS.map((m, i) => (
             <div key={i} onClick={() => selDate && setSelMeal(i)} style={{ flex: 1, textAlign: 'center', padding: '12px 8px', borderRadius: 14, border: `2px solid ${selMeal === i ? COLORS.purple : COLORS.border}`, background: selMeal === i ? COLORS.purpleLight : COLORS.surface, cursor: selDate ? 'pointer' : 'default' }}>
@@ -192,11 +203,21 @@ export function CalendarScreen({ userName = 'Sophie', userColor = COLORS.sophieC
         </div>
         <PrimaryButton label="Confirmer l'absence" onClick={() => {
           if (selDate && selMeal !== null) {
-            setAbsences(prev => [...prev.filter(a => !(a.dateStr === selDate.toDateString() && a.meal === selMeal)), { dateStr: selDate.toDateString(), meal: selMeal }]);
+            const end = selDateEnd || selDate;
+            const newAbsences = [];
+            const cur = new Date(selDate);
+            while (cur <= end) {
+              newAbsences.push({ dateStr: cur.toDateString(), meal: selMeal });
+              cur.setDate(cur.getDate() + 1);
+            }
+            setAbsences(prev => {
+              const filtered = prev.filter(a => !newAbsences.some(n => n.dateStr === a.dateStr && n.meal === a.meal));
+              return [...filtered, ...newAbsences];
+            });
           }
-          setAbsentModal(false); setSelDate(null); setSelMeal(null);
+          setAbsentModal(false); setSelDate(null); setSelDateEnd(null); setSelMeal(null);
         }} />
-        <button onClick={() => { setAbsentModal(false); setSelDate(null); setSelMeal(null); }} style={{ width: '100%', padding: '12px', borderRadius: 14, border: `2px solid ${COLORS.border}`, background: 'transparent', color: COLORS.textMuted, fontSize: 14, fontWeight: 700, fontFamily: FONTS.body, cursor: 'pointer', marginTop: 6 }}>
+        <button onClick={() => { setAbsentModal(false); setSelDate(null); setSelDateEnd(null); setSelMeal(null); }} style={{ width: '100%', padding: '12px', borderRadius: 14, border: `2px solid ${COLORS.border}`, background: 'transparent', color: COLORS.textMuted, fontSize: 14, fontWeight: 700, fontFamily: FONTS.body, cursor: 'pointer', marginTop: 6 }}>
           Annuler
         </button>
       </Modal>
