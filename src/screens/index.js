@@ -58,14 +58,17 @@ export function CalendarScreen({ userName = 'Sophie', userColor = COLORS.sophieC
   return (
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column', position: 'relative' }}>
       <div style={{ overflowY: 'auto', flex: 1, padding: '8px 20px 24px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
-          <h2 style={{ fontSize: 32, fontWeight: 800, fontFamily: FONTS.title, color: COLORS.text, letterSpacing: -0.5 }}>Repas</h2>
-          <div style={{ display: 'flex', gap: 8 }}>
+        <div style={{ display: 'flex', alignItems: 'center', marginBottom: 4 }}>
+          <div style={{ flex: 1 }}>
+            <h2 style={{ fontSize: 32, fontWeight: 800, fontFamily: FONTS.title, color: COLORS.text, letterSpacing: -0.5 }}>Repas</h2>
+            <p style={{ fontSize: 13, fontFamily: FONTS.body, color: COLORS.textMuted, marginTop: 4 }}>{formatRange(week)}</p>
+          </div>
+          <img src="/glouton.png" alt="mascotte" style={{ width: 100, height: 100, objectFit: 'contain' }} />
+          <div style={{ display: 'flex', gap: 8, marginLeft: 8 }}>
             <button onClick={() => setWeekOffset(o => o - 1)} style={{ width: 36, height: 36, borderRadius: 18, border: `1.5px solid ${COLORS.border}`, background: COLORS.surface, cursor: 'pointer', fontSize: 16, display:'flex', alignItems:'center', justifyContent:'center' }}>‹</button>
             <button onClick={() => setWeekOffset(o => o + 1)} style={{ width: 36, height: 36, borderRadius: 18, border: `1.5px solid ${COLORS.border}`, background: COLORS.surface, cursor: 'pointer', fontSize: 16, display:'flex', alignItems:'center', justifyContent:'center' }}>›</button>
           </div>
         </div>
-        <p style={{ fontSize: 13, fontFamily: FONTS.body, color: COLORS.textMuted, marginBottom: 16 }}>{formatRange(week)}</p>
 
         <Card style={{ padding: 12, overflowX: 'auto' }}>
           <div style={{ minWidth: 420 }}>
