@@ -480,9 +480,9 @@ export function ProfileScreen({ userName = 'Sophie', setUserName, userPhoto, set
     <div style={{ height: '100%', overflowY: 'auto', padding: '8px 20px 40px' }}>
       <div style={{ display: 'flex', alignItems: 'flex-start', marginBottom: 16 }}>
         <h2 style={{ fontSize: 32, fontWeight: 800, fontFamily: FONTS.title, color: COLORS.text, letterSpacing: -0.5, flex: 1 }}>Profil</h2>
-        <img src="/princesse.svg" alt="mascotte" style={{ width: 115, height: 115, objectFit: 'contain' }} />
+        <img src="/princesse.svg" alt="mascotte" style={{ width: 80, height: 80, objectFit: 'contain' }} />
       </div>
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, padding: '16px 0 20px' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, padding: '0 0 20px' }}>
         <div style={{ position: 'relative', display: 'inline-block' }}>
           <Avatar initials={userName.charAt(0).toUpperCase()} color={userColor} size="lg" photo={userPhoto} />
           <label style={{ position: 'absolute', bottom: 0, right: 0, width: 26, height: 26, borderRadius: '50%', background: COLORS.text, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', border: '2px solid #fff' }}>
