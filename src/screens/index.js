@@ -478,7 +478,12 @@ export function ProfileScreen({ userName = 'Sophie', setUserName, userPhoto, set
 
   return (
     <div style={{ height: '100%', overflowY: 'auto', padding: '8px 20px 40px' }}>
-      <h2 style={{ fontSize: 32, fontWeight: 800, fontFamily: FONTS.title, color: COLORS.text, letterSpacing: -0.5, marginBottom: 16 }}>Profil</h2>
+      <div style={{ display: 'flex', alignItems: 'center', marginBottom: 16 }}>
+        <div style={{ flex: 1 }}>
+          <h2 style={{ fontSize: 32, fontWeight: 800, fontFamily: FONTS.title, color: COLORS.text, letterSpacing: -0.5 }}>Profil</h2>
+        </div>
+        <img src="/princesse.png" alt="mascotte" style={{ width: 115, height: 115, objectFit: 'contain' }} />
+      </div>
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, padding: '16px 0 20px' }}>
         <div style={{ position: 'relative', display: 'inline-block' }}>
           <Avatar initials={userName.charAt(0).toUpperCase()} color={userColor} size="lg" photo={userPhoto} />
