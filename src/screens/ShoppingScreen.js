@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { COLORS, FONTS } from '../theme';
 import { Avatar, Card, Modal, Input, PrimaryButton } from '../components';
 
@@ -39,7 +39,8 @@ const INITIAL = [
 ];
 
 export default function ShoppingScreen({ userName = 'Sophie', userPhoto, userColor = COLORS.sophieColor }) {
-  const [items, setItems] = useState(INITIAL);
+  const [items, setItems] = useState(() => { try { const s = localStorage.getItem('shopping_items'); return s ? JSON.parse(s) : INITIAL; } catch { return INITIAL; } });
+  useEffect(() => localStorage.setItem('shopping_items', JSON.stringify(items)), [items]);
   const [filter, setFilter] = useState('buy');
   const [modal, setModal] = useState(false);
   const [newName, setNewName] = useState('');

@@ -191,6 +191,9 @@ export function CalendarScreen({ userName = 'Sophie', userColor = COLORS.sophieC
           }
           setAbsentModal(false); setSelDate(null); setSelMeal(null);
         }} />
+        <button onClick={() => { setAbsentModal(false); setSelDate(null); setSelMeal(null); }} style={{ width: '100%', padding: '12px', borderRadius: 14, border: `2px solid ${COLORS.border}`, background: 'transparent', color: COLORS.textMuted, fontSize: 14, fontWeight: 700, fontFamily: FONTS.body, cursor: 'pointer', marginTop: 6 }}>
+          Annuler
+        </button>
       </Modal>
     </div>
   );
