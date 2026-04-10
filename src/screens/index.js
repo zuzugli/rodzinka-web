@@ -50,7 +50,8 @@ export function CalendarScreen({ userName = 'Sophie', userColor = COLORS.sophieC
   const [absentModal, setAbsentModal] = useState(false);
   const [selDate, setSelDate] = useState(null);
   const [selDateEnd, setSelDateEnd] = useState(null);
-  const [selMeal, setSelMeal] = useState(null);
+  const [selMealStart, setSelMealStart] = useState(null);
+  const [selMealEnd, setSelMealEnd] = useState(null);
   const [calMonth, setCalMonth] = useState(() => { const d = new Date(); return { y: d.getFullYear(), m: d.getMonth() }; });
   const [absences, setAbsences] = useState(() => { try { const s = localStorage.getItem('cal_absences'); return s ? JSON.parse(s) : []; } catch { return []; } });
   useEffect(() => localStorage.setItem('cal_absences', JSON.stringify(absences)), [absences]);
@@ -134,10 +135,10 @@ export function CalendarScreen({ userName = 'Sophie', userColor = COLORS.sophieC
       </Modal>
 
       {/* Absent modal */}
-      <Modal visible={absentModal} onClose={() => { setAbsentModal(false); setSelDate(null); setSelDateEnd(null); setSelMeal(null); }} title="Me marquer absent·e">
+      <Modal visible={absentModal} onClose={() => { setAbsentModal(false); setSelDate(null); setSelDateEnd(null); setSelMealStart(null); setSelMealEnd(null); }} title="Me marquer absent·e">
         {/* Mini calendar */}
         <p style={{ fontSize: 12, color: COLORS.textMuted, fontFamily: FONTS.body, marginBottom: 10 }}>
-          {!selDate ? 'Sélectionne un jour ou une plage de dates' : !selDateEnd ? 'Sélectionne le jour de fin (ou confirme pour un seul jour)' : `Du ${selDate.toLocaleDateString('fr-FR')} au ${selDateEnd.toLocaleDateString('fr-FR')}`}
+          {!selDate ? '1. Sélectionne le jour de début' : !selDateEnd ? '2. Sélectionne le jour de fin (ou choisis le repas pour un seul jour)' : `Du ${selDate.toLocaleDateString('fr-FR')} au ${selDateEnd.toLocaleDateString('fr-FR')}`}
         </p>
         <div style={{ marginBottom: 14 }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
@@ -193,21 +194,55 @@ export function CalendarScreen({ userName = 'Sophie', userColor = COLORS.sophieC
         </div>
 
         {/* Meal choice */}
-        <p style={{ fontSize: 11, fontWeight: 700, color: !selDate ? COLORS.border : COLORS.textMuted, textTransform: 'uppercase', letterSpacing: 0.8, fontFamily: FONTS.body, marginBottom: 8 }}>Choisir le(s) repas</p>
-        <div style={{ display: 'flex', gap: 8, marginBottom: 12, opacity: !selDate ? 0.4 : 1 }}>
-          {MEALS.map((m, i) => (
-            <div key={i} onClick={() => selDate && setSelMeal(i)} style={{ flex: 1, textAlign: 'center', padding: '12px 8px', borderRadius: 14, border: `2px solid ${selMeal === i ? COLORS.purple : COLORS.border}`, background: selMeal === i ? COLORS.purpleLight : COLORS.surface, cursor: selDate ? 'pointer' : 'default' }}>
-              <span style={{ fontSize: 14, fontWeight: 700, fontFamily: FONTS.body, color: selMeal === i ? COLORS.purpleDark : COLORS.text }}>{m}</span>
-            </div>
-          ))}
+        <div style={{ opacity: !selDate ? 0.4 : 1, marginBottom: 12 }}>
+          {!selDateEnd ? (
+            /* Single day: Midi | Soir | Les deux */
+            <>
+              <p style={{ fontSize: 11, fontWeight: 700, color: !selDate ? COLORS.border : COLORS.textMuted, textTransform: 'uppercase', letterSpacing: 0.8, fontFamily: FONTS.body, marginBottom: 8 }}>Choisir le repas</p>
+              <div style={{ display: 'flex', gap: 8 }}>
+                {[['Midi', 0, 0], ['Soir', 1, 1], ['Les deux', 0, 1]].map(([label, ms, me]) => {
+                  const active = selMealStart === ms && selMealEnd === me;
+                  return (
+                    <div key={label} onClick={() => { if (selDate) { setSelMealStart(ms); setSelMealEnd(me); } }} style={{ flex: 1, textAlign: 'center', padding: '12px 4px', borderRadius: 14, border: `2px solid ${active ? COLORS.purple : COLORS.border}`, background: active ? COLORS.purpleLight : COLORS.surface, cursor: selDate ? 'pointer' : 'default' }}>
+                      <span style={{ fontSize: 13, fontWeight: 700, fontFamily: FONTS.body, color: active ? COLORS.purpleDark : COLORS.text }}>{label}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </>
+          ) : (
+            /* Range: début + fin */
+            <>
+              <p style={{ fontSize: 11, fontWeight: 700, color: COLORS.textMuted, textTransform: 'uppercase', letterSpacing: 0.8, fontFamily: FONTS.body, marginBottom: 6 }}>Repas de début</p>
+              <div style={{ display: 'flex', gap: 8, marginBottom: 10 }}>
+                {MEALS.map((m, i) => (
+                  <div key={i} onClick={() => setSelMealStart(i)} style={{ flex: 1, textAlign: 'center', padding: '10px 8px', borderRadius: 14, border: `2px solid ${selMealStart === i ? COLORS.purple : COLORS.border}`, background: selMealStart === i ? COLORS.purpleLight : COLORS.surface, cursor: 'pointer' }}>
+                    <span style={{ fontSize: 13, fontWeight: 700, fontFamily: FONTS.body, color: selMealStart === i ? COLORS.purpleDark : COLORS.text }}>{m}</span>
+                  </div>
+                ))}
+              </div>
+              <p style={{ fontSize: 11, fontWeight: 700, color: COLORS.textMuted, textTransform: 'uppercase', letterSpacing: 0.8, fontFamily: FONTS.body, marginBottom: 6 }}>Repas de fin</p>
+              <div style={{ display: 'flex', gap: 8 }}>
+                {MEALS.map((m, i) => (
+                  <div key={i} onClick={() => setSelMealEnd(i)} style={{ flex: 1, textAlign: 'center', padding: '10px 8px', borderRadius: 14, border: `2px solid ${selMealEnd === i ? COLORS.purple : COLORS.border}`, background: selMealEnd === i ? COLORS.purpleLight : COLORS.surface, cursor: 'pointer' }}>
+                    <span style={{ fontSize: 13, fontWeight: 700, fontFamily: FONTS.body, color: selMealEnd === i ? COLORS.purpleDark : COLORS.text }}>{m}</span>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
         </div>
         <PrimaryButton label="Confirmer l'absence" onClick={() => {
-          if (selDate && selMeal !== null) {
-            const end = selDateEnd || selDate;
+          if (selDate && selMealStart !== null && selMealEnd !== null) {
+            const endD = selDateEnd || selDate;
             const newAbsences = [];
             const cur = new Date(selDate);
-            while (cur <= end) {
-              newAbsences.push({ dateStr: cur.toDateString(), meal: selMeal });
+            while (cur.getTime() <= endD.getTime()) {
+              for (let m = 0; m <= 1; m++) {
+                const afterStart = cur.getTime() > selDate.getTime() || m >= selMealStart;
+                const beforeEnd = cur.getTime() < endD.getTime() || m <= selMealEnd;
+                if (afterStart && beforeEnd) newAbsences.push({ dateStr: cur.toDateString(), meal: m });
+              }
               cur.setDate(cur.getDate() + 1);
             }
             setAbsences(prev => {
@@ -215,9 +250,9 @@ export function CalendarScreen({ userName = 'Sophie', userColor = COLORS.sophieC
               return [...filtered, ...newAbsences];
             });
           }
-          setAbsentModal(false); setSelDate(null); setSelDateEnd(null); setSelMeal(null);
+          setAbsentModal(false); setSelDate(null); setSelDateEnd(null); setSelMealStart(null); setSelMealEnd(null);
         }} />
-        <button onClick={() => { setAbsentModal(false); setSelDate(null); setSelDateEnd(null); setSelMeal(null); }} style={{ width: '100%', padding: '12px', borderRadius: 14, border: `2px solid ${COLORS.border}`, background: 'transparent', color: COLORS.textMuted, fontSize: 14, fontWeight: 700, fontFamily: FONTS.body, cursor: 'pointer', marginTop: 6 }}>
+        <button onClick={() => { setAbsentModal(false); setSelDate(null); setSelDateEnd(null); setSelMealStart(null); setSelMealEnd(null); }} style={{ width: '100%', padding: '12px', borderRadius: 14, border: `2px solid ${COLORS.border}`, background: 'transparent', color: COLORS.textMuted, fontSize: 14, fontWeight: 700, fontFamily: FONTS.body, cursor: 'pointer', marginTop: 6 }}>
           Annuler
         </button>
       </Modal>
