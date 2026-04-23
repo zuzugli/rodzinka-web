@@ -109,7 +109,7 @@ export default function HomeScreen({ navigate, userName = 'Sophie', userPhoto, u
       {/* Semaine — glissable + jours cliquables */}
       <SectionLabel>Cette semaine</SectionLabel>
       <div onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd} style={{ touchAction: 'pan-y' }}>
-        <Card style={{ marginBottom: 0, borderRadius: dayDetail ? '20px 20px 0 0' : 20 }}>
+        <Card>
           <div style={{ display: 'flex', gap: 4 }}>
             {week.map((d, i) => {
               const isSelected = selectedDay && selectedDay.toDateString() === d.date.toDateString();
@@ -118,21 +118,17 @@ export default function HomeScreen({ navigate, userName = 'Sophie', userPhoto, u
               const cm = (isSelected || d.isToday) ? 'rgba(255,255,255,0.75)' : COLORS.textMuted;
               return (
                 <button key={i}
-                  onClick={() => setSelectedDay(prev =>
-                    prev && prev.toDateString() === d.date.toDateString() ? null : d.date
-                  )}
+                  onClick={() => setSelectedDay(d.date)}
                   onTouchEnd={e => {
                     if (Math.abs(touchStartX - e.changedTouches[0].clientX) < 10) {
                       e.stopPropagation();
-                      setSelectedDay(prev =>
-                        prev && prev.toDateString() === d.date.toDateString() ? null : d.date
-                      );
+                      setSelectedDay(d.date);
                     }
                   }}
                   style={{
-                  flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center',
-                  gap: 4, padding: '10px 2px', borderRadius: 16, border: 'none', cursor: 'pointer', background: bg,
-                }}>
+                    flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center',
+                    gap: 4, padding: '10px 2px', borderRadius: 16, border: 'none', cursor: 'pointer', background: bg,
+                  }}>
                   <span style={{ fontSize: 11, fontWeight: 700, fontFamily: FONTS.body, textTransform: 'uppercase', color: cm }}>{d.name}</span>
                   <span style={{ fontSize: 19, fontWeight: 800, fontFamily: FONTS.title, color: c }}>{d.num}</span>
                   <span style={{ fontSize: 10, fontWeight: 600, fontFamily: FONTS.body, color: cm }}>{d.month}</span>
@@ -141,39 +137,63 @@ export default function HomeScreen({ navigate, userName = 'Sophie', userPhoto, u
             })}
           </div>
         </Card>
+      </div>
 
-        {/* Détail du jour sélectionné */}
-        {dayDetail && (
-          <div style={{
-            background: COLORS.surface, border: `1px solid ${COLORS.border}`, borderTop: 'none',
-            borderRadius: '0 0 20px 20px', padding: '14px 16px 16px', marginBottom: 10,
+      {/* Popup jour */}
+      {dayDetail && (
+        <div onClick={() => setSelectedDay(null)} style={{
+          position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', zIndex: 200,
+          display: 'flex', alignItems: 'flex-end',
+        }}>
+          <div onClick={e => e.stopPropagation()} style={{
+            background: '#fff', borderRadius: '28px 28px 0 0', padding: 24, width: '100%',
           }}>
+            <div style={{ width: 36, height: 4, background: COLORS.border, borderRadius: 2, margin: '0 auto 20px' }} />
+            <p style={{ fontSize: 18, fontWeight: 800, fontFamily: FONTS.title, color: COLORS.text, marginBottom: 16 }}>
+              {selectedDay.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })}
+            </p>
+
             {dayDetail.rappels.length === 0 && dayDetail.absences.length === 0 ? (
-              <p style={{ fontSize: 13, color: COLORS.textMuted, fontFamily: FONTS.body }}>Rien ce jour-là</p>
+              <p style={{ fontSize: 14, color: COLORS.textMuted, fontFamily: FONTS.body, padding: '8px 0 16px' }}>Rien ce jour-là</p>
             ) : (
               <>
-                {dayDetail.rappels.map(r => (
-                  <div key={r.id} style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
-                    <div style={{ width: 8, height: 8, borderRadius: 4, background: CAT_DOT[r.cat] || '#AB47BC', flexShrink: 0 }} />
-                    <div>
-                      <span style={{ fontSize: 13, fontWeight: 700, color: COLORS.text, fontFamily: FONTS.body }}>{r.title}</span>
-                      {r.meta ? <span style={{ fontSize: 11, color: COLORS.textMuted, fontFamily: FONTS.body, marginLeft: 6 }}>{r.meta}</span> : null}
-                    </div>
-                  </div>
-                ))}
+                {dayDetail.rappels.length > 0 && (
+                  <>
+                    <p style={{ fontSize: 11, fontWeight: 700, color: COLORS.textMuted, textTransform: 'uppercase', letterSpacing: 0.8, fontFamily: FONTS.body, marginBottom: 10 }}>Rappels</p>
+                    {dayDetail.rappels.map(r => (
+                      <div key={r.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 14px', borderRadius: 14, background: COLORS.surface, marginBottom: 8 }}>
+                        <div style={{ width: 10, height: 10, borderRadius: 5, background: CAT_DOT[r.cat] || '#AB47BC', flexShrink: 0 }} />
+                        <div style={{ flex: 1 }}>
+                          <p style={{ fontSize: 14, fontWeight: 700, color: COLORS.text, fontFamily: FONTS.body }}>{r.title}</p>
+                          {r.meta && <p style={{ fontSize: 11, color: COLORS.textMuted, fontFamily: FONTS.body, marginTop: 2 }}>{r.meta}</p>}
+                        </div>
+                      </div>
+                    ))}
+                  </>
+                )}
                 {dayDetail.absences.length > 0 && (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <div style={{ width: 8, height: 8, borderRadius: 4, background: COLORS.pinkMid, flexShrink: 0 }} />
-                    <span style={{ fontSize: 13, fontWeight: 700, color: COLORS.text, fontFamily: FONTS.body }}>
-                      Absent·e — {dayDetail.absences.map(a => MEALS_LABEL[a.meal]).join(' & ')}
-                    </span>
-                  </div>
+                  <>
+                    <p style={{ fontSize: 11, fontWeight: 700, color: COLORS.textMuted, textTransform: 'uppercase', letterSpacing: 0.8, fontFamily: FONTS.body, margin: '12px 0 10px' }}>Absences repas</p>
+                    {dayDetail.absences.map((a, i) => (
+                      <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 14px', borderRadius: 14, background: '#FFF0F5', marginBottom: 8 }}>
+                        <Avatar initials={userName.charAt(0).toUpperCase()} color={userColor} size="sm" photo={userPhoto} />
+                        <p style={{ fontSize: 14, fontWeight: 700, color: COLORS.text, fontFamily: FONTS.body }}>
+                          {userName} — {MEALS_LABEL[a.meal]}
+                        </p>
+                      </div>
+                    ))}
+                  </>
                 )}
               </>
             )}
+            <button onClick={() => setSelectedDay(null)} style={{
+              width: '100%', padding: 14, borderRadius: 14, border: `2px solid ${COLORS.border}`,
+              background: 'transparent', color: COLORS.textMuted, fontSize: 14, fontWeight: 700,
+              fontFamily: FONTS.body, cursor: 'pointer', marginTop: 8,
+            }}>Fermer</button>
           </div>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* Rappels de la semaine */}
       <SectionLabel>Rappels de la semaine</SectionLabel>
