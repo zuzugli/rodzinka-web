@@ -83,6 +83,7 @@ export default function HomeScreen({ navigate, userName = 'Sophie', userPhoto, u
     if (touchStartX === null) return;
     const diff = touchStartX - e.changedTouches[0].clientX;
     if (Math.abs(diff) > 50) {
+      e.preventDefault();
       setWeekOffset(o => o + (diff > 0 ? 1 : -1));
       setSelectedDay(null);
     }
@@ -107,7 +108,7 @@ export default function HomeScreen({ navigate, userName = 'Sophie', userPhoto, u
 
       {/* Semaine — glissable + jours cliquables */}
       <SectionLabel>Cette semaine</SectionLabel>
-      <div onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
+      <div onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd} style={{ touchAction: 'pan-y' }}>
         <Card style={{ marginBottom: 0, borderRadius: dayDetail ? '20px 20px 0 0' : 20 }}>
           <div style={{ display: 'flex', gap: 4 }}>
             {week.map((d, i) => {
@@ -116,9 +117,19 @@ export default function HomeScreen({ navigate, userName = 'Sophie', userPhoto, u
               const c  = (isSelected || d.isToday) ? '#fff' : COLORS.text;
               const cm = (isSelected || d.isToday) ? 'rgba(255,255,255,0.75)' : COLORS.textMuted;
               return (
-                <button key={i} onClick={() => setSelectedDay(prev =>
-                  prev && prev.toDateString() === d.date.toDateString() ? null : d.date
-                )} style={{
+                <button key={i}
+                  onClick={() => setSelectedDay(prev =>
+                    prev && prev.toDateString() === d.date.toDateString() ? null : d.date
+                  )}
+                  onTouchEnd={e => {
+                    if (Math.abs(touchStartX - e.changedTouches[0].clientX) < 10) {
+                      e.stopPropagation();
+                      setSelectedDay(prev =>
+                        prev && prev.toDateString() === d.date.toDateString() ? null : d.date
+                      );
+                    }
+                  }}
+                  style={{
                   flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center',
                   gap: 4, padding: '10px 2px', borderRadius: 16, border: 'none', cursor: 'pointer', background: bg,
                 }}>
