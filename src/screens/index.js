@@ -54,26 +54,30 @@ export function CalendarScreen({ userName = 'Sophie', userColor = COLORS.sophieC
   const [selMealEnd, setSelMealEnd] = useState(null);
   const [calMonth, setCalMonth] = useState(() => { const d = new Date(); return { y: d.getFullYear(), m: d.getMonth() }; });
   const [absences, setAbsences] = useState(() => { try { const s = localStorage.getItem('cal_absences'); return s ? JSON.parse(s) : []; } catch { return []; } });
+  const [touchStartX, setTouchStartX] = useState(null);
   useEffect(() => localStorage.setItem('cal_absences', JSON.stringify(absences)), [absences]);
   const week = getWeek(weekOffset);
+
+  function handleTouchStart(e) { setTouchStartX(e.touches[0].clientX); }
+  function handleTouchEnd(e) {
+    if (touchStartX === null) return;
+    const diff = touchStartX - e.changedTouches[0].clientX;
+    if (Math.abs(diff) > 50) setWeekOffset(o => o + (diff > 0 ? 1 : -1));
+    setTouchStartX(null);
+  }
 
   return (
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column', position: 'relative' }}>
       <div style={{ overflowY: 'auto', flex: 1, padding: '8px 20px 24px' }}>
         <div style={{ display: 'flex', alignItems: 'center', marginBottom: 4 }}>
           <div style={{ flex: 1 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <h2 style={{ fontSize: 32, fontWeight: 800, fontFamily: FONTS.title, color: COLORS.text, letterSpacing: -0.5 }}>Repas</h2>
-              <div style={{ display: 'flex', gap: 8 }}>
-                <button onClick={() => setWeekOffset(o => o - 1)} style={{ width: 32, height: 32, borderRadius: 10, border: 'none', background: COLORS.text, cursor: 'pointer', fontSize: 18, fontWeight: 800, display:'flex', alignItems:'center', justifyContent:'center', color: '#fff', lineHeight: 1 }}>‹</button>
-                <button onClick={() => setWeekOffset(o => o + 1)} style={{ width: 32, height: 32, borderRadius: 10, border: 'none', background: COLORS.text, cursor: 'pointer', fontSize: 18, fontWeight: 800, display:'flex', alignItems:'center', justifyContent:'center', color: '#fff', lineHeight: 1 }}>›</button>
-              </div>
-            </div>
+            <h2 style={{ fontSize: 32, fontWeight: 800, fontFamily: FONTS.title, color: COLORS.text, letterSpacing: -0.5 }}>Repas</h2>
             <p style={{ fontSize: 13, fontFamily: FONTS.body, color: COLORS.textMuted, marginTop: 4 }}>{formatRange(week)}</p>
           </div>
           <img src="/glouton.png" alt="mascotte" style={{ width: 80, height: 80, objectFit: 'contain' }} />
         </div>
 
+        <div onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd} style={{ touchAction: 'pan-y' }}>
         <Card style={{ padding: 12, overflowX: 'auto' }}>
           <div style={{ minWidth: 420 }}>
             {/* Day headers */}
@@ -105,6 +109,7 @@ export function CalendarScreen({ userName = 'Sophie', userColor = COLORS.sophieC
             ))}
           </div>
         </Card>
+        </div>
         <PrimaryButton label="Me marquer absent·e…" onClick={() => setAbsentModal(true)} />
       </div>
 
