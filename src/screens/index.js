@@ -55,6 +55,8 @@ export function CalendarScreen({ userName = 'Sophie', userColor = COLORS.sophieC
   const [calMonth, setCalMonth] = useState(() => { const d = new Date(); return { y: d.getFullYear(), m: d.getMonth() }; });
   const [absences, setAbsences] = useState(() => { try { const s = localStorage.getItem('cal_absences'); return s ? JSON.parse(s) : []; } catch { return []; } });
   const [touchStartX, setTouchStartX] = useState(null);
+  const [slideDir, setSlideDir] = useState(null); // 'left' | 'right'
+  const [animKey, setAnimKey] = useState(0);
   useEffect(() => localStorage.setItem('cal_absences', JSON.stringify(absences)), [absences]);
   const week = getWeek(weekOffset);
 
@@ -62,7 +64,12 @@ export function CalendarScreen({ userName = 'Sophie', userColor = COLORS.sophieC
   function handleTouchEnd(e) {
     if (touchStartX === null) return;
     const diff = touchStartX - e.changedTouches[0].clientX;
-    if (Math.abs(diff) > 50) setWeekOffset(o => o + (diff > 0 ? 1 : -1));
+    if (Math.abs(diff) > 50) {
+      const dir = diff > 0 ? 'left' : 'right';
+      setSlideDir(dir);
+      setAnimKey(k => k + 1);
+      setWeekOffset(o => o + (diff > 0 ? 1 : -1));
+    }
     setTouchStartX(null);
   }
 
@@ -77,9 +84,13 @@ export function CalendarScreen({ userName = 'Sophie', userColor = COLORS.sophieC
           <img src="/glouton.png" alt="mascotte" style={{ width: 80, height: 80, objectFit: 'contain' }} />
         </div>
 
+        <style>{`
+          @keyframes slideFromRight { from { opacity: 0; transform: translateX(40px); } to { opacity: 1; transform: translateX(0); } }
+          @keyframes slideFromLeft  { from { opacity: 0; transform: translateX(-40px); } to { opacity: 1; transform: translateX(0); } }
+        `}</style>
         <div onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd} style={{ touchAction: 'pan-y' }}>
         <Card style={{ padding: 12, overflowX: 'auto' }}>
-          <div style={{ minWidth: 420 }}>
+          <div key={animKey} style={{ minWidth: 420, animation: slideDir ? `${slideDir === 'left' ? 'slideFromRight' : 'slideFromLeft'} 0.25s ease` : 'none' }}>
             {/* Day headers */}
             <div style={{ display: 'grid', gridTemplateColumns: '40px repeat(7, 1fr)', gap: 4, marginBottom: 8 }}>
               <div />
