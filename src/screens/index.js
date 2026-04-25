@@ -131,8 +131,9 @@ export function CalendarScreen({ userName = 'Sophie', userColor = COLORS.sophieC
           const todayLabel = today.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
           return (
             <>
-              <div style={{ fontSize: 11, fontWeight: 700, color: COLORS.textMuted, textTransform: 'uppercase', letterSpacing: 0.8, margin: '16px 0 10px', fontFamily: FONTS.body }}>
-                Aujourd'hui · {todayLabel}
+              <div style={{ marginTop: 20, marginBottom: 6 }}>
+                <p style={{ fontSize: 18, fontWeight: 800, fontFamily: FONTS.title, color: COLORS.text }}>Absences du jour</p>
+                <p style={{ fontSize: 13, fontFamily: FONTS.body, color: COLORS.textMuted, marginTop: 2 }}>{todayLabel}</p>
               </div>
               <Card style={{ padding: '0 16px' }}>
                 {MEALS.map((meal, mi) => {
