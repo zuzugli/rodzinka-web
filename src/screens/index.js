@@ -426,7 +426,7 @@ export function RemindersScreen({ userName = 'Sophie', userColor = COLORS.sophie
     if (isNaN(dateObj)) return;
     const recurLabel = newRecur === 'hebdo' ? ' · Hebdo' : newRecur === 'annuel' ? ' · Annuel' : '';
     const meta = dateObj.toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' }) + recurLabel;
-    setReminders(prev => [...prev, { id: Date.now(), title: newTitle.trim(), meta, dateStr: dateObj.toDateString(), cat: newCat, recur: newRecur, members: [MEMBERS[0].initials] }]);
+    setReminders(prev => [...prev, { id: Date.now(), title: newTitle.trim(), meta, dateStr: dateObj.toDateString(), cat: newCat, recur: newRecur, members: [MEMBERS[0].initials], createdBy: MEMBERS[0].initials }]);
     setNewTitle(''); setNewDay(''); setNewMonth(''); setNewYear(String(new Date().getFullYear())); setNewCat('autre'); setNewRecur('none'); setModal(false);
   }
 
@@ -481,9 +481,11 @@ export function RemindersScreen({ userName = 'Sophie', userColor = COLORS.sophie
             );
           })}
           <PrimaryButton label="Fermer" onClick={() => setSelectedReminder(null)} />
-          <button onClick={() => { setReminders(prev => prev.filter(r => r.id !== selectedReminder.id)); setSelectedReminder(null); }} style={{ width: '100%', padding: '12px', borderRadius: 14, border: `2px solid ${COLORS.pinkDark}`, background: 'transparent', color: COLORS.pinkDark, fontSize: 14, fontWeight: 700, fontFamily: FONTS.body, cursor: 'pointer', marginTop: 6 }}>
-            Supprimer ce rappel
-          </button>
+          {(!selectedReminder.createdBy || selectedReminder.createdBy === MEMBERS[0].initials) && (
+            <button onClick={() => { setReminders(prev => prev.filter(r => r.id !== selectedReminder.id)); setSelectedReminder(null); }} style={{ width: '100%', padding: '12px', borderRadius: 14, border: `2px solid ${COLORS.pinkDark}`, background: 'transparent', color: COLORS.pinkDark, fontSize: 14, fontWeight: 700, fontFamily: FONTS.body, cursor: 'pointer', marginTop: 6 }}>
+              Supprimer ce rappel
+            </button>
+          )}
         </>}
       </Modal>
 
