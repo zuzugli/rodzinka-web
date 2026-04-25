@@ -66,7 +66,7 @@ export default function App() {
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100dvh', background: '#fff' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', background: '#fff' }}>
       <div style={{ height: 44, background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 24px', flexShrink: 0 }}>
         <span style={{ fontSize: 15, fontWeight: 700, fontFamily: FONTS.body }}>9:41</span>
         <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
@@ -79,7 +79,7 @@ export default function App() {
         {screens[activeTab]}
       </div>
 
-      <div style={{ background: '#fff', borderTop: `1px solid ${COLORS.border}`, display: 'flex', alignItems: 'center', justifyContent: 'space-around', padding: `0 4px calc(12px + env(safe-area-inset-bottom))`, flexShrink: 0, paddingTop: 8 }}>
+      <div style={{ height: 80, background: '#fff', borderTop: `1px solid ${COLORS.border}`, display: 'flex', alignItems: 'center', justifyContent: 'space-around', padding: '0 4px 12px', flexShrink: 0 }}>
         {TABS.map(({ id, label, Icon }) => {
           const active = activeTab === id;
           const color = active ? COLORS.purpleDark : COLORS.textMuted;
