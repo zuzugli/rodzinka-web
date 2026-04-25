@@ -89,29 +89,28 @@ export function CalendarScreen({ userName = 'Sophie', userColor = COLORS.sophieC
           @keyframes slideFromLeft  { from { opacity: 0; transform: translateX(-40px); } to { opacity: 1; transform: translateX(0); } }
         `}</style>
         <div onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd} style={{ touchAction: 'pan-y' }}>
-        <Card style={{ padding: 12, overflowX: 'auto' }}>
-          <div key={animKey} style={{ minWidth: 420, animation: slideDir ? `${slideDir === 'left' ? 'slideFromRight' : 'slideFromLeft'} 0.25s ease` : 'none' }}>
+        <Card style={{ padding: 8 }}>
+          <div key={animKey} style={{ animation: slideDir ? `${slideDir === 'left' ? 'slideFromRight' : 'slideFromLeft'} 0.25s ease` : 'none' }}>
             {/* Day headers */}
-            <div style={{ display: 'grid', gridTemplateColumns: '40px repeat(7, 1fr)', gap: 4, marginBottom: 8 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '28px repeat(7, 1fr)', gap: 3, marginBottom: 6 }}>
               <div />
               {week.map(({ dayIndex, date, isToday }) => (
-                <div key={dayIndex} style={{ textAlign: 'center', padding: '6px 2px', borderRadius: 10, background: isToday ? COLORS.purple : 'transparent' }}>
-                  <div style={{ fontSize: 10, fontWeight: 700, fontFamily: FONTS.body, textTransform: 'uppercase', color: isToday ? '#fff' : COLORS.textMuted }}>{DAYS[dayIndex]}</div>
-                  <div style={{ fontSize: 15, fontWeight: 800, fontFamily: FONTS.title, color: isToday ? '#fff' : COLORS.text }}>{date.getDate()}</div>
+                <div key={dayIndex} style={{ textAlign: 'center', padding: '5px 1px', borderRadius: 10, background: isToday ? COLORS.purple : 'transparent' }}>
+                  <div style={{ fontSize: 9, fontWeight: 700, fontFamily: FONTS.body, textTransform: 'uppercase', color: isToday ? '#fff' : COLORS.textMuted }}>{DAYS[dayIndex]}</div>
+                  <div style={{ fontSize: 14, fontWeight: 800, fontFamily: FONTS.title, color: isToday ? '#fff' : COLORS.text }}>{date.getDate()}</div>
                 </div>
               ))}
             </div>
-            {/* Meal rows */}
             {MEALS.map((meal, mi) => (
-              <div key={mi} style={{ display: 'grid', gridTemplateColumns: '40px repeat(7, 1fr)', gap: 4, marginBottom: 6, alignItems: 'stretch' }}>
-                <div style={{ fontSize: 9, fontWeight: 700, fontFamily: FONTS.body, color: COLORS.textMuted, textTransform: 'uppercase', writingMode: 'vertical-rl', transform: 'rotate(180deg)', textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{meal}</div>
+              <div key={mi} style={{ display: 'grid', gridTemplateColumns: '28px repeat(7, 1fr)', gap: 3, marginBottom: 4, alignItems: 'stretch' }}>
+                <div style={{ fontSize: 8, fontWeight: 700, fontFamily: FONTS.body, color: COLORS.textMuted, textTransform: 'uppercase', writingMode: 'vertical-rl', transform: 'rotate(180deg)', textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{meal}</div>
                 {week.map(({ dayIndex, isToday }) => {
                   const bg = isToday ? COLORS.purpleLight : COLORS.surface;
                   const cellDate = week[dayIndex].date;
                   const userAbsent = absences.some(a => a.dateStr === cellDate.toDateString() && a.meal === mi);
                   const allAbsents = userAbsent ? [MEMBERS[0]] : [];
                   return (
-                    <div key={dayIndex} onClick={() => setSelected({ d: dayIndex, m: mi, date: cellDate })} style={{ background: bg, borderRadius: 12, padding: '10px 4px', minHeight: 80, border: `1.5px solid ${isToday ? COLORS.purple : COLORS.border}`, cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 3 }}>
+                    <div key={dayIndex} onClick={() => setSelected({ d: dayIndex, m: mi, date: cellDate })} style={{ background: bg, borderRadius: 10, padding: '6px 2px', minHeight: 60, border: `1.5px solid ${isToday ? COLORS.purple : COLORS.border}`, cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2 }}>
                       {allAbsents.map((mb, idx) => <Avatar key={idx} initials={mb.display || mb.initials} color={mb.color} size="xs" photo={mb.photo} />)}
                     </div>
                   );
