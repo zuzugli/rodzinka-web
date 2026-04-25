@@ -398,7 +398,9 @@ export function RemindersScreen({ userName = 'Sophie', userColor = COLORS.sophie
   const [modal, setModal] = useState(false);
   const [selectedReminder, setSelectedReminder] = useState(null);
   const [newTitle, setNewTitle] = useState('');
-  const [newDate, setNewDate] = useState('');
+  const [newDay, setNewDay] = useState('');
+  const [newMonth, setNewMonth] = useState('');
+  const [newYear, setNewYear] = useState(String(new Date().getFullYear()));
   const [newCat, setNewCat] = useState('autre');
   const [newRecur, setNewRecur] = useState('none');
 
@@ -419,15 +421,13 @@ export function RemindersScreen({ userName = 'Sophie', userColor = COLORS.sophie
   }
 
   function addReminder() {
-    if (!newTitle.trim() || !newDate.trim()) return;
-    // Forcer l'interprétation locale (YYYY-MM-DD → pas UTC)
-    const [y, m, d] = newDate.split('-').map(Number);
-    const dateObj = new Date(y, m - 1, d);
+    if (!newTitle.trim() || !newDay || !newMonth) return;
+    const dateObj = new Date(Number(newYear), Number(newMonth) - 1, Number(newDay));
     if (isNaN(dateObj)) return;
     const recurLabel = newRecur === 'hebdo' ? ' · Hebdo' : newRecur === 'annuel' ? ' · Annuel' : '';
     const meta = dateObj.toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' }) + recurLabel;
     setReminders(prev => [...prev, { id: Date.now(), title: newTitle.trim(), meta, dateStr: dateObj.toDateString(), cat: newCat, recur: newRecur, members: [MEMBERS[0].initials] }]);
-    setNewTitle(''); setNewDate(''); setNewCat('autre'); setNewRecur('none'); setModal(false);
+    setNewTitle(''); setNewDay(''); setNewMonth(''); setNewYear(String(new Date().getFullYear())); setNewCat('autre'); setNewRecur('none'); setModal(false);
   }
 
   return (
@@ -489,7 +489,20 @@ export function RemindersScreen({ userName = 'Sophie', userColor = COLORS.sophie
 
       <Modal visible={modal} onClose={() => setModal(false)} title="Nouveau rappel">
         <input value={newTitle} onChange={e => setNewTitle(e.target.value)} placeholder="Titre…" style={{ width: '100%', padding: '13px 16px', border: `2px solid ${COLORS.border}`, borderRadius: 14, fontSize: 15, fontFamily: FONTS.body, marginBottom: 10, outline: 'none', boxSizing: 'border-box' }} />
-        <input value={newDate} onChange={e => setNewDate(e.target.value)} type="date" style={{ width: '100%', padding: '13px 16px', border: `2px solid ${COLORS.border}`, borderRadius: 14, fontSize: 15, fontFamily: FONTS.body, marginBottom: 10, outline: 'none', boxSizing: 'border-box' }} />
+        <p style={{ fontSize: 11, fontWeight: 700, color: COLORS.textMuted, textTransform: 'uppercase', letterSpacing: 0.8, fontFamily: FONTS.body, marginBottom: 8 }}>Date</p>
+        <div style={{ display: 'flex', gap: 8, marginBottom: 10 }}>
+          <select value={newDay} onChange={e => setNewDay(e.target.value)} style={{ flex: 1, padding: '12px 8px', border: `2px solid ${COLORS.border}`, borderRadius: 14, fontSize: 15, fontFamily: FONTS.body, outline: 'none', background: '#fff' }}>
+            <option value="">Jour</option>
+            {Array.from({length:31},(_,i)=>i+1).map(d => <option key={d} value={d}>{d}</option>)}
+          </select>
+          <select value={newMonth} onChange={e => setNewMonth(e.target.value)} style={{ flex: 2, padding: '12px 8px', border: `2px solid ${COLORS.border}`, borderRadius: 14, fontSize: 15, fontFamily: FONTS.body, outline: 'none', background: '#fff' }}>
+            <option value="">Mois</option>
+            {['Jan','Fév','Mar','Avr','Mai','Juin','Juil','Aoû','Sep','Oct','Nov','Déc'].map((m,i) => <option key={i} value={i+1}>{m}</option>)}
+          </select>
+          <select value={newYear} onChange={e => setNewYear(e.target.value)} style={{ flex: 1, padding: '12px 8px', border: `2px solid ${COLORS.border}`, borderRadius: 14, fontSize: 15, fontFamily: FONTS.body, outline: 'none', background: '#fff' }}>
+            {Array.from({length:5},(_,i)=>new Date().getFullYear()+i).map(y => <option key={y} value={y}>{y}</option>)}
+          </select>
+        </div>
         <p style={{ fontSize: 11, fontWeight: 700, color: COLORS.textMuted, textTransform: 'uppercase', letterSpacing: 0.8, fontFamily: FONTS.body, marginBottom: 8 }}>Catégorie</p>
         <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
           {[['tâche', 'chore'], ['anniversaire', 'birthday'], ['autre', 'autre']].map(([l, k]) => (
