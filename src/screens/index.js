@@ -540,6 +540,8 @@ export function ProfileScreen({ userName = 'Sophie', setUserName, userPhoto, set
 
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js');
+    navigator.serviceWorker.getRegistrations().then(regs => {
+      regs.forEach(r => r.unregister());
+    });
   });
 }
