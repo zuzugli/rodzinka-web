@@ -79,7 +79,7 @@ export function CalendarScreen({ userName = 'Sophie', userColor = COLORS.sophieC
         <div style={{ display: 'flex', alignItems: 'center', marginBottom: 4 }}>
           <div style={{ flex: 1 }}>
             <h2 style={{ fontSize: 32, fontWeight: 800, fontFamily: FONTS.title, color: COLORS.text, letterSpacing: -0.5 }}>Repas</h2>
-            <p style={{ fontSize: 13, fontFamily: FONTS.body, color: COLORS.textMuted, marginTop: 4 }}>{formatRange(week)}</p>
+            <p style={{ fontSize: 15, fontWeight: 700, fontFamily: FONTS.body, color: COLORS.purple, marginTop: 2 }}>{formatRange(week)}</p>
           </div>
           <img src="/glouton.png" alt="mascotte" style={{ width: 80, height: 80, objectFit: 'contain' }} />
         </div>
@@ -98,6 +98,7 @@ export function CalendarScreen({ userName = 'Sophie', userColor = COLORS.sophieC
                 <div key={dayIndex} style={{ textAlign: 'center', padding: '5px 1px', borderRadius: 10, background: isToday ? COLORS.purple : 'transparent' }}>
                   <div style={{ fontSize: 9, fontWeight: 700, fontFamily: FONTS.body, textTransform: 'uppercase', color: isToday ? '#fff' : COLORS.textMuted }}>{DAYS[dayIndex]}</div>
                   <div style={{ fontSize: 14, fontWeight: 800, fontFamily: FONTS.title, color: isToday ? '#fff' : COLORS.text }}>{date.getDate()}</div>
+                  <div style={{ fontSize: 8, fontWeight: 600, fontFamily: FONTS.body, color: isToday ? 'rgba(255,255,255,0.8)' : COLORS.textMuted }}>{MONTH_NAMES[date.getMonth()]}</div>
                 </div>
               ))}
             </div>
