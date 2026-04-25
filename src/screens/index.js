@@ -152,21 +152,12 @@ export function CalendarScreen({ userName = 'Sophie', userColor = COLORS.sophieC
                       </div>
                       {absentMembers.length > 0 && (
                         <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-                          {absentMembers.map(m => {
-                            const isMe = m === MEMBERS[0];
-                            return (
-                              <div key={m.initials} style={{ display: 'flex', alignItems: 'center', gap: 8, background: COLORS.pink, borderRadius: 12, padding: '6px 12px 6px 6px' }}>
-                                <Avatar initials={m.display || m.initials} color={m.color} size="xs" photo={m.photo} />
-                                <span style={{ fontSize: 13, fontWeight: 700, fontFamily: FONTS.body, color: COLORS.pinkDark }}>{m.name}</span>
-                                {isMe && (
-                                  <button onClick={() => setAbsences(prev => prev.filter(a => !(a.dateStr === todayStr && a.meal === mi && !a.memberInitials)))}
-                                    style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '0 0 0 4px', display: 'flex', alignItems: 'center' }}>
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={COLORS.pinkDark} strokeWidth="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                                  </button>
-                                )}
-                              </div>
-                            );
-                          })}
+                          {absentMembers.map(m => (
+                            <div key={m.initials} style={{ display: 'flex', alignItems: 'center', gap: 8, background: COLORS.pink, borderRadius: 12, padding: '6px 12px 6px 6px' }}>
+                              <Avatar initials={m.display || m.initials} color={m.color} size="xs" photo={m.photo} />
+                              <span style={{ fontSize: 13, fontWeight: 700, fontFamily: FONTS.body, color: COLORS.pinkDark }}>{m.name}</span>
+                            </div>
+                          ))}
                         </div>
                       )}
                     </div>
@@ -193,9 +184,9 @@ export function CalendarScreen({ userName = 'Sophie', userColor = COLORS.sophieC
             </div>
           );
         })}
-        {selected && absences.some(a => a.dateStr === selected.date?.toDateString() && a.meal === selected.m && !a.memberInitials) && (
+        {selected && absences.some(a => a.dateStr === selected.date?.toDateString() && a.meal === selected.m) && (
           <button onClick={() => {
-            setAbsences(prev => prev.filter(a => !(a.dateStr === selected.date?.toDateString() && a.meal === selected.m && !a.memberInitials)));
+            setAbsences(prev => prev.filter(a => !(a.dateStr === selected.date?.toDateString() && a.meal === selected.m)));
             setSelected(null);
           }} style={{ width: '100%', padding: '12px', borderRadius: 14, border: `2px solid ${COLORS.pinkDark}`, background: 'transparent', color: COLORS.pinkDark, fontSize: 14, fontWeight: 700, fontFamily: FONTS.body, cursor: 'pointer', marginTop: 8 }}>
             Annuler mon absence
