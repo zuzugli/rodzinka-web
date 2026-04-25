@@ -132,29 +132,49 @@ export function CalendarScreen({ userName = 'Sophie', userColor = COLORS.sophieC
               <div style={{ fontSize: 11, fontWeight: 700, color: COLORS.textMuted, textTransform: 'uppercase', letterSpacing: 0.8, margin: '16px 0 10px', fontFamily: FONTS.body }}>
                 Aujourd'hui · {todayLabel}
               </div>
-              <Card style={{ padding: '0 16px' }}>
-                {MEALS.map((meal, mi) => {
-                  const absentees = absences.filter(a => a.dateStr === todayStr && a.meal === mi);
-                  return (
-                    <div key={mi} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 0', borderBottom: mi === 0 ? `1px solid ${COLORS.border}` : 'none' }}>
-                      <div style={{ width: 38, height: 38, borderRadius: 12, background: mi === 0 ? COLORS.purpleLight : COLORS.orange, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                        <span style={{ fontSize: 18 }}>{mi === 0 ? '☀️' : '🌙'}</span>
+              {MEALS.map((meal, mi) => {
+                const absentMembers = MEMBERS.filter(m =>
+                  absences.some(a => a.dateStr === todayStr && a.meal === mi && a.memberInitials === m.initials)
+                    || (m === MEMBERS[0] && absences.some(a => a.dateStr === todayStr && a.meal === mi && !a.memberInitials))
+                );
+                const presentMembers = MEMBERS.filter(m => !absentMembers.includes(m));
+                return (
+                  <Card key={mi} style={{ padding: '12px 16px', marginBottom: 8 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+                      <div style={{ width: 32, height: 32, borderRadius: 10, background: mi === 0 ? COLORS.purpleLight : '#FFF0D0', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                        <span style={{ fontSize: 16 }}>{mi === 0 ? '☀️' : '🌙'}</span>
                       </div>
-                      <div style={{ flex: 1 }}>
-                        <p style={{ fontSize: 14, fontWeight: 700, fontFamily: FONTS.body, color: COLORS.text }}>{meal}</p>
-                        {absentees.length === 0
-                          ? <p style={{ fontSize: 12, color: COLORS.greenMid, fontFamily: FONTS.body, marginTop: 2, fontWeight: 600 }}>Tout le monde présent</p>
-                          : <p style={{ fontSize: 12, color: COLORS.pinkDark, fontFamily: FONTS.body, marginTop: 2, fontWeight: 600 }}>{MEMBERS[0].name} absent·e</p>
-                        }
-                      </div>
-                      {absentees.length === 0
-                        ? <div style={{ display: 'flex', gap: 4 }}>{MEMBERS.map((m, i) => <Avatar key={i} initials={m.display || m.initials} color={m.color} size="xs" photo={m.photo} />)}</div>
-                        : <Avatar initials={MEMBERS[0].display || MEMBERS[0].initials} color={COLORS.border} size="xs" />
-                      }
+                      <span style={{ fontSize: 15, fontWeight: 800, fontFamily: FONTS.title, color: COLORS.text }}>{meal}</span>
                     </div>
-                  );
-                })}
-              </Card>
+                    {presentMembers.length > 0 && (
+                      <div style={{ marginBottom: absentMembers.length > 0 ? 10 : 0 }}>
+                        <p style={{ fontSize: 10, fontWeight: 700, color: COLORS.greenMid, textTransform: 'uppercase', letterSpacing: 0.6, fontFamily: FONTS.body, marginBottom: 8 }}>Présent·e·s</p>
+                        <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+                          {presentMembers.map(m => (
+                            <div key={m.initials} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
+                              <Avatar initials={m.display || m.initials} color={m.color} size="sm" photo={m.photo} />
+                              <span style={{ fontSize: 10, fontWeight: 700, fontFamily: FONTS.body, color: COLORS.text }}>{m.name}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    {absentMembers.length > 0 && (
+                      <div>
+                        <p style={{ fontSize: 10, fontWeight: 700, color: COLORS.pinkDark, textTransform: 'uppercase', letterSpacing: 0.6, fontFamily: FONTS.body, marginBottom: 8 }}>Absent·e·s</p>
+                        <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+                          {absentMembers.map(m => (
+                            <div key={m.initials} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, opacity: 0.5 }}>
+                              <Avatar initials={m.display || m.initials} color={m.color} size="sm" photo={m.photo} />
+                              <span style={{ fontSize: 10, fontWeight: 700, fontFamily: FONTS.body, color: COLORS.textMuted }}>{m.name}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </Card>
+                );
+              })}
             </>
           );
         })()}
