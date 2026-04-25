@@ -67,14 +67,6 @@ export default function App() {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', background: '#fff' }}>
-      <div style={{ height: 44, background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 24px', flexShrink: 0 }}>
-        <span style={{ fontSize: 15, fontWeight: 700, fontFamily: FONTS.body }}>9:41</span>
-        <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-          <svg width="16" height="12" viewBox="0 0 16 12" fill="none"><rect x="0" y="4" width="3" height="8" rx="1" fill="#1C1C1E"/><rect x="4.5" y="2.5" width="3" height="9.5" rx="1" fill="#1C1C1E"/><rect x="9" y="0.5" width="3" height="11.5" rx="1" fill="#1C1C1E"/></svg>
-          <svg width="25" height="12" viewBox="0 0 25 12" fill="none"><rect x="0.5" y="0.5" width="21" height="11" rx="3.5" stroke="#1C1C1E" strokeOpacity="0.3"/><rect x="2" y="2" width="16" height="8" rx="2" fill="#1C1C1E"/></svg>
-        </div>
-      </div>
-
       <div style={{ flex: 1, overflow: 'hidden', position: 'relative' }}>
         {screens[activeTab]}
       </div>
