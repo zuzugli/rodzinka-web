@@ -122,6 +122,8 @@ export function CalendarScreen({ userName = 'Sophie', userColor = COLORS.sophieC
         </Card>
         </div>
 
+        <PrimaryButton label="Me marquer absent·e…" onClick={() => setAbsentModal(true)} />
+
         {/* Absences du jour */}
         {(() => {
           const today = new Date();
@@ -132,54 +134,38 @@ export function CalendarScreen({ userName = 'Sophie', userColor = COLORS.sophieC
               <div style={{ fontSize: 11, fontWeight: 700, color: COLORS.textMuted, textTransform: 'uppercase', letterSpacing: 0.8, margin: '16px 0 10px', fontFamily: FONTS.body }}>
                 Aujourd'hui · {todayLabel}
               </div>
-              {MEALS.map((meal, mi) => {
-                const absentMembers = MEMBERS.filter(m =>
-                  absences.some(a => a.dateStr === todayStr && a.meal === mi && a.memberInitials === m.initials)
+              <Card style={{ padding: '0 16px' }}>
+                {MEALS.map((meal, mi) => {
+                  const absentMembers = MEMBERS.filter(m =>
+                    absences.some(a => a.dateStr === todayStr && a.meal === mi && a.memberInitials === m.initials)
                     || (m === MEMBERS[0] && absences.some(a => a.dateStr === todayStr && a.meal === mi && !a.memberInitials))
-                );
-                const presentMembers = MEMBERS.filter(m => !absentMembers.includes(m));
-                return (
-                  <Card key={mi} style={{ padding: '12px 16px', marginBottom: 8 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
-                      <div style={{ width: 32, height: 32, borderRadius: 10, background: mi === 0 ? COLORS.purpleLight : '#FFF0D0', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                        <span style={{ fontSize: 16 }}>{mi === 0 ? '☀️' : '🌙'}</span>
-                      </div>
-                      <span style={{ fontSize: 15, fontWeight: 800, fontFamily: FONTS.title, color: COLORS.text }}>{meal}</span>
-                    </div>
-                    {presentMembers.length > 0 && (
-                      <div style={{ marginBottom: absentMembers.length > 0 ? 10 : 0 }}>
-                        <p style={{ fontSize: 10, fontWeight: 700, color: COLORS.greenMid, textTransform: 'uppercase', letterSpacing: 0.6, fontFamily: FONTS.body, marginBottom: 8 }}>Présent·e·s</p>
-                        <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-                          {presentMembers.map(m => (
-                            <div key={m.initials} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
-                              <Avatar initials={m.display || m.initials} color={m.color} size="sm" photo={m.photo} />
-                              <span style={{ fontSize: 10, fontWeight: 700, fontFamily: FONTS.body, color: COLORS.text }}>{m.name}</span>
-                            </div>
-                          ))}
+                  );
+                  return (
+                    <div key={mi} style={{ padding: '14px 0', borderBottom: mi === 0 ? `1px solid ${COLORS.border}` : 'none' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: absentMembers.length > 0 ? 10 : 0 }}>
+                        <div style={{ width: 28, height: 28, borderRadius: 8, background: mi === 0 ? COLORS.purpleLight : '#FFF0D0', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                          <span style={{ fontSize: 14 }}>{mi === 0 ? '☀️' : '🌙'}</span>
                         </div>
+                        <span style={{ fontSize: 14, fontWeight: 800, fontFamily: FONTS.title, color: COLORS.text, flex: 1 }}>{meal}</span>
+                        {absentMembers.length === 0 && <span style={{ fontSize: 12, fontWeight: 700, color: COLORS.greenMid, fontFamily: FONTS.body }}>Tout le monde présent</span>}
                       </div>
-                    )}
-                    {absentMembers.length > 0 && (
-                      <div>
-                        <p style={{ fontSize: 10, fontWeight: 700, color: COLORS.pinkDark, textTransform: 'uppercase', letterSpacing: 0.6, fontFamily: FONTS.body, marginBottom: 8 }}>Absent·e·s</p>
-                        <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+                      {absentMembers.length > 0 && (
+                        <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
                           {absentMembers.map(m => (
-                            <div key={m.initials} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, opacity: 0.5 }}>
-                              <Avatar initials={m.display || m.initials} color={m.color} size="sm" photo={m.photo} />
-                              <span style={{ fontSize: 10, fontWeight: 700, fontFamily: FONTS.body, color: COLORS.textMuted }}>{m.name}</span>
+                            <div key={m.initials} style={{ display: 'flex', alignItems: 'center', gap: 8, background: COLORS.pink, borderRadius: 12, padding: '6px 12px 6px 6px' }}>
+                              <Avatar initials={m.display || m.initials} color={m.color} size="xs" photo={m.photo} />
+                              <span style={{ fontSize: 13, fontWeight: 700, fontFamily: FONTS.body, color: COLORS.pinkDark }}>{m.name}</span>
                             </div>
                           ))}
                         </div>
-                      </div>
-                    )}
-                  </Card>
-                );
-              })}
+                      )}
+                    </div>
+                  );
+                })}
+              </Card>
             </>
           );
         })()}
-
-        <PrimaryButton label="Me marquer absent·e…" onClick={() => setAbsentModal(true)} />
       </div>
 
       {/* Detail modal */}
