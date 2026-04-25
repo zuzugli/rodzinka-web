@@ -453,7 +453,6 @@ const SWATCHES = [
   '#E53935', // rouge
   '#AB47BC', // violet
   '#00AFBE', // turquoise
-  '#26A69A', // vert menthe
   '#66BB6A', // vert
 ];
 
