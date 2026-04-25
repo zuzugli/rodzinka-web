@@ -419,7 +419,9 @@ export function RemindersScreen({ userName = 'Sophie', userColor = COLORS.sophie
 
   function addReminder() {
     if (!newTitle.trim() || !newDate.trim()) return;
-    const dateObj = new Date(newDate);
+    // Forcer l'interprétation locale (YYYY-MM-DD → pas UTC)
+    const [y, m, d] = newDate.split('-').map(Number);
+    const dateObj = new Date(y, m - 1, d);
     if (isNaN(dateObj)) return;
     const recurLabel = newRecur === 'hebdo' ? ' · Hebdo' : newRecur === 'annuel' ? ' · Annuel' : '';
     const meta = dateObj.toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' }) + recurLabel;
