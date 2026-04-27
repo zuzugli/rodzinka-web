@@ -45,8 +45,8 @@ function LoginScreen({ onLogin }) {
   return (
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '0 32px', background: '#fff' }}>
       <div style={{ fontSize: 56, marginBottom: 16 }}>🏠</div>
-      <h1 style={{ fontSize: 28, fontWeight: 800, fontFamily: FONTS.title, color: COLORS.text, marginBottom: 6, textAlign: 'center' }}>Famille Tchenio-Gaubert</h1>
-      <p style={{ fontSize: 14, fontFamily: FONTS.body, color: COLORS.textMuted, marginBottom: 40, textAlign: 'center' }}>Entre ton prénom et le code famille pour accéder à l'app</p>
+      <h1 style={{ fontSize: 28, fontWeight: 800, fontFamily: FONTS.title, color: COLORS.text, marginBottom: 6, textAlign: 'center' }}>Bienvenue sur Oiko !</h1>
+      <p style={{ fontSize: 14, fontFamily: FONTS.body, color: COLORS.textMuted, marginBottom: 40, textAlign: 'center' }}>Entre ton prénom et le code famille pour rejoindre l'app</p>
 
       <input
         placeholder="Ton prénom"
