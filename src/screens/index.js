@@ -53,23 +53,12 @@ export function CalendarScreen({ userName = 'Sophie', userColor = COLORS.sophieC
   const [selMealStart, setSelMealStart] = useState(null);
   const [selMealEnd, setSelMealEnd] = useState(null);
   const [calMonth, setCalMonth] = useState(() => { const d = new Date(); return { y: d.getFullYear(), m: d.getMonth() }; });
-  const [absences, setAbsences] = useState([]);
+  const [absences, setAbsences] = useState(() => { try { return JSON.parse(localStorage.getItem('cal_absences') || '[]'); } catch { return []; } });
   const [touchStartX, setTouchStartX] = useState(null);
   const [slideDir, setSlideDir] = useState(null);
   const [animKey, setAnimKey] = useState(0);
 
-  async function loadAbsences() {
-    const { data } = await supabase.from('meals').select('*').eq('meal_type', 'absence');
-    if (data) setAbsences(data.map(a => ({ dateStr: a.date, meal: a.name === 'midi' ? 0 : 1, memberInitials: a.created_by })));
-  }
-
-  useEffect(() => {
-    loadAbsences();
-    const sub = supabase.channel('absences')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'meals' }, loadAbsences)
-      .subscribe();
-    return () => supabase.removeChannel(sub);
-  }, []);
+  useEffect(() => { localStorage.setItem('cal_absences', JSON.stringify(absences)); }, [absences]);
 
   const week = getWeek(weekOffset);
 
@@ -86,38 +75,29 @@ export function CalendarScreen({ userName = 'Sophie', userColor = COLORS.sophieC
     setTouchStartX(null);
   }
 
-  async function confirmerAbsence() {
+  function confirmerAbsence() {
     if (selDate && selMealStart !== null && selMealEnd !== null) {
       const endD = selDateEnd || selDate;
+      const newAbsences = [];
       const cur = new Date(selDate);
       while (cur.getTime() <= endD.getTime()) {
         for (let m = 0; m <= 1; m++) {
           const afterStart = cur.getTime() > selDate.getTime() || m >= selMealStart;
           const beforeEnd = cur.getTime() < endD.getTime() || m <= selMealEnd;
-          if (afterStart && beforeEnd) {
-            await supabase.from('meals').insert({
-              date: cur.toDateString(),
-              meal_type: 'absence',
-              name: m === 0 ? 'midi' : 'soir',
-              created_by: MEMBERS[0].initials,
-            });
-          }
+          if (afterStart && beforeEnd) newAbsences.push({ dateStr: cur.toDateString(), meal: m });
         }
         cur.setDate(cur.getDate() + 1);
       }
-      await loadAbsences();
+      setAbsences(prev => {
+        const filtered = prev.filter(a => !newAbsences.some(n => n.dateStr === a.dateStr && n.meal === a.meal));
+        return [...filtered, ...newAbsences];
+      });
     }
     setAbsentModal(false); setSelDate(null); setSelDateEnd(null); setSelMealStart(null); setSelMealEnd(null);
   }
 
-  async function annulerAbsence(dateStr, meal) {
-    await supabase.from('meals')
-      .delete()
-      .eq('meal_type', 'absence')
-      .eq('date', dateStr)
-      .eq('name', meal === 0 ? 'midi' : 'soir')
-      .eq('created_by', MEMBERS[0].initials);
-    await loadAbsences();
+  function annulerAbsence(dateStr, meal) {
+    setAbsences(prev => prev.filter(a => !(a.dateStr === dateStr && a.meal === meal)));
     setSelected(null);
   }
 
