@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { COLORS, FONTS } from '../theme';
 import { Avatar, Card, Modal, PrimaryButton } from '../components';
-import { supabase } from '../supabase';
 
 const DAYS = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
 const MEALS = ['Midi', 'Soir'];
@@ -416,23 +415,18 @@ export function RemindersScreen({ userName = 'Sophie', userColor = COLORS.sophie
     });
   }
 
-  async function addReminder() {
+  function addReminder() {
     if (!newTitle.trim() || !newDay || !newMonth) return;
     const dateObj = new Date(Number(newYear), Number(newMonth) - 1, Number(newDay));
     if (isNaN(dateObj)) return;
     const recurLabel = newRecur === 'hebdo' ? ' · Hebdo' : newRecur === 'annuel' ? ' · Annuel' : '';
     const meta = dateObj.toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' }) + recurLabel;
-    await supabase.from('reminders').insert({
-      title: newTitle.trim(),
-      date: dateObj.toISOString().split('T')[0],
-      recurrence: newRecur,
-      created_by: MEMBERS[0].initials,
-    });
+    setReminders(prev => [...prev, { id: Date.now(), title: newTitle.trim(), meta, dateStr: dateObj.toDateString(), cat: newCat, recur: newRecur, members: [MEMBERS[0].initials], createdBy: MEMBERS[0].initials }]);
     setNewTitle(''); setNewDay(''); setNewMonth(''); setNewYear(String(new Date().getFullYear())); setNewCat('autre'); setNewRecur('none'); setModal(false);
   }
 
-  async function deleteReminder(id) {
-    await supabase.from('reminders').delete().eq('id', id);
+  function deleteReminder(id) {
+    setReminders(prev => prev.filter(r => r.id !== id));
     setSelectedReminder(null);
   }
 
