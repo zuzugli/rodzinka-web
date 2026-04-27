@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { COLORS, FONTS } from '../theme';
 import { Avatar, Card, Modal, PrimaryButton } from '../components';
-import { supabase } from '../supabase';
 
 const DAYS = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
 const MEALS = ['Midi', 'Soir'];
@@ -21,6 +20,7 @@ export function getMembers(userName, userColor, userPhoto) {
 }
 
 const MONTH_NAMES = ['jan','fév','mar','avr','mai','juin','juil','aoû','sep','oct','nov','déc'];
+
 
 function getWeek(offset) {
   const today = new Date();
@@ -43,191 +43,478 @@ function formatRange(week) {
     : `${first.getDate()} ${MONTH_NAMES[first.getMonth()]} – ${last.getDate()} ${MONTH_NAMES[last.getMonth()]} ${last.getFullYear()}`;
 }
 
-function toDateStr(date) {
-  return date.toISOString().split('T')[0];
-}
-
-// ── CALENDAR ─────────────────────────────────────────────────
-export function CalendarScreen({ userName = 'Sophie', userColor = COLORS.sophieColor, userPhoto = null, memberId }) {
+export function CalendarScreen({ userName = 'Sophie', userColor = COLORS.sophieColor, userPhoto = null }) {
   const MEMBERS = getMembers(userName, userColor, userPhoto);
   const [weekOffset, setWeekOffset] = useState(0);
   const [selected, setSelected] = useState(null);
-  const [absences, setAbsences] = useState([]);
-  const [meals, setMeals] = useState([]);
   const [absentModal, setAbsentModal] = useState(false);
-  const [mealModal, setMealModal] = useState(false);
   const [selDate, setSelDate] = useState(null);
   const [selDateEnd, setSelDateEnd] = useState(null);
   const [selMealStart, setSelMealStart] = useState(null);
   const [selMealEnd, setSelMealEnd] = useState(null);
   const [calMonth, setCalMonth] = useState(() => { const d = new Date(); return { y: d.getFullYear(), m: d.getMonth() }; });
-  const [newMealName, setNewMealName] = useState('');
-  const [newMealType, setNewMealType] = useState(0);
-
-  async function loadData() {
-    const { data: absData } = await supabase.from('reminders').select('*').eq('recurrence', 'absence');
-    const { data: mealData } = await supabase.from('meals').select('*');
-    if (absData) setAbsences(absData);
-    if (mealData) setMeals(mealData);
-  }
-
-  useEffect(() => {
-    loadData();
-    const sub = supabase
-      .channel('calendar')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'meals' }, () => loadData())
-      .subscribe();
-    return () => supabase.removeChannel(sub);
-  }, []);
-
+  const [absences, setAbsences] = useState(() => { try { const s = localStorage.getItem('cal_absences'); return s ? JSON.parse(s) : []; } catch { return []; } });
+  const [touchStartX, setTouchStartX] = useState(null);
+  const [slideDir, setSlideDir] = useState(null); // 'left' | 'right'
+  const [animKey, setAnimKey] = useState(0);
+  useEffect(() => localStorage.setItem('cal_absences', JSON.stringify(absences)), [absences]);
   const week = getWeek(weekOffset);
 
-  const addMeal = async () => {
-    if (!newMealName.trim() || !selected) return;
-    await supabase.from('meals').insert({
-      date: toDateStr(selected.date),
-      meal_type: newMealType === 0 ? 'lunch' : 'dinner',
-      name: newMealName.trim(),
-      created_by: userName,
-    });
-    setNewMealName(''); setMealModal(false);
-  };
-
-  const getMealsForSlot = (date, mealIndex) => {
-    const dateStr = toDateStr(date);
-    const type = mealIndex === 0 ? 'lunch' : 'dinner';
-    return meals.filter(m => m.date === dateStr && m.meal_type === type);
-  };
+  function handleTouchStart(e) { setTouchStartX(e.touches[0].clientX); }
+  function handleTouchEnd(e) {
+    if (touchStartX === null) return;
+    const diff = touchStartX - e.changedTouches[0].clientX;
+    if (Math.abs(diff) > 50) {
+      const dir = diff > 0 ? 'left' : 'right';
+      setSlideDir(dir);
+      setAnimKey(k => k + 1);
+      setWeekOffset(o => o + (diff > 0 ? 1 : -1));
+    }
+    setTouchStartX(null);
+  }
 
   return (
-    <div style={{ height: '100%', overflowY: 'auto', padding: '8px 20px 40px' }}>
-      <h2 style={{ fontSize: 32, fontWeight: 800, fontFamily: FONTS.title, color: COLORS.text, letterSpacing: -0.5, marginBottom: 16 }}>Repas</h2>
+    <div style={{ height: '100%', display: 'flex', flexDirection: 'column', position: 'relative' }}>
+      <div style={{ overflowY: 'auto', flex: 1, padding: '8px 20px 24px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', marginBottom: 4 }}>
+          <div style={{ flex: 1 }}>
+            <h2 style={{ fontSize: 32, fontWeight: 800, fontFamily: FONTS.title, color: COLORS.text, letterSpacing: -0.5 }}>Repas</h2>
+            <p style={{ fontSize: 15, fontWeight: 700, fontFamily: FONTS.body, color: COLORS.purple, marginTop: 2 }}>{formatRange(week)}</p>
+          </div>
+          <img src="/glouton.png" alt="mascotte" style={{ width: 80, height: 80, objectFit: 'contain' }} />
+        </div>
 
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-        <button onClick={() => setWeekOffset(w => w - 1)} style={{ background: COLORS.surface, border: 'none', borderRadius: 10, padding: '8px 14px', cursor: 'pointer', fontWeight: 700, fontFamily: FONTS.body }}>‹</button>
-        <span style={{ fontFamily: FONTS.body, fontWeight: 700, color: COLORS.text, fontSize: 14 }}>{formatRange(week)}</span>
-        <button onClick={() => setWeekOffset(w => w + 1)} style={{ background: COLORS.surface, border: 'none', borderRadius: 10, padding: '8px 14px', cursor: 'pointer', fontWeight: 700, fontFamily: FONTS.body }}>›</button>
+        <style>{`
+          @keyframes slideFromRight { from { opacity: 0; transform: translateX(40px); } to { opacity: 1; transform: translateX(0); } }
+          @keyframes slideFromLeft  { from { opacity: 0; transform: translateX(-40px); } to { opacity: 1; transform: translateX(0); } }
+        `}</style>
+        <div onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd} style={{ touchAction: 'pan-y' }}>
+        <Card style={{ padding: 8 }}>
+          <div key={animKey} style={{ animation: slideDir ? `${slideDir === 'left' ? 'slideFromRight' : 'slideFromLeft'} 0.25s ease` : 'none' }}>
+            {/* Day headers */}
+            <div style={{ display: 'grid', gridTemplateColumns: '28px repeat(7, 1fr)', gap: 3, marginBottom: 6 }}>
+              <div />
+              {week.map(({ dayIndex, date, isToday }) => (
+                <div key={dayIndex} style={{ textAlign: 'center', padding: '5px 1px', borderRadius: 10, background: isToday ? COLORS.purple : 'transparent' }}>
+                  <div style={{ fontSize: 9, fontWeight: 700, fontFamily: FONTS.body, textTransform: 'uppercase', color: isToday ? '#fff' : COLORS.textMuted }}>{DAYS[dayIndex]}</div>
+                  <div style={{ fontSize: 14, fontWeight: 800, fontFamily: FONTS.title, color: isToday ? '#fff' : COLORS.text }}>{date.getDate()}</div>
+                  <div style={{ fontSize: 8, fontWeight: 600, fontFamily: FONTS.body, color: isToday ? 'rgba(255,255,255,0.8)' : COLORS.textMuted }}>{MONTH_NAMES[date.getMonth()]}</div>
+                </div>
+              ))}
+            </div>
+            {MEALS.map((meal, mi) => (
+              <div key={mi} style={{ display: 'grid', gridTemplateColumns: '28px repeat(7, 1fr)', gap: 3, marginBottom: 4, alignItems: 'stretch' }}>
+                <div style={{ fontSize: 8, fontWeight: 700, fontFamily: FONTS.body, color: COLORS.textMuted, textTransform: 'uppercase', writingMode: 'vertical-rl', transform: 'rotate(180deg)', textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{meal}</div>
+                {week.map(({ dayIndex, isToday }) => {
+                  const bg = isToday ? COLORS.purpleLight : COLORS.surface;
+                  const cellDate = week[dayIndex].date;
+                  const userAbsent = absences.some(a => a.dateStr === cellDate.toDateString() && a.meal === mi);
+                  const allAbsents = userAbsent ? [MEMBERS[0]] : [];
+                  return (
+                    <div key={dayIndex} onClick={() => setSelected({ d: dayIndex, m: mi, date: cellDate })} style={{ background: bg, borderRadius: 10, padding: '6px 2px', minHeight: 60, border: `1.5px solid ${isToday ? COLORS.purple : COLORS.border}`, cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2 }}>
+                      {allAbsents.map((mb, idx) => <Avatar key={idx} initials={mb.display || mb.initials} color={mb.color} size="xs" photo={mb.photo} />)}
+                    </div>
+                  );
+                })}
+              </div>
+            ))}
+          </div>
+        </Card>
+        </div>
+
+        <PrimaryButton label="Me marquer absent·e…" onClick={() => setAbsentModal(true)} />
+
+        {/* Absences du jour */}
+        {(() => {
+          const today = new Date();
+          const todayStr = today.toDateString();
+          const todayLabel = today.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
+          return (
+            <>
+              <div style={{ marginTop: 20, marginBottom: 6 }}>
+                <p style={{ fontSize: 18, fontWeight: 800, fontFamily: FONTS.title, color: COLORS.text }}>Absences du jour</p>
+                <p style={{ fontSize: 13, fontFamily: FONTS.body, color: COLORS.textMuted, marginTop: 2 }}>{todayLabel}</p>
+              </div>
+              <Card style={{ padding: '0 16px' }}>
+                {MEALS.map((meal, mi) => {
+                  const absentMembers = MEMBERS.filter(m =>
+                    absences.some(a => a.dateStr === todayStr && a.meal === mi && a.memberInitials === m.initials)
+                    || (m === MEMBERS[0] && absences.some(a => a.dateStr === todayStr && a.meal === mi && !a.memberInitials))
+                  );
+                  return (
+                    <div key={mi} style={{ padding: '14px 0', borderBottom: mi === 0 ? `1px solid ${COLORS.border}` : 'none' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: absentMembers.length > 0 ? 10 : 0 }}>
+                        <div style={{ width: 28, height: 28, borderRadius: 8, background: mi === 0 ? COLORS.purpleLight : '#FFF0D0', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                          <span style={{ fontSize: 14 }}>{mi === 0 ? '☀️' : '🌙'}</span>
+                        </div>
+                        <span style={{ fontSize: 14, fontWeight: 800, fontFamily: FONTS.title, color: COLORS.text, flex: 1 }}>{meal}</span>
+                        {absentMembers.length === 0 && <span style={{ fontSize: 12, fontWeight: 700, color: COLORS.greenMid, fontFamily: FONTS.body }}>Tout le monde présent</span>}
+                      </div>
+                      {absentMembers.length > 0 && (
+                        <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+                          {absentMembers.map(m => (
+                            <div key={m.initials} style={{ display: 'flex', alignItems: 'center', gap: 8, background: COLORS.pink, borderRadius: 12, padding: '6px 12px 6px 6px' }}>
+                              <Avatar initials={m.display || m.initials} color={m.color} size="xs" photo={m.photo} />
+                              <span style={{ fontSize: 13, fontWeight: 700, fontFamily: FONTS.body, color: COLORS.pinkDark }}>{m.name}</span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </Card>
+            </>
+          );
+        })()}
       </div>
 
-      {week.map(({ date, isToday }) => (
-        <Card key={date.toDateString()} style={{ marginBottom: 10, padding: '12px 16px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
-            <div style={{ width: 32, height: 32, borderRadius: '50%', background: isToday ? COLORS.purple : COLORS.surface, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <span style={{ fontSize: 14, fontWeight: 800, fontFamily: FONTS.body, color: isToday ? '#fff' : COLORS.text }}>{date.getDate()}</span>
+      {/* Detail modal */}
+      <Modal visible={!!selected} onClose={() => setSelected(null)} title={selected ? `${MEALS[selected.m]} · ${DAYS[selected.d]} ${selected.date?.getDate()} ${MONTH_NAMES[selected.date?.getMonth()]}` : ''}>
+        {selected && MEMBERS.map(m => {
+          const isUserAbsent = m === MEMBERS[0] && absences.some(a => a.dateStr === selected.date?.toDateString() && a.meal === selected.m);
+          const present = !isUserAbsent;
+          return (
+            <div key={m.initials} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 0', borderBottom: `1px solid ${COLORS.border}` }}>
+              <Avatar initials={m.display || m.initials} color={m.color} size="sm" photo={m.photo} />
+              <span style={{ flex: 1, fontSize: 15, fontWeight: 700, fontFamily: FONTS.body, color: COLORS.text }}>{m.name}</span>
+              <span style={{ background: present ? COLORS.green : COLORS.pink, color: present ? COLORS.greenDark : COLORS.pinkDark, fontSize: 12, fontWeight: 700, padding: '4px 12px', borderRadius: 999, fontFamily: FONTS.body }}>
+                {present ? 'Présent·e' : 'Absent·e'}
+              </span>
             </div>
-            <span style={{ fontSize: 14, fontWeight: 700, fontFamily: FONTS.body, color: COLORS.text }}>{DAYS[date.getDay() === 0 ? 6 : date.getDay() - 1]}</span>
+          );
+        })}
+        {selected && absences.some(a => a.dateStr === selected.date?.toDateString() && a.meal === selected.m) && (
+          <button onClick={() => {
+            setAbsences(prev => prev.filter(a => !(a.dateStr === selected.date?.toDateString() && a.meal === selected.m)));
+            setSelected(null);
+          }} style={{ width: '100%', padding: '12px', borderRadius: 14, border: `2px solid ${COLORS.pinkDark}`, background: 'transparent', color: COLORS.pinkDark, fontSize: 14, fontWeight: 700, fontFamily: FONTS.body, cursor: 'pointer', marginTop: 8 }}>
+            Annuler mon absence
+          </button>
+        )}
+        <PrimaryButton label="Fermer" onClick={() => setSelected(null)} />
+      </Modal>
+
+      {/* Absent modal */}
+      <Modal visible={absentModal} onClose={() => { setAbsentModal(false); setSelDate(null); setSelDateEnd(null); setSelMealStart(null); setSelMealEnd(null); }} title="Me marquer absent·e">
+        {/* Mini calendar */}
+        <p style={{ fontSize: 12, color: COLORS.textMuted, fontFamily: FONTS.body, marginBottom: 10 }}>
+          {!selDate ? '1. Sélectionne le jour de début' : !selDateEnd ? '2. Sélectionne le jour de fin (ou choisis le repas pour un seul jour)' : `Du ${selDate.toLocaleDateString('fr-FR')} au ${selDateEnd.toLocaleDateString('fr-FR')}`}
+        </p>
+        <div style={{ marginBottom: 14 }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+            <button onClick={() => setCalMonth(p => { const d = new Date(p.y, p.m - 1); return { y: d.getFullYear(), m: d.getMonth() }; })} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 18, color: COLORS.text, padding: '0 6px' }}>‹</button>
+            <span style={{ fontSize: 14, fontWeight: 700, fontFamily: FONTS.body, color: COLORS.text, textTransform: 'capitalize' }}>
+              {new Date(calMonth.y, calMonth.m).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })}
+            </span>
+            <button onClick={() => setCalMonth(p => { const d = new Date(p.y, p.m + 1); return { y: d.getFullYear(), m: d.getMonth() }; })} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 18, color: COLORS.text, padding: '0 6px' }}>›</button>
           </div>
-          {MEALS.map((meal, mealIdx) => {
-            const slotMeals = getMealsForSlot(date, mealIdx);
+          {/* Day labels */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 3, marginBottom: 4 }}>
+            {['L','M','M','J','V','S','D'].map((d, i) => (
+              <div key={i} style={{ textAlign: 'center', fontSize: 10, fontWeight: 700, color: COLORS.textMuted, fontFamily: FONTS.body }}>{d}</div>
+            ))}
+          </div>
+          {/* Days grid */}
+          {(() => {
+            const today = new Date(); today.setHours(0,0,0,0);
+            const firstDay = new Date(calMonth.y, calMonth.m, 1);
+            const startOffset = (firstDay.getDay() + 6) % 7;
+            const daysInMonth = new Date(calMonth.y, calMonth.m + 1, 0).getDate();
+            const cells = [];
+            for (let i = 0; i < startOffset; i++) cells.push(null);
+            for (let d = 1; d <= daysInMonth; d++) cells.push(d);
             return (
-              <div key={meal} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 0', borderTop: `1px solid ${COLORS.border}` }}>
-                <span style={{ fontSize: 12, fontWeight: 700, color: COLORS.textMuted, fontFamily: FONTS.body, width: 36 }}>{meal}</span>
-                <div style={{ flex: 1, display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-                  {slotMeals.map(m => (
-                    <span key={m.id} style={{ background: COLORS.purpleLight, borderRadius: 8, padding: '3px 10px', fontSize: 12, fontWeight: 700, color: COLORS.purpleDark, fontFamily: FONTS.body }}>{m.name}</span>
-                  ))}
-                </div>
-                <button onClick={() => { setSelected({ date }); setNewMealType(mealIdx); setMealModal(true); }} style={{ background: COLORS.surface, border: 'none', borderRadius: 8, width: 26, height: 26, cursor: 'pointer', fontSize: 16, color: COLORS.textMuted }}>+</button>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 3 }}>
+                {cells.map((d, i) => {
+                  if (!d) return <div key={i} />;
+                  const date = new Date(calMonth.y, calMonth.m, d); date.setHours(0,0,0,0);
+                  const isPast = date < today;
+                  const isStart = selDate && date.toDateString() === selDate.toDateString();
+                  const isEnd = selDateEnd && date.toDateString() === selDateEnd.toDateString();
+                  const isInRange = selDate && selDateEnd && date > selDate && date < selDateEnd;
+                  const isToday = date.toDateString() === today.toDateString();
+                  return (
+                    <div key={i} onClick={() => {
+                      if (isPast) return;
+                      if (!selDate || selDateEnd) { setSelDate(date); setSelDateEnd(null); }
+                      else if (date >= selDate) { setSelDateEnd(date); }
+                      else { setSelDate(date); setSelDateEnd(null); }
+                    }} style={{
+                      textAlign: 'center', padding: '7px 2px', borderRadius: 10, cursor: isPast ? 'default' : 'pointer',
+                      background: isStart || isEnd ? COLORS.purple : isInRange ? COLORS.purpleLight : isToday ? COLORS.purpleLight : 'transparent',
+                      opacity: isPast ? 0.3 : 1,
+                    }}>
+                      <span style={{ fontSize: 13, fontWeight: 700, fontFamily: FONTS.body, color: isStart || isEnd ? '#fff' : isInRange || isToday ? COLORS.purpleDark : COLORS.text }}>{d}</span>
+                    </div>
+                  );
+                })}
               </div>
             );
-          })}
-        </Card>
-      ))}
+          })()}
+        </div>
 
-      <Modal visible={mealModal} onClose={() => setMealModal(false)} title="Ajouter un repas">
-        <input
-          placeholder="Ex: Pâtes bolognaise"
-          value={newMealName}
-          onChange={e => setNewMealName(e.target.value)}
-          onKeyDown={e => e.key === 'Enter' && addMeal()}
-          autoFocus
-          style={{ width: '100%', padding: '12px 14px', borderRadius: 12, border: `2px solid ${COLORS.border}`, fontSize: 15, fontFamily: FONTS.body, outline: 'none', boxSizing: 'border-box', marginBottom: 12 }}
-        />
-        <PrimaryButton label="Ajouter" onClick={addMeal} />
+        {/* Meal choice */}
+        <div style={{ opacity: !selDate ? 0.4 : 1, marginBottom: 12 }}>
+          {!selDateEnd ? (
+            /* Single day: Midi | Soir | Les deux */
+            <>
+              <p style={{ fontSize: 11, fontWeight: 700, color: !selDate ? COLORS.border : COLORS.textMuted, textTransform: 'uppercase', letterSpacing: 0.8, fontFamily: FONTS.body, marginBottom: 8 }}>Choisir le repas</p>
+              <div style={{ display: 'flex', gap: 8 }}>
+                {[['Midi', 0, 0], ['Soir', 1, 1], ['Les deux', 0, 1]].map(([label, ms, me]) => {
+                  const active = selMealStart === ms && selMealEnd === me;
+                  return (
+                    <div key={label} onClick={() => { if (selDate) { setSelMealStart(ms); setSelMealEnd(me); } }} style={{ flex: 1, textAlign: 'center', padding: '12px 4px', borderRadius: 14, border: `2px solid ${active ? COLORS.purple : COLORS.border}`, background: active ? COLORS.purpleLight : COLORS.surface, cursor: selDate ? 'pointer' : 'default' }}>
+                      <span style={{ fontSize: 13, fontWeight: 700, fontFamily: FONTS.body, color: active ? COLORS.purpleDark : COLORS.text }}>{label}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </>
+          ) : (
+            /* Range: début + fin */
+            <>
+              <p style={{ fontSize: 11, fontWeight: 700, color: COLORS.textMuted, textTransform: 'uppercase', letterSpacing: 0.8, fontFamily: FONTS.body, marginBottom: 6 }}>Repas de début</p>
+              <div style={{ display: 'flex', gap: 8, marginBottom: 10 }}>
+                {MEALS.map((m, i) => (
+                  <div key={i} onClick={() => setSelMealStart(i)} style={{ flex: 1, textAlign: 'center', padding: '10px 8px', borderRadius: 14, border: `2px solid ${selMealStart === i ? COLORS.purple : COLORS.border}`, background: selMealStart === i ? COLORS.purpleLight : COLORS.surface, cursor: 'pointer' }}>
+                    <span style={{ fontSize: 13, fontWeight: 700, fontFamily: FONTS.body, color: selMealStart === i ? COLORS.purpleDark : COLORS.text }}>{m}</span>
+                  </div>
+                ))}
+              </div>
+              <p style={{ fontSize: 11, fontWeight: 700, color: COLORS.textMuted, textTransform: 'uppercase', letterSpacing: 0.8, fontFamily: FONTS.body, marginBottom: 6 }}>Repas de fin</p>
+              <div style={{ display: 'flex', gap: 8 }}>
+                {MEALS.map((m, i) => (
+                  <div key={i} onClick={() => setSelMealEnd(i)} style={{ flex: 1, textAlign: 'center', padding: '10px 8px', borderRadius: 14, border: `2px solid ${selMealEnd === i ? COLORS.purple : COLORS.border}`, background: selMealEnd === i ? COLORS.purpleLight : COLORS.surface, cursor: 'pointer' }}>
+                    <span style={{ fontSize: 13, fontWeight: 700, fontFamily: FONTS.body, color: selMealEnd === i ? COLORS.purpleDark : COLORS.text }}>{m}</span>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
+        </div>
+        <PrimaryButton label="Confirmer l'absence" onClick={() => {
+          if (selDate && selMealStart !== null && selMealEnd !== null) {
+            const endD = selDateEnd || selDate;
+            const newAbsences = [];
+            const cur = new Date(selDate);
+            while (cur.getTime() <= endD.getTime()) {
+              for (let m = 0; m <= 1; m++) {
+                const afterStart = cur.getTime() > selDate.getTime() || m >= selMealStart;
+                const beforeEnd = cur.getTime() < endD.getTime() || m <= selMealEnd;
+                if (afterStart && beforeEnd) newAbsences.push({ dateStr: cur.toDateString(), meal: m });
+              }
+              cur.setDate(cur.getDate() + 1);
+            }
+            setAbsences(prev => {
+              const filtered = prev.filter(a => !newAbsences.some(n => n.dateStr === a.dateStr && n.meal === a.meal));
+              return [...filtered, ...newAbsences];
+            });
+          }
+          setAbsentModal(false); setSelDate(null); setSelDateEnd(null); setSelMealStart(null); setSelMealEnd(null);
+        }} />
+        <button onClick={() => { setAbsentModal(false); setSelDate(null); setSelDateEnd(null); setSelMealStart(null); setSelMealEnd(null); }} style={{ width: '100%', padding: '12px', borderRadius: 14, border: `2px solid ${COLORS.border}`, background: 'transparent', color: COLORS.textMuted, fontSize: 14, fontWeight: 700, fontFamily: FONTS.body, cursor: 'pointer', marginTop: 6 }}>
+          Annuler
+        </button>
       </Modal>
     </div>
   );
 }
 
 // ── REMINDERS ────────────────────────────────────────────────
+const REMINDERS = [];
+
 const CAT = {
   chore:    { dot: '#00AFBE',        bg: '#E0F7FA',      c: '#006878',         label: 'tâche' },
   birthday: { dot: COLORS.pinkMid,   bg: COLORS.pink,    c: COLORS.pinkDark,   label: 'anniversaire' },
   autre:    { dot: '#AB47BC',        bg: '#F3E5F5',      c: '#6A1B9A',         label: 'autre' },
 };
 
-function ReminderItem({ item, onPress, onDelete }) {
-  const cat = CAT[item.category] || CAT.autre;
+function ReminderItem({ item, members, onPress }) {
+  const cat = CAT[item.cat] || CAT.autre;
   return (
-    <Card onClick={() => onPress(item)} style={{ marginBottom: 10, padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer' }}>
-      <div style={{ width: 10, height: 10, borderRadius: '50%', background: cat.dot, flexShrink: 0 }} />
+    <div onClick={onPress} style={{ display: 'flex', gap: 12, padding: '13px 0', alignItems: 'flex-start', cursor: 'pointer' }}>
+      <div style={{ width: 10, height: 10, borderRadius: 5, background: cat.dot, marginTop: 5, flexShrink: 0 }} />
       <div style={{ flex: 1 }}>
-        <p style={{ fontSize: 15, fontWeight: 700, fontFamily: FONTS.body, color: COLORS.text }}>{item.title}</p>
-        {item.date && <p style={{ fontSize: 12, color: COLORS.textMuted, fontFamily: FONTS.body }}>{item.date}{item.time ? ` à ${item.time}` : ''}</p>}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 3 }}>
+          <span style={{ fontSize: 15, fontWeight: 700, fontFamily: FONTS.body, color: COLORS.text }}>{item.title}</span>
+          <span style={{ background: cat.bg, color: cat.c, fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: 999, fontFamily: FONTS.body }}>{cat.label}</span>
+        </div>
+        <p style={{ fontSize: 12, fontFamily: FONTS.body, color: COLORS.textMuted }}>{item.meta}</p>
+        {item.members.length > 0 && (
+          <div style={{ display: 'flex', gap: 4, marginTop: 6 }}>
+            {item.members.map(initials => { const m = members.find(x => x.initials === initials); return m ? <Avatar key={initials} initials={m.display || m.initials} color={m.color} size="xs" photo={m.photo} /> : null; })}
+          </div>
+        )}
       </div>
-      <span style={{ background: cat.bg, borderRadius: 8, padding: '3px 10px', fontSize: 11, fontWeight: 700, color: cat.c, fontFamily: FONTS.body }}>{cat.label}</span>
-      <button onClick={e => { e.stopPropagation(); onDelete(item.id); }} style={{ background: 'none', border: 'none', cursor: 'pointer', color: COLORS.textMuted, fontSize: 16 }}>✕</button>
-    </Card>
+    </div>
   );
 }
 
-export function RemindersScreen({ userName, userPhoto, userColor, reminders, setReminders, memberId }) {
+function getWeekBounds() {
+  const today = new Date(); today.setHours(0,0,0,0);
+  const dow = today.getDay();
+  const mon = new Date(today); mon.setDate(today.getDate() - (dow === 0 ? 6 : dow - 1));
+  const sun = new Date(mon); sun.setDate(mon.getDate() + 6); sun.setHours(23,59,59,999);
+  return { mon, sun };
+}
+
+function nextOccurrence(r) {
+  if (!r.dateStr) return null;
+  const base = new Date(r.dateStr);
+  if (isNaN(base)) return null;
+  const today = new Date(); today.setHours(0,0,0,0);
+  if (r.recur === 'hebdo') {
+    const next = new Date(today);
+    const diff = (base.getDay() - today.getDay() + 7) % 7;
+    next.setDate(today.getDate() + diff);
+    return next;
+  }
+  if (r.recur === 'annuel') {
+    const next = new Date(today.getFullYear(), base.getMonth(), base.getDate());
+    if (next < today) next.setFullYear(next.getFullYear() + 1);
+    return next;
+  }
+  return base;
+}
+
+function isThisWeek(r) {
+  const d = nextOccurrence(r);
+  if (!d) return false;
+  const { mon, sun } = getWeekBounds();
+  return d >= mon && d <= sun;
+}
+
+function isUpcoming(r) {
+  const d = nextOccurrence(r);
+  if (!d) return false;
+  const { sun } = getWeekBounds();
+  const today = new Date(); today.setHours(0,0,0,0);
+  return d > sun || (r.recur && d >= today);
+}
+
+export function RemindersScreen({ userName = 'Sophie', userColor = COLORS.sophieColor, userPhoto = null, reminders = [], setReminders }) {
+  const MEMBERS = getMembers(userName, userColor, userPhoto);
   const [modal, setModal] = useState(false);
+  const [selectedReminder, setSelectedReminder] = useState(null);
   const [newTitle, setNewTitle] = useState('');
-  const [newDate, setNewDate] = useState('');
-  const [newTime, setNewTime] = useState('');
-  const [newCat, setNewCat] = useState('chore');
+  const [newDay, setNewDay] = useState('');
+  const [newMonth, setNewMonth] = useState('');
+  const [newYear, setNewYear] = useState(String(new Date().getFullYear()));
+  const [newCat, setNewCat] = useState('autre');
   const [newRecur, setNewRecur] = useState('none');
 
-  const addReminder = async () => {
-    if (!newTitle.trim()) return;
-    await supabase.from('reminders').insert({
-      title: newTitle.trim(),
-      date: newDate || null,
-      time: newTime || null,
-      recurrence: newRecur,
-      created_by: userName,
-    });
-    setNewTitle(''); setNewDate(''); setNewTime(''); setNewCat('chore'); setNewRecur('none');
-    setModal(false);
-  };
+  const thisWeek = reminders.filter(r => isThisWeek(r));
+  const upcoming = reminders.filter(r => !isThisWeek(r) && (() => { const d = nextOccurrence(r); return d && d >= new Date(); })());
 
-  const deleteReminder = async (id) => {
-    await supabase.from('reminders').delete().eq('id', id);
-  };
+  function toggleMember(reminderId, initials) {
+    setReminders(prev => prev.map(r => {
+      if (r.id !== reminderId) return r;
+      const has = r.members.includes(initials);
+      return { ...r, members: has ? r.members.filter(i => i !== initials) : [...r.members, initials] };
+    }));
+    setSelectedReminder(prev => {
+      if (!prev || prev.id !== reminderId) return prev;
+      const has = prev.members.includes(initials);
+      return { ...prev, members: has ? prev.members.filter(i => i !== initials) : [...prev.members, initials] };
+    });
+  }
+
+  function addReminder() {
+    if (!newTitle.trim() || !newDay || !newMonth) return;
+    const dateObj = new Date(Number(newYear), Number(newMonth) - 1, Number(newDay));
+    if (isNaN(dateObj)) return;
+    const recurLabel = newRecur === 'hebdo' ? ' · Hebdo' : newRecur === 'annuel' ? ' · Annuel' : '';
+    const meta = dateObj.toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' }) + recurLabel;
+    setReminders(prev => [...prev, { id: Date.now(), title: newTitle.trim(), meta, dateStr: dateObj.toDateString(), cat: newCat, recur: newRecur, members: [MEMBERS[0].initials], createdBy: MEMBERS[0].initials }]);
+    setNewTitle(''); setNewDay(''); setNewMonth(''); setNewYear(String(new Date().getFullYear())); setNewCat('autre'); setNewRecur('none'); setModal(false);
+  }
 
   return (
-    <div style={{ height: '100%', overflowY: 'auto', padding: '8px 20px 40px' }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-        <h2 style={{ fontSize: 32, fontWeight: 800, fontFamily: FONTS.title, color: COLORS.text, letterSpacing: -0.5 }}>Rappels</h2>
-        <button onClick={() => setModal(true)} style={{ width: 36, height: 36, borderRadius: '50%', background: COLORS.purple, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-        </button>
+    <div style={{ height: '100%', display: 'flex', flexDirection: 'column', position: 'relative' }}>
+      <div style={{ overflowY: 'auto', flex: 1, padding: '8px 20px 100px' }}>
+        <div style={{ display: 'flex', alignItems: 'flex-start', marginBottom: 4 }}>
+          <div style={{ flex: 1 }}>
+            <h2 style={{ fontSize: 32, fontWeight: 800, fontFamily: FONTS.title, color: COLORS.text, letterSpacing: -0.5 }}>Rappels</h2>
+            <p style={{ fontSize: 13, fontFamily: FONTS.body, color: COLORS.textMuted, marginTop: 4 }}>{thisWeek.length} cette semaine</p>
+          </div>
+          <img src="/chatouille.png" alt="mascotte" style={{ width: 115, height: 115, objectFit: 'contain' }} />
+        </div>
+
+        {thisWeek.length > 0 && <>
+          <div style={{ fontSize: 11, fontWeight: 700, color: COLORS.textMuted, textTransform: 'uppercase', letterSpacing: 0.8, margin: '18px 0 10px', fontFamily: FONTS.body }}>Cette semaine</div>
+          <Card style={{ padding: '4px 16px' }}>
+            {thisWeek.map((r, i) => <div key={r.id} style={{ borderBottom: i < thisWeek.length - 1 ? `1px solid ${COLORS.border}` : 'none' }}><ReminderItem item={r} members={MEMBERS} onPress={() => setSelectedReminder(r)} /></div>)}
+          </Card>
+        </>}
+
+        {upcoming.length > 0 && <>
+          <div style={{ fontSize: 11, fontWeight: 700, color: COLORS.textMuted, textTransform: 'uppercase', letterSpacing: 0.8, margin: '18px 0 10px', fontFamily: FONTS.body }}>À venir</div>
+          <Card style={{ padding: '4px 16px' }}>
+            {upcoming.map((r, i) => <div key={r.id} style={{ borderBottom: i < upcoming.length - 1 ? `1px solid ${COLORS.border}` : 'none' }}><ReminderItem item={r} members={MEMBERS} onPress={() => setSelectedReminder(r)} /></div>)}
+          </Card>
+        </>}
+
+        {thisWeek.length === 0 && upcoming.length === 0 && (
+          <p style={{ textAlign: 'center', padding: 40, color: COLORS.textMuted, fontFamily: FONTS.body }}>Aucun rappel à venir</p>
+        )}
       </div>
-
-      {reminders.length === 0 && (
-        <div style={{ textAlign: 'center', padding: '40px 0', color: COLORS.textMuted, fontFamily: FONTS.body }}>Aucun rappel pour l'instant</div>
-      )}
-
-      {reminders.map(item => (
-        <ReminderItem key={item.id} item={item} onPress={() => {}} onDelete={deleteReminder} />
-      ))}
+      <button onClick={() => setModal(true)} style={{ position: 'absolute', bottom: 24, right: 20, width: 52, height: 52, borderRadius: 26, background: COLORS.purple, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: `0 4px 16px ${COLORS.purple}66` }}>
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      </button>
+      {/* Detail modal */}
+      <Modal visible={!!selectedReminder} onClose={() => setSelectedReminder(null)} title={selectedReminder?.title || ''}>
+        {selectedReminder && <>
+          <p style={{ fontSize: 12, fontFamily: FONTS.body, color: COLORS.textMuted, marginBottom: 16 }}>{selectedReminder.meta}</p>
+          <p style={{ fontSize: 11, fontWeight: 700, color: COLORS.textMuted, textTransform: 'uppercase', letterSpacing: 0.8, fontFamily: FONTS.body, marginBottom: 10 }}>Notifications</p>
+          {BASE_MEMBERS.map(bm => {
+            const m = MEMBERS.find(x => x.initials === bm.initials) || bm;
+            const isIn = selectedReminder.members.includes(m.initials);
+            return (
+              <div key={m.initials} onClick={() => toggleMember(selectedReminder.id, m.initials)} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 0', borderBottom: `1px solid ${COLORS.border}`, cursor: 'pointer' }}>
+                <Avatar initials={m.display || m.initials} color={m.color} size="sm" photo={m.photo} />
+                <span style={{ flex: 1, fontSize: 15, fontWeight: 700, fontFamily: FONTS.body, color: COLORS.text }}>{m.name}</span>
+                <div style={{ width: 46, height: 27, borderRadius: 14, background: isIn ? COLORS.greenMid : COLORS.border, position: 'relative', transition: 'background 0.2s' }}>
+                  <div style={{ position: 'absolute', top: 3, left: isIn ? 22 : 3, width: 21, height: 21, borderRadius: '50%', background: '#fff', transition: 'left 0.2s' }} />
+                </div>
+              </div>
+            );
+          })}
+          <PrimaryButton label="Fermer" onClick={() => setSelectedReminder(null)} />
+          {(!selectedReminder.createdBy || selectedReminder.createdBy === MEMBERS[0].initials) && (
+            <button onClick={() => { setReminders(prev => prev.filter(r => r.id !== selectedReminder.id)); setSelectedReminder(null); }} style={{ width: '100%', padding: '12px', borderRadius: 14, border: `2px solid ${COLORS.pinkDark}`, background: 'transparent', color: COLORS.pinkDark, fontSize: 14, fontWeight: 700, fontFamily: FONTS.body, cursor: 'pointer', marginTop: 6 }}>
+              Supprimer ce rappel
+            </button>
+          )}
+        </>}
+      </Modal>
 
       <Modal visible={modal} onClose={() => setModal(false)} title="Nouveau rappel">
-        <input placeholder="Titre du rappel" value={newTitle} onChange={e => setNewTitle(e.target.value)} autoFocus
-          style={{ width: '100%', padding: '12px 14px', borderRadius: 12, border: `2px solid ${COLORS.border}`, fontSize: 15, fontFamily: FONTS.body, outline: 'none', boxSizing: 'border-box', marginBottom: 12 }} />
-        <input type="date" value={newDate} onChange={e => setNewDate(e.target.value)}
-          style={{ width: '100%', padding: '12px 14px', borderRadius: 12, border: `2px solid ${COLORS.border}`, fontSize: 15, fontFamily: FONTS.body, outline: 'none', boxSizing: 'border-box', marginBottom: 12 }} />
-        <input type="time" value={newTime} onChange={e => setNewTime(e.target.value)}
-          style={{ width: '100%', padding: '12px 14px', borderRadius: 12, border: `2px solid ${COLORS.border}`, fontSize: 15, fontFamily: FONTS.body, outline: 'none', boxSizing: 'border-box', marginBottom: 12 }} />
+        <input value={newTitle} onChange={e => setNewTitle(e.target.value)} placeholder="Titre…" style={{ width: '100%', padding: '13px 16px', border: `2px solid ${COLORS.border}`, borderRadius: 14, fontSize: 15, fontFamily: FONTS.body, marginBottom: 10, outline: 'none', boxSizing: 'border-box' }} />
+        <p style={{ fontSize: 11, fontWeight: 700, color: COLORS.textMuted, textTransform: 'uppercase', letterSpacing: 0.8, fontFamily: FONTS.body, marginBottom: 8 }}>Date</p>
+        <div style={{ display: 'flex', gap: 8, marginBottom: 10 }}>
+          <select value={newDay} onChange={e => setNewDay(e.target.value)} style={{ flex: 1, padding: '12px 8px', border: `2px solid ${COLORS.border}`, borderRadius: 14, fontSize: 15, fontFamily: FONTS.body, outline: 'none', background: '#fff' }}>
+            <option value="">Jour</option>
+            {Array.from({length:31},(_,i)=>i+1).map(d => <option key={d} value={d}>{d}</option>)}
+          </select>
+          <select value={newMonth} onChange={e => setNewMonth(e.target.value)} style={{ flex: 2, padding: '12px 8px', border: `2px solid ${COLORS.border}`, borderRadius: 14, fontSize: 15, fontFamily: FONTS.body, outline: 'none', background: '#fff' }}>
+            <option value="">Mois</option>
+            {['Jan','Fév','Mar','Avr','Mai','Juin','Juil','Aoû','Sep','Oct','Nov','Déc'].map((m,i) => <option key={i} value={i+1}>{m}</option>)}
+          </select>
+          <select value={newYear} onChange={e => setNewYear(e.target.value)} style={{ flex: 1, padding: '12px 8px', border: `2px solid ${COLORS.border}`, borderRadius: 14, fontSize: 15, fontFamily: FONTS.body, outline: 'none', background: '#fff' }}>
+            {Array.from({length:5},(_,i)=>new Date().getFullYear()+i).map(y => <option key={y} value={y}>{y}</option>)}
+          </select>
+        </div>
+        <p style={{ fontSize: 11, fontWeight: 700, color: COLORS.textMuted, textTransform: 'uppercase', letterSpacing: 0.8, fontFamily: FONTS.body, marginBottom: 8 }}>Catégorie</p>
         <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
-          {Object.entries(CAT).map(([k, v]) => (
-            <button key={k} onClick={() => setNewCat(k)} style={{ flex: 1, padding: '8px 0', borderRadius: 10, border: `2px solid ${newCat === k ? v.dot : COLORS.border}`, background: newCat === k ? v.bg : COLORS.surface, color: newCat === k ? v.c : COLORS.textMuted, fontSize: 12, fontWeight: 700, fontFamily: FONTS.body, cursor: 'pointer' }}>{v.label}</button>
+          {[['tâche', 'chore'], ['anniversaire', 'birthday'], ['autre', 'autre']].map(([l, k]) => (
+            <button key={k} onClick={() => setNewCat(k)} style={{ flex: 1, padding: 10, borderRadius: 12, border: `2px solid ${newCat === k ? COLORS.text : 'transparent'}`, background: CAT[k]?.bg || '#EEE', color: CAT[k]?.c || '#555', fontSize: 12, fontWeight: 700, fontFamily: FONTS.body, cursor: 'pointer' }}>{l}</button>
           ))}
         </div>
-        <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
-          {[['none','une fois'],['weekly','hebdo'],['monthly','mensuel']].map(([k, l]) => (
-            <button key={k} onClick={() => setNewRecur(k)} style={{ flex: 1, padding: '8px 0', borderRadius: 10, border: `2px solid ${newRecur === k ? COLORS.purple : COLORS.border}`, background: newRecur === k ? COLORS.purpleLight : COLORS.surface, color: newRecur === k ? COLORS.purpleDark : COLORS.textMuted, fontSize: 12, fontWeight: 700, fontFamily: FONTS.body, cursor: 'pointer' }}>{l}</button>
+        <p style={{ fontSize: 11, fontWeight: 700, color: COLORS.textMuted, textTransform: 'uppercase', letterSpacing: 0.8, fontFamily: FONTS.body, marginBottom: 8 }}>Récurrence</p>
+        <div style={{ display: 'flex', gap: 8, marginBottom: 14 }}>
+          {[['Aucune', 'none'], ['Hebdo', 'hebdo'], ['Annuel', 'annuel']].map(([l, k]) => (
+            <button key={k} onClick={() => setNewRecur(k)} style={{ flex: 1, padding: 10, borderRadius: 12, border: `2px solid ${newRecur === k ? COLORS.purple : COLORS.border}`, background: newRecur === k ? COLORS.purpleLight : COLORS.surface, color: newRecur === k ? COLORS.purpleDark : COLORS.textMuted, fontSize: 12, fontWeight: 700, fontFamily: FONTS.body, cursor: 'pointer' }}>{l}</button>
           ))}
         </div>
         <PrimaryButton label="Créer le rappel" onClick={addReminder} />
@@ -238,8 +525,13 @@ export function RemindersScreen({ userName, userPhoto, userColor, reminders, set
 
 // ── PROFILE ──────────────────────────────────────────────────
 const SWATCHES = [
-  '#FFD740', '#F07A4E', '#F48FB1', '#E53935',
-  '#AB47BC', '#00AFBE', '#26A69A', '#66BB6A',
+  '#FFD740', // jaune
+  '#F07A4E', // corail
+  '#F48FB1', // rose
+  '#E53935', // rouge
+  '#AB47BC', // violet
+  '#00AFBE', // turquoise
+  '#66BB6A', // vert
 ];
 
 export function ProfileScreen({ userName = 'Sophie', setUserName, userPhoto, setUserPhoto, userColor = '#FFD740', setUserColor }) {
@@ -274,9 +566,13 @@ export function ProfileScreen({ userName = 'Sophie', setUserName, userPhoto, set
         )}
         {editingName ? (
           <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-            <input value={nameInput} onChange={e => setNameInput(e.target.value)}
+            <input
+              value={nameInput}
+              onChange={e => setNameInput(e.target.value)}
               onKeyDown={e => { if (e.key === 'Enter') { setUserName?.(nameInput); setEditingName(false); } if (e.key === 'Escape') setEditingName(false); }}
-              autoFocus style={{ fontSize: 20, fontWeight: 800, fontFamily: FONTS.title, color: COLORS.text, border: `2px solid ${COLORS.purple}`, borderRadius: 10, padding: '4px 10px', outline: 'none', width: 160 }} />
+              autoFocus
+              style={{ fontSize: 20, fontWeight: 800, fontFamily: FONTS.title, color: COLORS.text, border: `2px solid ${COLORS.purple}`, borderRadius: 10, padding: '4px 10px', outline: 'none', width: 160 }}
+            />
             <button onClick={() => { setUserName?.(nameInput); setEditingName(false); }} style={{ background: COLORS.purple, color: '#fff', border: 'none', borderRadius: 8, padding: '6px 12px', fontWeight: 700, fontFamily: FONTS.body, cursor: 'pointer' }}>OK</button>
           </div>
         ) : (
@@ -289,7 +585,7 @@ export function ProfileScreen({ userName = 'Sophie', setUserName, userPhoto, set
 
       {!userPhoto && <>
         <div style={{ fontSize: 11, fontWeight: 700, color: COLORS.textMuted, textTransform: 'uppercase', letterSpacing: 0.8, margin: '0 0 10px', fontFamily: FONTS.body }}>Couleur d'avatar</div>
-        <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 20 }}>
+        <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 20, justifyContent: 'center' }}>
           {SWATCHES.map(c => (
             <div key={c} onClick={() => setUserColor?.(c)} style={{ width: 34, height: 34, borderRadius: '50%', background: c, cursor: 'pointer', border: `3px solid ${userColor === c ? COLORS.text : 'transparent'}` }} />
           ))}
@@ -318,4 +614,12 @@ export function ProfileScreen({ userName = 'Sophie', setUserName, userPhoto, set
       </div>
     </div>
   );
+}
+
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.getRegistrations().then(regs => {
+      regs.forEach(r => r.unregister());
+    });
+  });
 }
