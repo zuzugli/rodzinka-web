@@ -88,7 +88,7 @@ export function Modal({ visible, onClose, title, children }) {
             {title}
           </div>
         </div>
-        <div style={{ overflowY: 'auto', padding: '0 24px 24px', flex: 1 }}>
+        <div style={{ overflowY: 'auto', WebkitOverflowScrolling: 'touch', padding: '0 24px 24px', flex: 1 }}>
           {children}
         </div>
       </div>

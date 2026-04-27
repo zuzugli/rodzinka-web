@@ -575,16 +575,16 @@ export function RemindersScreen({ userName = 'Sophie', userColor = COLORS.sophie
             {Array.from({length:5},(_,i)=>new Date().getFullYear()+i).map(y => <option key={y} value={y}>{y}</option>)}
           </select>
         </div>
-        <p style={{ fontSize: 11, fontWeight: 700, color: COLORS.textMuted, textTransform: 'uppercase', letterSpacing: 0.8, fontFamily: FONTS.body, marginBottom: 8 }}>Catégorie</p>
-        <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
+        <p style={{ fontSize: 11, fontWeight: 700, color: COLORS.textMuted, textTransform: 'uppercase', letterSpacing: 0.8, fontFamily: FONTS.body, marginBottom: 10 }}>Catégorie</p>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 16 }}>
           {[['tâche', 'chore'], ['anniversaire', 'birthday'], ['autre', 'autre']].map(([l, k]) => (
-            <button key={k} onClick={() => setNewCat(k)} style={{ flex: 1, padding: 10, borderRadius: 12, border: `2px solid ${newCat === k ? COLORS.text : 'transparent'}`, background: CAT[k]?.bg || '#EEE', color: CAT[k]?.c || '#555', fontSize: 12, fontWeight: 700, fontFamily: FONTS.body, cursor: 'pointer' }}>{l}</button>
+            <button key={k} onClick={() => setNewCat(k)} style={{ width: '100%', padding: '13px 16px', borderRadius: 14, border: `2px solid ${newCat === k ? CAT[k]?.c || COLORS.text : COLORS.border}`, background: newCat === k ? CAT[k]?.bg || '#EEE' : '#fff', color: newCat === k ? CAT[k]?.c || '#555' : COLORS.textMuted, fontSize: 14, fontWeight: 700, fontFamily: FONTS.body, cursor: 'pointer', textAlign: 'left' }}>{l}</button>
           ))}
         </div>
-        <p style={{ fontSize: 11, fontWeight: 700, color: COLORS.textMuted, textTransform: 'uppercase', letterSpacing: 0.8, fontFamily: FONTS.body, marginBottom: 8 }}>Récurrence</p>
-        <div style={{ display: 'flex', gap: 8, marginBottom: 14 }}>
+        <p style={{ fontSize: 11, fontWeight: 700, color: COLORS.textMuted, textTransform: 'uppercase', letterSpacing: 0.8, fontFamily: FONTS.body, marginBottom: 10 }}>Récurrence</p>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 16 }}>
           {[['Aucune', 'none'], ['Hebdo', 'hebdo'], ['Annuel', 'annuel']].map(([l, k]) => (
-            <button key={k} onClick={() => setNewRecur(k)} style={{ flex: 1, padding: 10, borderRadius: 12, border: `2px solid ${newRecur === k ? COLORS.purple : COLORS.border}`, background: newRecur === k ? COLORS.purpleLight : COLORS.surface, color: newRecur === k ? COLORS.purpleDark : COLORS.textMuted, fontSize: 12, fontWeight: 700, fontFamily: FONTS.body, cursor: 'pointer' }}>{l}</button>
+            <button key={k} onClick={() => setNewRecur(k)} style={{ width: '100%', padding: '13px 16px', borderRadius: 14, border: `2px solid ${newRecur === k ? COLORS.purple : COLORS.border}`, background: newRecur === k ? COLORS.purpleLight : '#fff', color: newRecur === k ? COLORS.purpleDark : COLORS.textMuted, fontSize: 14, fontWeight: 700, fontFamily: FONTS.body, cursor: 'pointer', textAlign: 'left' }}>{l}</button>
           ))}
         </div>
         <PrimaryButton label={editingId ? 'Enregistrer' : 'Créer le rappel'} onClick={saveReminder} />
