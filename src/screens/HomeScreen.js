@@ -32,13 +32,13 @@ function getThisWeek(reminders, week) {
   const today = new Date(); today.setHours(0,0,0,0);
   return reminders.filter(r => {
     const base = new Date(r.dateStr); if (isNaN(base)) return false;
-    if (r.recur === 'weekly') {
+    if (r.recur === 'weekly' || r.recur === 'hebdo') {
       const day = base.getDay();
       const cur = new Date(mon);
       while (cur <= sun) { if (cur.getDay() === day) return true; cur.setDate(cur.getDate()+1); }
       return false;
     }
-    if (r.recur === 'yearly') {
+    if (r.recur === 'yearly' || r.recur === 'annuel') {
       const d = new Date(base); d.setFullYear(mon.getFullYear());
       return d >= mon && d <= sun;
     }
@@ -52,8 +52,8 @@ function remindersForDay(reminders, date) {
   return reminders.filter(r => {
     if (!r.dateStr) return false;
     const base = new Date(r.dateStr); if (isNaN(base)) return false;
-    if (r.recur === 'weekly') return base.getDay() === d.getDay();
-    if (r.recur === 'yearly') return base.getMonth() === d.getMonth() && base.getDate() === d.getDate();
+    if (r.recur === 'weekly' || r.recur === 'hebdo') return base.getDay() === d.getDay();
+    if (r.recur === 'yearly' || r.recur === 'annuel') return base.getMonth() === d.getMonth() && base.getDate() === d.getDate();
     const bd = new Date(base); bd.setHours(0,0,0,0);
     return bd.getTime() === d.getTime();
   });

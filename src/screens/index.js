@@ -358,7 +358,7 @@ function ReminderItem({ item, members, onPress }) {
       <div style={{ width: 10, height: 10, borderRadius: 5, background: cat.dot, marginTop: 5, flexShrink: 0 }} />
       <div style={{ flex: 1 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 3 }}>
-          <span style={{ fontSize: 15, fontWeight: 700, fontFamily: FONTS.body, color: COLORS.text }}>{item.title}</span>
+          <span style={{ fontSize: 16, fontWeight: 800, fontFamily: FONTS.title, color: COLORS.text }}>{item.title}</span>
           <span style={{ background: cat.bg, color: cat.c, fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: 999, fontFamily: FONTS.body }}>{cat.label}</span>
         </div>
         <div style={{ display: 'inline-flex', alignItems: 'center', gap: 4, marginTop: 4, background: COLORS.surface, borderRadius: 8, padding: '3px 8px' }}>
