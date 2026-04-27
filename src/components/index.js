@@ -92,12 +92,13 @@ export function Modal({ visible, onClose, title, children }) {
   );
 }
 
-export function Input({ placeholder, value, onChange }) {
+export function Input({ placeholder, value, onChange, ...rest }) {
   return (
     <input
       placeholder={placeholder}
       value={value}
-      onChange={e => onChange(e.target.value)}
+      onChange={onChange}
+      {...rest}
       style={{
         width: '100%', padding: '13px 16px', border: `2px solid ${COLORS.border}`,
         borderRadius: 14, fontSize: 15, fontFamily: FONTS.body,
