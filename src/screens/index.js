@@ -361,7 +361,10 @@ function ReminderItem({ item, members, onPress }) {
           <span style={{ fontSize: 15, fontWeight: 700, fontFamily: FONTS.body, color: COLORS.text }}>{item.title}</span>
           <span style={{ background: cat.bg, color: cat.c, fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: 999, fontFamily: FONTS.body }}>{cat.label}</span>
         </div>
-        <p style={{ fontSize: 12, fontFamily: FONTS.body, color: COLORS.textMuted }}>{item.meta}</p>
+        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 4, marginTop: 4, background: COLORS.surface, borderRadius: 8, padding: '3px 8px' }}>
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke={COLORS.purple} strokeWidth="2.5"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          <span style={{ fontSize: 12, fontWeight: 700, fontFamily: FONTS.body, color: COLORS.purple }}>{item.meta}</span>
+        </div>
         {item.members && item.members.length > 0 && (
           <div style={{ display: 'flex', gap: 4, marginTop: 6 }}>
             {item.members.map(initials => { const m = members.find(x => x.initials === initials); return m ? <Avatar key={initials} initials={m.display || m.initials} color={m.color} size="xs" photo={m.photo} /> : null; })}
