@@ -470,15 +470,17 @@ export function RemindersScreen({ userName = 'Sophie', userColor = COLORS.sophie
         title: newTitle.trim(),
         date: toISODate(dateObj),
         recurrence: newRecur,
+        cat: newCat,
       }).eq('id', editingId);
       setReminders(prev => prev.map(r => r.id !== editingId ? r : {
-        ...r, title: newTitle.trim(), meta, dateStr: dateObj.toDateString(), recur: newRecur,
+        ...r, title: newTitle.trim(), meta, dateStr: dateObj.toDateString(), recur: newRecur, cat: newCat,
       }));
     } else {
       await supabase.from('reminders').insert({
         title: newTitle.trim(),
         date: toISODate(dateObj),
         recurrence: newRecur,
+        cat: newCat,
         created_by: MEMBERS[0].initials,
       });
     }

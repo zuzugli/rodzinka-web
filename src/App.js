@@ -48,7 +48,7 @@ export default function App() {
           title: r.title,
           meta,
           dateStr: dateObj ? dateObj.toDateString() : '',
-          cat: 'autre',
+          cat: r.cat || 'autre',
           recur: r.recurrence || 'none',
           members: r.created_by ? [r.created_by] : [],
           createdBy: r.created_by,
