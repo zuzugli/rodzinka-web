@@ -540,7 +540,7 @@ export function RemindersScreen({ userName = 'Sophie', userColor = COLORS.sophie
               </div>
             );
           })}
-          <PrimaryButton label="Fermer" onClick={() => setSelectedReminder(null)} />
+          <button onClick={() => setSelectedReminder(null)} style={{ width: '100%', padding: '14px', borderRadius: 14, border: `2px solid ${COLORS.border}`, background: 'transparent', color: COLORS.textMuted, fontSize: 14, fontWeight: 700, fontFamily: FONTS.body, cursor: 'pointer', marginTop: 8 }}>Fermer</button>
           {(!selectedReminder.createdBy || selectedReminder.createdBy === MEMBERS[0].initials) && (
             <button onClick={() => openEdit(selectedReminder)} style={{ width: '100%', padding: '12px', borderRadius: 14, border: 'none', background: COLORS.purple, color: '#fff', fontSize: 14, fontWeight: 700, fontFamily: FONTS.body, cursor: 'pointer', marginTop: 6 }}>
               ✏️ Modifier ce rappel
