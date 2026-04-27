@@ -417,6 +417,7 @@ function isUpcoming(r) {
 export function RemindersScreen({ userName = 'Sophie', userColor = COLORS.sophieColor, userPhoto = null, reminders = [], setReminders }) {
   const MEMBERS = getMembers(userName, userColor, userPhoto);
   const [modal, setModal] = useState(false);
+  const [editingId, setEditingId] = useState(null);
   const [selectedReminder, setSelectedReminder] = useState(null);
   const [newTitle, setNewTitle] = useState('');
   const [newDay, setNewDay] = useState('');
@@ -441,17 +442,42 @@ export function RemindersScreen({ userName = 'Sophie', userColor = COLORS.sophie
     });
   }
 
-  async function addReminder() {
+  function resetForm() {
+    setNewTitle(''); setNewDay(''); setNewMonth(''); setNewYear(String(new Date().getFullYear())); setNewCat('autre'); setNewRecur('none'); setEditingId(null);
+  }
+
+  function openEdit(reminder) {
+    const d = reminder.dateStr ? new Date(reminder.dateStr) : null;
+    setNewTitle(reminder.title);
+    setNewDay(d ? String(d.getDate()) : '');
+    setNewMonth(d ? String(d.getMonth() + 1) : '');
+    setNewYear(d ? String(d.getFullYear()) : String(new Date().getFullYear()));
+    setNewCat(reminder.cat || 'autre');
+    setNewRecur(reminder.recur || 'none');
+    setEditingId(reminder.id);
+    setSelectedReminder(null);
+    setModal(true);
+  }
+
+  async function saveReminder() {
     if (!newTitle.trim() || !newDay || !newMonth) return;
     const dateObj = new Date(Number(newYear), Number(newMonth) - 1, Number(newDay));
     if (isNaN(dateObj)) return;
-    await supabase.from('reminders').insert({
-      title: newTitle.trim(),
-      date: toISODate(dateObj),
-      recurrence: newRecur,
-      created_by: MEMBERS[0].initials,
-    });
-    setNewTitle(''); setNewDay(''); setNewMonth(''); setNewYear(String(new Date().getFullYear())); setNewCat('autre'); setNewRecur('none'); setModal(false);
+    if (editingId) {
+      await supabase.from('reminders').update({
+        title: newTitle.trim(),
+        date: toISODate(dateObj),
+        recurrence: newRecur,
+      }).eq('id', editingId);
+    } else {
+      await supabase.from('reminders').insert({
+        title: newTitle.trim(),
+        date: toISODate(dateObj),
+        recurrence: newRecur,
+        created_by: MEMBERS[0].initials,
+      });
+    }
+    resetForm(); setModal(false);
   }
 
   async function deleteReminder(id) {
@@ -510,13 +536,20 @@ export function RemindersScreen({ userName = 'Sophie', userColor = COLORS.sophie
             );
           })}
           <PrimaryButton label="Fermer" onClick={() => setSelectedReminder(null)} />
-          <button onClick={() => deleteReminder(selectedReminder.id)} style={{ width: '100%', padding: '12px', borderRadius: 14, border: `2px solid ${COLORS.pinkDark}`, background: 'transparent', color: COLORS.pinkDark, fontSize: 14, fontWeight: 700, fontFamily: FONTS.body, cursor: 'pointer', marginTop: 6 }}>
-            Supprimer ce rappel
-          </button>
+          {selectedReminder.createdBy === MEMBERS[0].initials && (
+            <button onClick={() => openEdit(selectedReminder)} style={{ width: '100%', padding: '12px', borderRadius: 14, border: `2px solid ${COLORS.purple}`, background: 'transparent', color: COLORS.purple, fontSize: 14, fontWeight: 700, fontFamily: FONTS.body, cursor: 'pointer', marginTop: 6 }}>
+              Modifier ce rappel
+            </button>
+          )}
+          {selectedReminder.createdBy === MEMBERS[0].initials && (
+            <button onClick={() => deleteReminder(selectedReminder.id)} style={{ width: '100%', padding: '12px', borderRadius: 14, border: `2px solid ${COLORS.pinkDark}`, background: 'transparent', color: COLORS.pinkDark, fontSize: 14, fontWeight: 700, fontFamily: FONTS.body, cursor: 'pointer', marginTop: 6 }}>
+              Supprimer ce rappel
+            </button>
+          )}
         </>}
       </Modal>
 
-      <Modal visible={modal} onClose={() => setModal(false)} title="Nouveau rappel">
+      <Modal visible={modal} onClose={() => { setModal(false); resetForm(); }} title={editingId ? 'Modifier le rappel' : 'Nouveau rappel'}>
         <input value={newTitle} onChange={e => setNewTitle(e.target.value)} placeholder="Titre…" style={{ width: '100%', padding: '13px 16px', border: `2px solid ${COLORS.border}`, borderRadius: 14, fontSize: 15, fontFamily: FONTS.body, marginBottom: 10, outline: 'none', boxSizing: 'border-box' }} />
         <p style={{ fontSize: 11, fontWeight: 700, color: COLORS.textMuted, textTransform: 'uppercase', letterSpacing: 0.8, fontFamily: FONTS.body, marginBottom: 8 }}>Date</p>
         <div style={{ display: 'flex', gap: 8, marginBottom: 10 }}>
@@ -544,7 +577,7 @@ export function RemindersScreen({ userName = 'Sophie', userColor = COLORS.sophie
             <button key={k} onClick={() => setNewRecur(k)} style={{ flex: 1, padding: 10, borderRadius: 12, border: `2px solid ${newRecur === k ? COLORS.purple : COLORS.border}`, background: newRecur === k ? COLORS.purpleLight : COLORS.surface, color: newRecur === k ? COLORS.purpleDark : COLORS.textMuted, fontSize: 12, fontWeight: 700, fontFamily: FONTS.body, cursor: 'pointer' }}>{l}</button>
           ))}
         </div>
-        <PrimaryButton label="Créer le rappel" onClick={addReminder} />
+        <PrimaryButton label={editingId ? 'Enregistrer' : 'Créer le rappel'} onClick={saveReminder} />
       </Modal>
     </div>
   );
