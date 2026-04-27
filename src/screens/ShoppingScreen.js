@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { COLORS, FONTS } from '../theme';
 import { Avatar, Card, Modal, Input, PrimaryButton } from '../components';
+import { supabase } from '../supabase';
 
 const FAMILY = {
   Sophie: { initials: 'SP', color: COLORS.sophieColor },
@@ -27,41 +28,58 @@ function relativeDate(ts) {
   return `il y a ${diff} jours`;
 }
 
-const INITIAL = [
-  { id:1, name:"Huile d'olive",   by:'Sophie', addedAt: daysAgo(2), done:false },
-  { id:2, name:'Pâtes (x3)',      by:'Marc',   addedAt: daysAgo(1), done:false },
-  { id:3, name:'Yaourt grec',     by:'Lucie',  addedAt: daysAgo(0), done:false },
-  { id:4, name:'Pain au levain',  by:'Thomas', addedAt: daysAgo(0), done:false },
-  { id:5, name:"Lait d'amande",   by:'Sophie', addedAt: daysAgo(0), done:false },
-  { id:6, name:'Parmesan',        by:'Marc',   addedAt: daysAgo(3), done:false },
-  { id:7, name:'Tomates cerises', by:'Lucie',  addedAt: daysAgo(1), done:false },
-  { id:8, name:"Jus d'orange",    by:'Thomas', addedAt: daysAgo(0), done:false },
-];
-
 export default function ShoppingScreen({ userName = 'Sophie', userPhoto, userColor = COLORS.sophieColor }) {
-  const [items, setItems] = useState(() => { try { const s = localStorage.getItem('shopping_items'); return s ? JSON.parse(s) : INITIAL; } catch { return INITIAL; } });
-  useEffect(() => localStorage.setItem('shopping_items', JSON.stringify(items)), [items]);
+  const [items, setItems] = useState([]);
   const [filter, setFilter] = useState('buy');
   const [modal, setModal] = useState(false);
   const [newName, setNewName] = useState('');
   const [newQty, setNewQty] = useState(1);
-
   const [confirmDelete, setConfirmDelete] = useState(null);
-  const toggle = id => setItems(prev => prev.map(it => it.id === id ? { ...it, done: !it.done } : it));
-  const deleteItem = (e, id) => {
-    e.stopPropagation();
-    if (confirmDelete === id) { setItems(prev => prev.filter(it => it.id !== id)); setConfirmDelete(null); }
-    else { setConfirmDelete(id); setTimeout(() => setConfirmDelete(null), 2500); }
+
+  async function loadItems() {
+    const { data } = await supabase
+      .from('shopping_items')
+      .select('*')
+      .order('created_at', { ascending: false });
+    if (data) setItems(data);
+  }
+
+  useEffect(() => {
+    loadItems();
+    const sub = supabase.channel('shopping')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'shopping_items' }, loadItems)
+      .subscribe();
+    return () => supabase.removeChannel(sub);
+  }, []);
+
+  const toggle = async (id, current) => {
+    await supabase.from('shopping_items').update({ checked: !current }).eq('id', id);
   };
-  const addItem = () => {
+
+  const deleteItem = async (e, id) => {
+    e.stopPropagation();
+    if (confirmDelete === id) {
+      await supabase.from('shopping_items').delete().eq('id', id);
+      setConfirmDelete(null);
+    } else {
+      setConfirmDelete(id);
+      setTimeout(() => setConfirmDelete(null), 2500);
+    }
+  };
+
+  const addItem = async () => {
     if (!newName.trim()) return;
     const name = newQty > 1 ? `${newName.trim()} (x${newQty})` : newName.trim();
-    setItems(prev => [{ id: Date.now(), name, by: userName, addedAt: Date.now(), done: false }, ...prev]);
+    await supabase.from('shopping_items').insert({
+      name,
+      added_by: userName,
+      checked: false,
+    });
     setNewName(''); setNewQty(1); setModal(false);
   };
 
-  const visible = items.filter(it => filter === 'buy' ? !it.done : it.done);
-  const remaining = items.filter(it => !it.done).length;
+  const visible = items.filter(it => filter === 'buy' ? !it.checked : it.checked);
+  const remaining = items.filter(it => !it.checked).length;
 
   function getAvatar(by) {
     if (by === userName) return { initials: userName.charAt(0).toUpperCase(), color: userColor, photo: userPhoto };
@@ -99,23 +117,23 @@ export default function ShoppingScreen({ userName = 'Sophie', userPhoto, userCol
               {filter === 'buy' ? 'Tout est acheté !' : 'Rien encore acheté.'}
             </p>
           ) : visible.map((item, idx) => {
-            const av = getAvatar(item.by);
+            const av = getAvatar(item.added_by);
             return (
-              <div key={item.id} onClick={() => toggle(item.id)} style={{
+              <div key={item.id} onClick={() => toggle(item.id, item.checked)} style={{
                 display: 'flex', alignItems: 'center', gap: 12, padding: '13px 0', cursor: 'pointer',
                 borderBottom: idx < visible.length - 1 ? `1px solid ${COLORS.border}` : 'none',
               }}>
                 <div style={{
-                  width: 26, height: 26, borderRadius: 13, border: `2px solid ${item.done ? COLORS.greenMid : COLORS.border}`,
-                  background: item.done ? COLORS.greenMid : '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+                  width: 26, height: 26, borderRadius: 13, border: `2px solid ${item.checked ? COLORS.greenMid : COLORS.border}`,
+                  background: item.checked ? COLORS.greenMid : '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
                 }}>
-                  {item.done && <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3.5"><polyline points="20 6 9 17 4 12"/></svg>}
+                  {item.checked && <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3.5"><polyline points="20 6 9 17 4 12"/></svg>}
                 </div>
                 <div style={{ flex: 1 }}>
-                  <p style={{ fontSize: 15, fontWeight: 700, fontFamily: FONTS.body, color: item.done ? COLORS.textMuted : COLORS.text, textDecoration: item.done ? 'line-through' : 'none' }}>
+                  <p style={{ fontSize: 15, fontWeight: 700, fontFamily: FONTS.body, color: item.checked ? COLORS.textMuted : COLORS.text, textDecoration: item.checked ? 'line-through' : 'none' }}>
                     {item.name}
                   </p>
-                  <p style={{ fontSize: 11, fontFamily: FONTS.body, color: COLORS.textMuted, marginTop: 2 }}>{relativeDate(item.addedAt)}</p>
+                  <p style={{ fontSize: 11, fontFamily: FONTS.body, color: COLORS.textMuted, marginTop: 2 }}>{relativeDate(item.created_at)}</p>
                 </div>
                 <Avatar initials={av.initials} color={av.color} size="sm" photo={av.photo} />
                 <button onClick={e => deleteItem(e, item.id)} style={{

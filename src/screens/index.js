@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { COLORS, FONTS } from '../theme';
 import { Avatar, Card, Modal, PrimaryButton } from '../components';
+import { supabase } from '../supabase';
 
 const DAYS = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
 const MEALS = ['Midi', 'Soir'];
@@ -20,7 +21,6 @@ export function getMembers(userName, userColor, userPhoto) {
 }
 
 const MONTH_NAMES = ['jan','fév','mar','avr','mai','juin','juil','aoû','sep','oct','nov','déc'];
-
 
 function getWeek(offset) {
   const today = new Date();
@@ -53,11 +53,24 @@ export function CalendarScreen({ userName = 'Sophie', userColor = COLORS.sophieC
   const [selMealStart, setSelMealStart] = useState(null);
   const [selMealEnd, setSelMealEnd] = useState(null);
   const [calMonth, setCalMonth] = useState(() => { const d = new Date(); return { y: d.getFullYear(), m: d.getMonth() }; });
-  const [absences, setAbsences] = useState(() => { try { const s = localStorage.getItem('cal_absences'); return s ? JSON.parse(s) : []; } catch { return []; } });
+  const [absences, setAbsences] = useState([]);
   const [touchStartX, setTouchStartX] = useState(null);
-  const [slideDir, setSlideDir] = useState(null); // 'left' | 'right'
+  const [slideDir, setSlideDir] = useState(null);
   const [animKey, setAnimKey] = useState(0);
-  useEffect(() => localStorage.setItem('cal_absences', JSON.stringify(absences)), [absences]);
+
+  async function loadAbsences() {
+    const { data } = await supabase.from('meals').select('*').eq('meal_type', 'absence');
+    if (data) setAbsences(data.map(a => ({ dateStr: a.date, meal: a.name === 'midi' ? 0 : 1, memberInitials: a.created_by })));
+  }
+
+  useEffect(() => {
+    loadAbsences();
+    const sub = supabase.channel('absences')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'meals' }, loadAbsences)
+      .subscribe();
+    return () => supabase.removeChannel(sub);
+  }, []);
+
   const week = getWeek(weekOffset);
 
   function handleTouchStart(e) { setTouchStartX(e.touches[0].clientX); }
@@ -71,6 +84,41 @@ export function CalendarScreen({ userName = 'Sophie', userColor = COLORS.sophieC
       setWeekOffset(o => o + (diff > 0 ? 1 : -1));
     }
     setTouchStartX(null);
+  }
+
+  async function confirmerAbsence() {
+    if (selDate && selMealStart !== null && selMealEnd !== null) {
+      const endD = selDateEnd || selDate;
+      const cur = new Date(selDate);
+      while (cur.getTime() <= endD.getTime()) {
+        for (let m = 0; m <= 1; m++) {
+          const afterStart = cur.getTime() > selDate.getTime() || m >= selMealStart;
+          const beforeEnd = cur.getTime() < endD.getTime() || m <= selMealEnd;
+          if (afterStart && beforeEnd) {
+            await supabase.from('meals').insert({
+              date: cur.toDateString(),
+              meal_type: 'absence',
+              name: m === 0 ? 'midi' : 'soir',
+              created_by: MEMBERS[0].initials,
+            });
+          }
+        }
+        cur.setDate(cur.getDate() + 1);
+      }
+      await loadAbsences();
+    }
+    setAbsentModal(false); setSelDate(null); setSelDateEnd(null); setSelMealStart(null); setSelMealEnd(null);
+  }
+
+  async function annulerAbsence(dateStr, meal) {
+    await supabase.from('meals')
+      .delete()
+      .eq('meal_type', 'absence')
+      .eq('date', dateStr)
+      .eq('name', meal === 0 ? 'midi' : 'soir')
+      .eq('created_by', MEMBERS[0].initials);
+    await loadAbsences();
+    setSelected(null);
   }
 
   return (
@@ -91,7 +139,6 @@ export function CalendarScreen({ userName = 'Sophie', userColor = COLORS.sophieC
         <div onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd} style={{ touchAction: 'pan-y' }}>
         <Card style={{ padding: 8 }}>
           <div key={animKey} style={{ animation: slideDir ? `${slideDir === 'left' ? 'slideFromRight' : 'slideFromLeft'} 0.25s ease` : 'none' }}>
-            {/* Day headers */}
             <div style={{ display: 'grid', gridTemplateColumns: '28px repeat(7, 1fr)', gap: 3, marginBottom: 6 }}>
               <div />
               {week.map(({ dayIndex, date, isToday }) => (
@@ -124,7 +171,6 @@ export function CalendarScreen({ userName = 'Sophie', userColor = COLORS.sophieC
 
         <PrimaryButton label="Me marquer absent·e…" onClick={() => setAbsentModal(true)} />
 
-        {/* Absences du jour */}
         {(() => {
           const today = new Date();
           const todayStr = today.toDateString();
@@ -169,7 +215,6 @@ export function CalendarScreen({ userName = 'Sophie', userColor = COLORS.sophieC
         })()}
       </div>
 
-      {/* Detail modal */}
       <Modal visible={!!selected} onClose={() => setSelected(null)} title={selected ? `${MEALS[selected.m]} · ${DAYS[selected.d]} ${selected.date?.getDate()} ${MONTH_NAMES[selected.date?.getMonth()]}` : ''}>
         {selected && MEMBERS.map(m => {
           const isUserAbsent = m === MEMBERS[0] && absences.some(a => a.dateStr === selected.date?.toDateString() && a.meal === selected.m);
@@ -185,19 +230,14 @@ export function CalendarScreen({ userName = 'Sophie', userColor = COLORS.sophieC
           );
         })}
         {selected && absences.some(a => a.dateStr === selected.date?.toDateString() && a.meal === selected.m) && (
-          <button onClick={() => {
-            setAbsences(prev => prev.filter(a => !(a.dateStr === selected.date?.toDateString() && a.meal === selected.m)));
-            setSelected(null);
-          }} style={{ width: '100%', padding: '12px', borderRadius: 14, border: `2px solid ${COLORS.pinkDark}`, background: 'transparent', color: COLORS.pinkDark, fontSize: 14, fontWeight: 700, fontFamily: FONTS.body, cursor: 'pointer', marginTop: 8 }}>
+          <button onClick={() => annulerAbsence(selected.date.toDateString(), selected.m)} style={{ width: '100%', padding: '12px', borderRadius: 14, border: `2px solid ${COLORS.pinkDark}`, background: 'transparent', color: COLORS.pinkDark, fontSize: 14, fontWeight: 700, fontFamily: FONTS.body, cursor: 'pointer', marginTop: 8 }}>
             Annuler mon absence
           </button>
         )}
         <PrimaryButton label="Fermer" onClick={() => setSelected(null)} />
       </Modal>
 
-      {/* Absent modal */}
       <Modal visible={absentModal} onClose={() => { setAbsentModal(false); setSelDate(null); setSelDateEnd(null); setSelMealStart(null); setSelMealEnd(null); }} title="Me marquer absent·e">
-        {/* Mini calendar */}
         <p style={{ fontSize: 12, color: COLORS.textMuted, fontFamily: FONTS.body, marginBottom: 10 }}>
           {!selDate ? '1. Sélectionne le jour de début' : !selDateEnd ? '2. Sélectionne le jour de fin (ou choisis le repas pour un seul jour)' : `Du ${selDate.toLocaleDateString('fr-FR')} au ${selDateEnd.toLocaleDateString('fr-FR')}`}
         </p>
@@ -209,13 +249,11 @@ export function CalendarScreen({ userName = 'Sophie', userColor = COLORS.sophieC
             </span>
             <button onClick={() => setCalMonth(p => { const d = new Date(p.y, p.m + 1); return { y: d.getFullYear(), m: d.getMonth() }; })} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 18, color: COLORS.text, padding: '0 6px' }}>›</button>
           </div>
-          {/* Day labels */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 3, marginBottom: 4 }}>
             {['L','M','M','J','V','S','D'].map((d, i) => (
               <div key={i} style={{ textAlign: 'center', fontSize: 10, fontWeight: 700, color: COLORS.textMuted, fontFamily: FONTS.body }}>{d}</div>
             ))}
           </div>
-          {/* Days grid */}
           {(() => {
             const today = new Date(); today.setHours(0,0,0,0);
             const firstDay = new Date(calMonth.y, calMonth.m, 1);
@@ -254,10 +292,8 @@ export function CalendarScreen({ userName = 'Sophie', userColor = COLORS.sophieC
           })()}
         </div>
 
-        {/* Meal choice */}
         <div style={{ opacity: !selDate ? 0.4 : 1, marginBottom: 12 }}>
           {!selDateEnd ? (
-            /* Single day: Midi | Soir | Les deux */
             <>
               <p style={{ fontSize: 11, fontWeight: 700, color: !selDate ? COLORS.border : COLORS.textMuted, textTransform: 'uppercase', letterSpacing: 0.8, fontFamily: FONTS.body, marginBottom: 8 }}>Choisir le repas</p>
               <div style={{ display: 'flex', gap: 8 }}>
@@ -272,7 +308,6 @@ export function CalendarScreen({ userName = 'Sophie', userColor = COLORS.sophieC
               </div>
             </>
           ) : (
-            /* Range: début + fin */
             <>
               <p style={{ fontSize: 11, fontWeight: 700, color: COLORS.textMuted, textTransform: 'uppercase', letterSpacing: 0.8, fontFamily: FONTS.body, marginBottom: 6 }}>Repas de début</p>
               <div style={{ display: 'flex', gap: 8, marginBottom: 10 }}>
@@ -293,26 +328,7 @@ export function CalendarScreen({ userName = 'Sophie', userColor = COLORS.sophieC
             </>
           )}
         </div>
-        <PrimaryButton label="Confirmer l'absence" onClick={() => {
-          if (selDate && selMealStart !== null && selMealEnd !== null) {
-            const endD = selDateEnd || selDate;
-            const newAbsences = [];
-            const cur = new Date(selDate);
-            while (cur.getTime() <= endD.getTime()) {
-              for (let m = 0; m <= 1; m++) {
-                const afterStart = cur.getTime() > selDate.getTime() || m >= selMealStart;
-                const beforeEnd = cur.getTime() < endD.getTime() || m <= selMealEnd;
-                if (afterStart && beforeEnd) newAbsences.push({ dateStr: cur.toDateString(), meal: m });
-              }
-              cur.setDate(cur.getDate() + 1);
-            }
-            setAbsences(prev => {
-              const filtered = prev.filter(a => !newAbsences.some(n => n.dateStr === a.dateStr && n.meal === a.meal));
-              return [...filtered, ...newAbsences];
-            });
-          }
-          setAbsentModal(false); setSelDate(null); setSelDateEnd(null); setSelMealStart(null); setSelMealEnd(null);
-        }} />
+        <PrimaryButton label="Confirmer l'absence" onClick={confirmerAbsence} />
         <button onClick={() => { setAbsentModal(false); setSelDate(null); setSelDateEnd(null); setSelMealStart(null); setSelMealEnd(null); }} style={{ width: '100%', padding: '12px', borderRadius: 14, border: `2px solid ${COLORS.border}`, background: 'transparent', color: COLORS.textMuted, fontSize: 14, fontWeight: 700, fontFamily: FONTS.body, cursor: 'pointer', marginTop: 6 }}>
           Annuler
         </button>
@@ -341,7 +357,7 @@ function ReminderItem({ item, members, onPress }) {
           <span style={{ background: cat.bg, color: cat.c, fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: 999, fontFamily: FONTS.body }}>{cat.label}</span>
         </div>
         <p style={{ fontSize: 12, fontFamily: FONTS.body, color: COLORS.textMuted }}>{item.meta}</p>
-        {item.members.length > 0 && (
+        {item.members && item.members.length > 0 && (
           <div style={{ display: 'flex', gap: 4, marginTop: 6 }}>
             {item.members.map(initials => { const m = members.find(x => x.initials === initials); return m ? <Avatar key={initials} initials={m.display || m.initials} color={m.color} size="xs" photo={m.photo} /> : null; })}
           </div>
@@ -420,14 +436,24 @@ export function RemindersScreen({ userName = 'Sophie', userColor = COLORS.sophie
     });
   }
 
-  function addReminder() {
+  async function addReminder() {
     if (!newTitle.trim() || !newDay || !newMonth) return;
     const dateObj = new Date(Number(newYear), Number(newMonth) - 1, Number(newDay));
     if (isNaN(dateObj)) return;
     const recurLabel = newRecur === 'hebdo' ? ' · Hebdo' : newRecur === 'annuel' ? ' · Annuel' : '';
     const meta = dateObj.toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' }) + recurLabel;
-    setReminders(prev => [...prev, { id: Date.now(), title: newTitle.trim(), meta, dateStr: dateObj.toDateString(), cat: newCat, recur: newRecur, members: [MEMBERS[0].initials], createdBy: MEMBERS[0].initials }]);
+    await supabase.from('reminders').insert({
+      title: newTitle.trim(),
+      date: dateObj.toISOString().split('T')[0],
+      recurrence: newRecur,
+      created_by: MEMBERS[0].initials,
+    });
     setNewTitle(''); setNewDay(''); setNewMonth(''); setNewYear(String(new Date().getFullYear())); setNewCat('autre'); setNewRecur('none'); setModal(false);
+  }
+
+  async function deleteReminder(id) {
+    await supabase.from('reminders').delete().eq('id', id);
+    setSelectedReminder(null);
   }
 
   return (
@@ -462,14 +488,14 @@ export function RemindersScreen({ userName = 'Sophie', userColor = COLORS.sophie
       <button onClick={() => setModal(true)} style={{ position: 'absolute', bottom: 24, right: 20, width: 52, height: 52, borderRadius: 26, background: COLORS.purple, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: `0 4px 16px ${COLORS.purple}66` }}>
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
       </button>
-      {/* Detail modal */}
+
       <Modal visible={!!selectedReminder} onClose={() => setSelectedReminder(null)} title={selectedReminder?.title || ''}>
         {selectedReminder && <>
           <p style={{ fontSize: 12, fontFamily: FONTS.body, color: COLORS.textMuted, marginBottom: 16 }}>{selectedReminder.meta}</p>
           <p style={{ fontSize: 11, fontWeight: 700, color: COLORS.textMuted, textTransform: 'uppercase', letterSpacing: 0.8, fontFamily: FONTS.body, marginBottom: 10 }}>Notifications</p>
           {BASE_MEMBERS.map(bm => {
             const m = MEMBERS.find(x => x.initials === bm.initials) || bm;
-            const isIn = selectedReminder.members.includes(m.initials);
+            const isIn = selectedReminder.members && selectedReminder.members.includes(m.initials);
             return (
               <div key={m.initials} onClick={() => toggleMember(selectedReminder.id, m.initials)} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 0', borderBottom: `1px solid ${COLORS.border}`, cursor: 'pointer' }}>
                 <Avatar initials={m.display || m.initials} color={m.color} size="sm" photo={m.photo} />
@@ -481,11 +507,9 @@ export function RemindersScreen({ userName = 'Sophie', userColor = COLORS.sophie
             );
           })}
           <PrimaryButton label="Fermer" onClick={() => setSelectedReminder(null)} />
-          {(!selectedReminder.createdBy || selectedReminder.createdBy === MEMBERS[0].initials) && (
-            <button onClick={() => { setReminders(prev => prev.filter(r => r.id !== selectedReminder.id)); setSelectedReminder(null); }} style={{ width: '100%', padding: '12px', borderRadius: 14, border: `2px solid ${COLORS.pinkDark}`, background: 'transparent', color: COLORS.pinkDark, fontSize: 14, fontWeight: 700, fontFamily: FONTS.body, cursor: 'pointer', marginTop: 6 }}>
-              Supprimer ce rappel
-            </button>
-          )}
+          <button onClick={() => deleteReminder(selectedReminder.id)} style={{ width: '100%', padding: '12px', borderRadius: 14, border: `2px solid ${COLORS.pinkDark}`, background: 'transparent', color: COLORS.pinkDark, fontSize: 14, fontWeight: 700, fontFamily: FONTS.body, cursor: 'pointer', marginTop: 6 }}>
+            Supprimer ce rappel
+          </button>
         </>}
       </Modal>
 
@@ -525,13 +549,7 @@ export function RemindersScreen({ userName = 'Sophie', userColor = COLORS.sophie
 
 // ── PROFILE ──────────────────────────────────────────────────
 const SWATCHES = [
-  '#FFD740', // jaune
-  '#F07A4E', // corail
-  '#F48FB1', // rose
-  '#E53935', // rouge
-  '#AB47BC', // violet
-  '#00AFBE', // turquoise
-  '#66BB6A', // vert
+  '#FFD740', '#F07A4E', '#F48FB1', '#E53935', '#AB47BC', '#00AFBE', '#66BB6A',
 ];
 
 export function ProfileScreen({ userName = 'Sophie', setUserName, userPhoto, setUserPhoto, userColor = '#FFD740', setUserColor }) {
@@ -566,13 +584,9 @@ export function ProfileScreen({ userName = 'Sophie', setUserName, userPhoto, set
         )}
         {editingName ? (
           <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-            <input
-              value={nameInput}
-              onChange={e => setNameInput(e.target.value)}
+            <input value={nameInput} onChange={e => setNameInput(e.target.value)}
               onKeyDown={e => { if (e.key === 'Enter') { setUserName?.(nameInput); setEditingName(false); } if (e.key === 'Escape') setEditingName(false); }}
-              autoFocus
-              style={{ fontSize: 20, fontWeight: 800, fontFamily: FONTS.title, color: COLORS.text, border: `2px solid ${COLORS.purple}`, borderRadius: 10, padding: '4px 10px', outline: 'none', width: 160 }}
-            />
+              autoFocus style={{ fontSize: 20, fontWeight: 800, fontFamily: FONTS.title, color: COLORS.text, border: `2px solid ${COLORS.purple}`, borderRadius: 10, padding: '4px 10px', outline: 'none', width: 160 }} />
             <button onClick={() => { setUserName?.(nameInput); setEditingName(false); }} style={{ background: COLORS.purple, color: '#fff', border: 'none', borderRadius: 8, padding: '6px 12px', fontWeight: 700, fontFamily: FONTS.body, cursor: 'pointer' }}>OK</button>
           </div>
         ) : (
