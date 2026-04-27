@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { COLORS, FONTS } from '../theme';
 import { Avatar, Card, SectionLabel } from '../components';
 import { getMembers } from './index';
+import { supabase } from '../supabase';
 
 const CAT_DOT = { chore: '#00AFBE', birthday: '#F48FB1', autre: '#AB47BC' };
 const MEALS_LABEL = ['Midi', 'Soir'];
@@ -73,6 +74,17 @@ export default function HomeScreen({ navigate, userName = 'Sophie', userPhoto, u
   const [weekOffset, setWeekOffset] = useState(0);
   const [selectedDay, setSelectedDay] = useState(null);
   const [touchStartX, setTouchStartX] = useState(null);
+  const [shoppingCount, setShoppingCount] = useState(null);
+  const [absencesCount, setAbsencesCount] = useState(null);
+
+  useEffect(() => {
+    supabase.from('shopping_items').select('id').eq('checked', false)
+      .then(({ data }) => setShoppingCount(data ? data.length : 0));
+    const today = new Date();
+    const iso = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
+    supabase.from('meals').select('id').eq('meal_type', 'absence').eq('date', iso)
+      .then(({ data }) => setAbsencesCount(data ? data.length : 0));
+  }, []);
 
   const week = getWeek(weekOffset);
   const thisWeek = getThisWeek(reminders, week);
@@ -216,8 +228,8 @@ export default function HomeScreen({ navigate, userName = 'Sophie', userPhoto, u
       <SectionLabel>Accès rapide</SectionLabel>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 10 }}>
         {[
-          { label: 'Courses', sub: '8 articles', bg: '#FFD740', color: '#fff', tab: 'shopping' },
-          { label: 'Repas', sub: '2 absences', bg: '#F48FB1', color: '#fff', tab: 'calendar' },
+          { label: 'Courses', sub: shoppingCount === null ? '…' : `${shoppingCount} article${shoppingCount !== 1 ? 's' : ''} à acheter`, bg: '#FFD740', color: '#fff', tab: 'shopping' },
+          { label: 'Repas', sub: absencesCount === null ? '…' : absencesCount === 0 ? 'Tout le monde là' : `${absencesCount} absence${absencesCount !== 1 ? 's' : ''} aujourd'hui`, bg: '#F48FB1', color: '#fff', tab: 'calendar' },
         ].map(q => (
           <button key={q.label} onClick={() => navigate(q.tab)} style={{
             background: q.bg, borderRadius: 20, padding: 16, border: 'none',
