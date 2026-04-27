@@ -1,6 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { COLORS, FONTS } from '../theme';
 import { Avatar, Card, Modal, PrimaryButton } from '../components';
+import { supabase } from '../supabase';
+
+function toISODate(date) {
+  return `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`;
+}
 
 const DAYS = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
 const MEALS = ['Midi', 'Soir'];
@@ -52,12 +57,28 @@ export function CalendarScreen({ userName = 'Sophie', userColor = COLORS.sophieC
   const [selMealStart, setSelMealStart] = useState(null);
   const [selMealEnd, setSelMealEnd] = useState(null);
   const [calMonth, setCalMonth] = useState(() => { const d = new Date(); return { y: d.getFullYear(), m: d.getMonth() }; });
-  const [absences, setAbsences] = useState(() => { try { return JSON.parse(localStorage.getItem('cal_absences') || '[]'); } catch { return []; } });
+  const [absences, setAbsences] = useState([]);
   const [touchStartX, setTouchStartX] = useState(null);
   const [slideDir, setSlideDir] = useState(null);
   const [animKey, setAnimKey] = useState(0);
 
-  useEffect(() => { localStorage.setItem('cal_absences', JSON.stringify(absences)); }, [absences]);
+  async function loadAbsences() {
+    const { data } = await supabase.from('meals').select('*').eq('meal_type', 'absence');
+    if (data) setAbsences(data.map(a => ({
+      id: a.id,
+      dateStr: new Date(a.date + 'T12:00:00').toDateString(),
+      meal: a.name === 'midi' ? 0 : 1,
+      memberInitials: a.created_by,
+    })));
+  }
+
+  useEffect(() => {
+    loadAbsences();
+    const sub = supabase.channel('absences')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'meals' }, loadAbsences)
+      .subscribe();
+    return () => supabase.removeChannel(sub);
+  }, []);
 
   const week = getWeek(weekOffset);
 
@@ -74,29 +95,34 @@ export function CalendarScreen({ userName = 'Sophie', userColor = COLORS.sophieC
     setTouchStartX(null);
   }
 
-  function confirmerAbsence() {
+  async function confirmerAbsence() {
     if (selDate && selMealStart !== null && selMealEnd !== null) {
       const endD = selDateEnd || selDate;
-      const newAbsences = [];
       const cur = new Date(selDate);
       while (cur.getTime() <= endD.getTime()) {
         for (let m = 0; m <= 1; m++) {
           const afterStart = cur.getTime() > selDate.getTime() || m >= selMealStart;
           const beforeEnd = cur.getTime() < endD.getTime() || m <= selMealEnd;
-          if (afterStart && beforeEnd) newAbsences.push({ dateStr: cur.toDateString(), meal: m });
+          if (afterStart && beforeEnd) {
+            await supabase.from('meals').insert({
+              date: toISODate(cur),
+              meal_type: 'absence',
+              name: m === 0 ? 'midi' : 'soir',
+              created_by: MEMBERS[0].initials,
+            });
+          }
         }
         cur.setDate(cur.getDate() + 1);
       }
-      setAbsences(prev => {
-        const filtered = prev.filter(a => !newAbsences.some(n => n.dateStr === a.dateStr && n.meal === a.meal));
-        return [...filtered, ...newAbsences];
-      });
+      await loadAbsences();
     }
     setAbsentModal(false); setSelDate(null); setSelDateEnd(null); setSelMealStart(null); setSelMealEnd(null);
   }
 
-  function annulerAbsence(dateStr, meal) {
-    setAbsences(prev => prev.filter(a => !(a.dateStr === dateStr && a.meal === meal)));
+  async function annulerAbsence(dateStr, meal) {
+    const absence = absences.find(a => a.dateStr === dateStr && a.meal === meal && a.memberInitials === MEMBERS[0].initials);
+    if (absence?.id) await supabase.from('meals').delete().eq('id', absence.id);
+    await loadAbsences();
     setSelected(null);
   }
 
@@ -415,18 +441,21 @@ export function RemindersScreen({ userName = 'Sophie', userColor = COLORS.sophie
     });
   }
 
-  function addReminder() {
+  async function addReminder() {
     if (!newTitle.trim() || !newDay || !newMonth) return;
     const dateObj = new Date(Number(newYear), Number(newMonth) - 1, Number(newDay));
     if (isNaN(dateObj)) return;
-    const recurLabel = newRecur === 'hebdo' ? ' · Hebdo' : newRecur === 'annuel' ? ' · Annuel' : '';
-    const meta = dateObj.toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' }) + recurLabel;
-    setReminders(prev => [...prev, { id: Date.now(), title: newTitle.trim(), meta, dateStr: dateObj.toDateString(), cat: newCat, recur: newRecur, members: [MEMBERS[0].initials], createdBy: MEMBERS[0].initials }]);
+    await supabase.from('reminders').insert({
+      title: newTitle.trim(),
+      date: toISODate(dateObj),
+      recurrence: newRecur,
+      created_by: MEMBERS[0].initials,
+    });
     setNewTitle(''); setNewDay(''); setNewMonth(''); setNewYear(String(new Date().getFullYear())); setNewCat('autre'); setNewRecur('none'); setModal(false);
   }
 
-  function deleteReminder(id) {
-    setReminders(prev => prev.filter(r => r.id !== id));
+  async function deleteReminder(id) {
+    await supabase.from('reminders').delete().eq('id', id);
     setSelectedReminder(null);
   }
 

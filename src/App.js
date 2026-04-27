@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { COLORS, FONTS } from './theme';
 import HomeScreen from './screens/HomeScreen';
 import ShoppingScreen from './screens/ShoppingScreen';
 import { CalendarScreen, RemindersScreen, ProfileScreen } from './screens/index';
+import { supabase } from './supabase';
 
 const TABS = [
   { id: 'home',      label: 'Accueil',  Icon: HomeIcon },
@@ -33,14 +34,36 @@ export default function App() {
   const [userName, setUserName]   = useState(() => localStorage.getItem('userName')  || 'Sophie');
   const [userPhoto, setUserPhoto] = useState(() => localStorage.getItem('userPhoto') || null);
   const [userColor, setUserColor] = useState(() => localStorage.getItem('userColor') || '#FFD740');
-  const [reminders, setReminders] = useState(() => { try { const s = localStorage.getItem('reminders'); return s ? JSON.parse(s) : []; } catch { return []; } });
+  const [reminders, setReminders] = useState([]);
+
+  useEffect(() => {
+    async function loadReminders() {
+      const { data } = await supabase.from('reminders').select('*').order('created_at', { ascending: false });
+      if (data) setReminders(data.map(r => {
+        const dateObj = r.date ? new Date(r.date + 'T12:00:00') : null;
+        const recurLabel = r.recurrence === 'hebdo' ? ' · Hebdo' : r.recurrence === 'annuel' ? ' · Annuel' : '';
+        const meta = dateObj ? dateObj.toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' }) + recurLabel : '';
+        return {
+          id: r.id,
+          title: r.title,
+          meta,
+          dateStr: dateObj ? dateObj.toDateString() : '',
+          cat: 'autre',
+          recur: r.recurrence || 'none',
+          members: r.created_by ? [r.created_by] : [],
+          createdBy: r.created_by,
+        };
+      }));
+    }
+    loadReminders();
+    const sub = supabase.channel('reminders')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'reminders' }, loadReminders)
+      .subscribe();
+    return () => supabase.removeChannel(sub);
+  }, []);
 
   function handleSetReminders(fn) {
-    setReminders(prev => {
-      const next = typeof fn === 'function' ? fn(prev) : fn;
-      localStorage.setItem('reminders', JSON.stringify(next));
-      return next;
-    });
+    setReminders(prev => typeof fn === 'function' ? fn(prev) : fn);
   }
 
   function handleSetUserName(name) {
