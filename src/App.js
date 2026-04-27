@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { COLORS, FONTS } from './theme';
 import HomeScreen from './screens/HomeScreen';
 import ShoppingScreen from './screens/ShoppingScreen';
 import { CalendarScreen, RemindersScreen, ProfileScreen } from './screens/index';
+import { supabase } from './supabase';
 
 const TABS = [
   { id: 'home',      label: 'Accueil',  Icon: HomeIcon },
@@ -30,22 +31,63 @@ function UserIcon({ color }) {
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('home');
-  const [userName, setUserName]   = useState(() => localStorage.getItem('userName')  || 'Sophie');
+  const [userName, setUserName]   = useState(() => localStorage.getItem('userName') || 'Sophie');
   const [userPhoto, setUserPhoto] = useState(() => localStorage.getItem('userPhoto') || null);
   const [userColor, setUserColor] = useState(() => localStorage.getItem('userColor') || '#FFD740');
-  const [reminders, setReminders] = useState(() => { try { const s = localStorage.getItem('reminders'); return s ? JSON.parse(s) : []; } catch { return []; } });
+  const [reminders, setReminders] = useState([]);
+  const [memberId, setMemberId]   = useState(() => localStorage.getItem('memberId') || null);
 
-  function handleSetReminders(fn) {
-    setReminders(prev => {
-      const next = typeof fn === 'function' ? fn(prev) : fn;
-      localStorage.setItem('reminders', JSON.stringify(next));
-      return next;
-    });
+  // Créer ou récupérer le membre au démarrage
+  useEffect(() => {
+    async function initMember() {
+      const storedId = localStorage.getItem('memberId');
+      if (storedId) {
+        setMemberId(storedId);
+        return;
+      }
+      // Créer un nouveau membre
+      const { data, error } = await supabase
+        .from('members')
+        .insert({ name: userName, color: userColor })
+        .select()
+        .single();
+      if (!error && data) {
+        localStorage.setItem('memberId', data.id);
+        setMemberId(data.id);
+      }
+    }
+    initMember();
+  }, []);
+
+  // Charger les rappels depuis Supabase
+  useEffect(() => {
+    async function loadReminders() {
+      const { data } = await supabase
+        .from('reminders')
+        .select('*')
+        .order('created_at', { ascending: false });
+      if (data) setReminders(data);
+    }
+    loadReminders();
+
+    // Temps réel
+    const sub = supabase
+      .channel('reminders')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'reminders' }, () => loadReminders())
+      .subscribe();
+
+    return () => supabase.removeChannel(sub);
+  }, []);
+
+  async function handleSetReminders(fn) {
+    // Garde la compatibilité avec l'ancien code
+    setReminders(prev => typeof fn === 'function' ? fn(prev) : fn);
   }
 
   function handleSetUserName(name) {
     setUserName(name);
     localStorage.setItem('userName', name);
+    if (memberId) supabase.from('members').update({ name }).eq('id', memberId);
   }
   function handleSetUserPhoto(photo) {
     setUserPhoto(photo);
@@ -55,18 +97,27 @@ export default function App() {
   function handleSetUserColor(color) {
     setUserColor(color);
     localStorage.setItem('userColor', color);
+    if (memberId) supabase.from('members').update({ color }).eq('id', memberId);
   }
 
   const screens = {
     home:      <HomeScreen navigate={setActiveTab} userName={userName} userPhoto={userPhoto} userColor={userColor} reminders={reminders} />,
-    shopping:  <ShoppingScreen userName={userName} userPhoto={userPhoto} userColor={userColor} />,
-    calendar:  <CalendarScreen userName={userName} userPhoto={userPhoto} userColor={userColor} />,
-    reminders: <RemindersScreen userName={userName} userPhoto={userPhoto} userColor={userColor} reminders={reminders} setReminders={handleSetReminders} />,
+    shopping:  <ShoppingScreen userName={userName} userPhoto={userPhoto} userColor={userColor} memberId={memberId} />,
+    calendar:  <CalendarScreen userName={userName} userPhoto={userPhoto} userColor={userColor} memberId={memberId} />,
+    reminders: <RemindersScreen userName={userName} userPhoto={userPhoto} userColor={userColor} reminders={reminders} setReminders={handleSetReminders} memberId={memberId} />,
     profile:   <ProfileScreen userName={userName} setUserName={handleSetUserName} userPhoto={userPhoto} setUserPhoto={handleSetUserPhoto} userColor={userColor} setUserColor={handleSetUserColor} />,
   };
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', background: '#fff' }}>
+      <div style={{ height: 44, background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 24px', flexShrink: 0 }}>
+        <span style={{ fontSize: 15, fontWeight: 700, fontFamily: FONTS.body }}>9:41</span>
+        <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+          <svg width="16" height="12" viewBox="0 0 16 12" fill="none"><rect x="0" y="4" width="3" height="8" rx="1" fill="#1C1C1E"/><rect x="4.5" y="2.5" width="3" height="9.5" rx="1" fill="#1C1C1E"/><rect x="9" y="0.5" width="3" height="11.5" rx="1" fill="#1C1C1E"/></svg>
+          <svg width="25" height="12" viewBox="0 0 25 12" fill="none"><rect x="0.5" y="0.5" width="21" height="11" rx="3.5" stroke="#1C1C1E" strokeOpacity="0.3"/><rect x="2" y="2" width="16" height="8" rx="2" fill="#1C1C1E"/></svg>
+        </div>
+      </div>
+
       <div style={{ flex: 1, overflow: 'hidden', position: 'relative' }}>
         {screens[activeTab]}
       </div>
@@ -74,11 +125,11 @@ export default function App() {
       <div style={{ height: 80, background: '#fff', borderTop: `1px solid ${COLORS.border}`, display: 'flex', alignItems: 'center', justifyContent: 'space-around', padding: '0 4px 12px', flexShrink: 0 }}>
         {TABS.map(({ id, label, Icon }) => {
           const active = activeTab === id;
-          const color = active ? COLORS.purpleDark : COLORS.textMuted;
+          const color = active ? COLORS.purple : COLORS.textMuted;
           return (
-            <button key={id} onClick={() => setActiveTab(id)} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, padding: '8px 12px', borderRadius: 16, border: 'none', cursor: 'pointer', background: active ? COLORS.purpleLight : 'transparent' }}>
+            <button key={id} onClick={() => setActiveTab(id)} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3, background: 'none', border: 'none', cursor: 'pointer', padding: '6px 12px', borderRadius: 12 }}>
               <Icon color={color} />
-              <span style={{ fontSize: 10, fontWeight: 700, color, fontFamily: FONTS.body }}>{label}</span>
+              <span style={{ fontSize: 10, fontWeight: active ? 700 : 500, color, fontFamily: FONTS.body }}>{label}</span>
             </button>
           );
         })}
