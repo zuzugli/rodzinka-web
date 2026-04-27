@@ -80,13 +80,17 @@ export function Modal({ visible, onClose, title, children }) {
     }} onClick={onClose}>
       <div style={{
         background: '#fff', borderRadius: '28px 28px 0 0',
-        padding: 24, width: '100%',
+        width: '100%', maxHeight: '85vh', display: 'flex', flexDirection: 'column',
       }} onClick={e => e.stopPropagation()}>
-        <div style={{ width: 36, height: 4, background: COLORS.border, borderRadius: 2, margin: '0 auto 20px' }} />
-        <div style={{ fontSize: 22, fontWeight: 800, fontFamily: FONTS.title, color: COLORS.text, marginBottom: 16 }}>
-          {title}
+        <div style={{ padding: '24px 24px 0', flexShrink: 0 }}>
+          <div style={{ width: 36, height: 4, background: COLORS.border, borderRadius: 2, margin: '0 auto 20px' }} />
+          <div style={{ fontSize: 22, fontWeight: 800, fontFamily: FONTS.title, color: COLORS.text, marginBottom: 16 }}>
+            {title}
+          </div>
         </div>
-        {children}
+        <div style={{ overflowY: 'auto', padding: '0 24px 24px', flex: 1 }}>
+          {children}
+        </div>
       </div>
     </div>
   );
