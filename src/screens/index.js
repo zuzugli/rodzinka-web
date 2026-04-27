@@ -463,12 +463,17 @@ export function RemindersScreen({ userName = 'Sophie', userColor = COLORS.sophie
     if (!newTitle.trim() || !newDay || !newMonth) return;
     const dateObj = new Date(Number(newYear), Number(newMonth) - 1, Number(newDay));
     if (isNaN(dateObj)) return;
+    const recurLabel = newRecur === 'hebdo' ? ' · Hebdo' : newRecur === 'annuel' ? ' · Annuel' : '';
+    const meta = dateObj.toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' }) + recurLabel;
     if (editingId) {
       await supabase.from('reminders').update({
         title: newTitle.trim(),
         date: toISODate(dateObj),
         recurrence: newRecur,
       }).eq('id', editingId);
+      setReminders(prev => prev.map(r => r.id !== editingId ? r : {
+        ...r, title: newTitle.trim(), meta, dateStr: dateObj.toDateString(), recur: newRecur,
+      }));
     } else {
       await supabase.from('reminders').insert({
         title: newTitle.trim(),
@@ -536,14 +541,14 @@ export function RemindersScreen({ userName = 'Sophie', userColor = COLORS.sophie
             );
           })}
           <PrimaryButton label="Fermer" onClick={() => setSelectedReminder(null)} />
-          {selectedReminder.createdBy === MEMBERS[0].initials && (
-            <button onClick={() => openEdit(selectedReminder)} style={{ width: '100%', padding: '12px', borderRadius: 14, border: `2px solid ${COLORS.purple}`, background: 'transparent', color: COLORS.purple, fontSize: 14, fontWeight: 700, fontFamily: FONTS.body, cursor: 'pointer', marginTop: 6 }}>
-              Modifier ce rappel
+          {(!selectedReminder.createdBy || selectedReminder.createdBy === MEMBERS[0].initials) && (
+            <button onClick={() => openEdit(selectedReminder)} style={{ width: '100%', padding: '12px', borderRadius: 14, border: 'none', background: COLORS.purple, color: '#fff', fontSize: 14, fontWeight: 700, fontFamily: FONTS.body, cursor: 'pointer', marginTop: 6 }}>
+              ✏️ Modifier ce rappel
             </button>
           )}
-          {selectedReminder.createdBy === MEMBERS[0].initials && (
+          {(!selectedReminder.createdBy || selectedReminder.createdBy === MEMBERS[0].initials) && (
             <button onClick={() => deleteReminder(selectedReminder.id)} style={{ width: '100%', padding: '12px', borderRadius: 14, border: `2px solid ${COLORS.pinkDark}`, background: 'transparent', color: COLORS.pinkDark, fontSize: 14, fontWeight: 700, fontFamily: FONTS.body, cursor: 'pointer', marginTop: 6 }}>
-              Supprimer ce rappel
+              🗑 Supprimer ce rappel
             </button>
           )}
         </>}
