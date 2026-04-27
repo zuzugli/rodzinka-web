@@ -97,7 +97,7 @@ export function Input({ placeholder, value, onChange, ...rest }) {
     <input
       placeholder={placeholder}
       value={value}
-      onChange={onChange}
+      onChange={e => onChange(e.target.value)}
       {...rest}
       style={{
         width: '100%', padding: '13px 16px', border: `2px solid ${COLORS.border}`,
