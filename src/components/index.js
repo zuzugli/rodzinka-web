@@ -75,8 +75,8 @@ export function Modal({ visible, onClose, title, children }) {
   if (!visible) return null;
   return (
     <div style={{
-      position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.35)',
-      display: 'flex', alignItems: 'flex-end', zIndex: 100,
+      position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.35)',
+      display: 'flex', alignItems: 'flex-end', zIndex: 1000,
     }} onClick={onClose}>
       <div style={{
         background: '#fff', borderRadius: '28px 28px 0 0',
