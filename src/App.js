@@ -56,7 +56,7 @@ function LoginScreen({ onLogin }) {
         style={{ width: '100%', padding: '14px 16px', borderRadius: 14, border: `2px solid ${COLORS.border}`, fontSize: 16, fontFamily: FONTS.body, outline: 'none', marginBottom: 12, boxSizing: 'border-box' }}
       />
       <input
-        placeholder="Code famille (ex: TCHN42)"
+        placeholder="Code famille"
         value={code}
         onChange={e => { setCode(e.target.value.toUpperCase()); setError(''); }}
         onKeyDown={e => e.key === 'Enter' && handleSubmit()}
