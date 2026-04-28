@@ -9,19 +9,15 @@ function toISODate(date) {
 
 const DAYS = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
 const MEALS = ['Midi', 'Soir'];
-const BASE_MEMBERS = [
-  { initials: 'SP', color: COLORS.sophieColor, name: 'Sophie' },
-  { initials: 'MA', color: COLORS.marcColor,   name: 'Marc'   },
-  { initials: 'LU', color: COLORS.lucieColor,  name: 'Lucie'  },
-  { initials: 'TH', color: COLORS.thomasColor, name: 'Thomas' },
-];
-
-export function getMembers(userName, userColor, userPhoto) {
-  return BASE_MEMBERS.map(m =>
-    m.initials === 'SP'
-      ? { ...m, display: userName.charAt(0).toUpperCase(), color: userColor, photo: userPhoto, name: userName }
-      : { ...m, display: m.initials }
-  );
+export function getMembers(supabaseMembers, userName, userColor, userPhoto) {
+  const list = supabaseMembers && supabaseMembers.length > 0 ? supabaseMembers : [{ name: userName, color: userColor }];
+  return list.map(m => ({
+    name: m.name,
+    initials: m.name.slice(0, 2).toUpperCase(),
+    display: m.name.charAt(0).toUpperCase(),
+    color: m.name === userName ? userColor : (m.color || '#ccc'),
+    photo: m.name === userName ? userPhoto : null,
+  }));
 }
 
 const MONTH_NAMES = ['jan','fév','mar','avr','mai','juin','juil','aoû','sep','oct','nov','déc'];
@@ -47,8 +43,8 @@ function formatRange(week) {
     : `${first.getDate()} ${MONTH_NAMES[first.getMonth()]} – ${last.getDate()} ${MONTH_NAMES[last.getMonth()]} ${last.getFullYear()}`;
 }
 
-export function CalendarScreen({ userName = 'Sophie', userColor = COLORS.sophieColor, userPhoto = null }) {
-  const MEMBERS = getMembers(userName, userColor, userPhoto);
+export function CalendarScreen({ userName = 'Sophie', userColor = COLORS.sophieColor, userPhoto = null, members: supabaseMembers = [] }) {
+  const MEMBERS = getMembers(supabaseMembers, userName, userColor, userPhoto);
   const [weekOffset, setWeekOffset] = useState(0);
   const [selected, setSelected] = useState(null);
   const [absentModal, setAbsentModal] = useState(false);
@@ -68,7 +64,7 @@ export function CalendarScreen({ userName = 'Sophie', userColor = COLORS.sophieC
       id: a.id,
       dateStr: new Date(a.date + 'T12:00:00').toDateString(),
       meal: a.name === 'midi' ? 0 : 1,
-      memberInitials: a.created_by,
+      memberName: a.created_by,
     })));
   }
 
@@ -108,7 +104,7 @@ export function CalendarScreen({ userName = 'Sophie', userColor = COLORS.sophieC
               date: toISODate(cur),
               meal_type: 'absence',
               name: m === 0 ? 'midi' : 'soir',
-              created_by: MEMBERS[0].initials,
+              created_by: userName,
             });
           }
         }
@@ -120,7 +116,7 @@ export function CalendarScreen({ userName = 'Sophie', userColor = COLORS.sophieC
   }
 
   async function annulerAbsence(dateStr, meal) {
-    const absence = absences.find(a => a.dateStr === dateStr && a.meal === meal && a.memberInitials === MEMBERS[0].initials);
+    const absence = absences.find(a => a.dateStr === dateStr && a.meal === meal && a.memberName === userName);
     if (absence?.id) await supabase.from('meals').delete().eq('id', absence.id);
     await loadAbsences();
     setSelected(null);
@@ -160,11 +156,10 @@ export function CalendarScreen({ userName = 'Sophie', userColor = COLORS.sophieC
                 {week.map(({ dayIndex, isToday }) => {
                   const bg = isToday ? COLORS.purpleLight : COLORS.surface;
                   const cellDate = week[dayIndex].date;
-                  const userAbsent = absences.some(a => a.dateStr === cellDate.toDateString() && a.meal === mi);
-                  const allAbsents = userAbsent ? [MEMBERS[0]] : [];
+                  const cellAbsents = MEMBERS.filter(mb => absences.some(a => a.dateStr === cellDate.toDateString() && a.meal === mi && a.memberName === mb.name));
                   return (
                     <div key={dayIndex} onClick={() => setSelected({ d: dayIndex, m: mi, date: cellDate })} style={{ background: bg, borderRadius: 10, padding: '6px 2px', minHeight: 60, border: `1.5px solid ${isToday ? COLORS.purple : COLORS.border}`, cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2 }}>
-                      {allAbsents.map((mb, idx) => <Avatar key={idx} initials={mb.display || mb.initials} color={mb.color} size="xs" photo={mb.photo} />)}
+                      {cellAbsents.map((mb, idx) => <Avatar key={idx} initials={mb.display || mb.initials} color={mb.color} size="xs" photo={mb.photo} />)}
                     </div>
                   );
                 })}
@@ -189,8 +184,7 @@ export function CalendarScreen({ userName = 'Sophie', userColor = COLORS.sophieC
               <Card style={{ padding: '0 16px' }}>
                 {MEALS.map((meal, mi) => {
                   const absentMembers = MEMBERS.filter(m =>
-                    absences.some(a => a.dateStr === todayStr && a.meal === mi && a.memberInitials === m.initials)
-                    || (m === MEMBERS[0] && absences.some(a => a.dateStr === todayStr && a.meal === mi && !a.memberInitials))
+                    absences.some(a => a.dateStr === todayStr && a.meal === mi && a.memberName === m.name)
                   );
                   return (
                     <div key={mi} style={{ padding: '14px 0', borderBottom: mi === 0 ? `1px solid ${COLORS.border}` : 'none' }}>
@@ -222,7 +216,7 @@ export function CalendarScreen({ userName = 'Sophie', userColor = COLORS.sophieC
 
       <Modal visible={!!selected} onClose={() => setSelected(null)} title={selected ? `${MEALS[selected.m]} · ${DAYS[selected.d]} ${selected.date?.getDate()} ${MONTH_NAMES[selected.date?.getMonth()]}` : ''}>
         {selected && MEMBERS.map(m => {
-          const isUserAbsent = m === MEMBERS[0] && absences.some(a => a.dateStr === selected.date?.toDateString() && a.meal === selected.m);
+          const isUserAbsent = absences.some(a => a.dateStr === selected.date?.toDateString() && a.meal === selected.m && a.memberName === m.name);
           const present = !isUserAbsent;
           return (
             <div key={m.initials} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 0', borderBottom: `1px solid ${COLORS.border}` }}>
@@ -234,7 +228,7 @@ export function CalendarScreen({ userName = 'Sophie', userColor = COLORS.sophieC
             </div>
           );
         })}
-        {selected && absences.some(a => a.dateStr === selected.date?.toDateString() && a.meal === selected.m) && (
+        {selected && absences.some(a => a.dateStr === selected.date?.toDateString() && a.meal === selected.m && a.memberName === userName) && (
           <button onClick={() => annulerAbsence(selected.date.toDateString(), selected.m)} style={{ width: '100%', padding: '12px', borderRadius: 14, border: `2px solid ${COLORS.pinkDark}`, background: 'transparent', color: COLORS.pinkDark, fontSize: 14, fontWeight: 700, fontFamily: FONTS.body, cursor: 'pointer', marginTop: 8 }}>
             Annuler mon absence
           </button>
@@ -417,8 +411,8 @@ function isUpcoming(r) {
   return d > sun || (r.recur && d >= today);
 }
 
-export function RemindersScreen({ userName = 'Sophie', userColor = COLORS.sophieColor, userPhoto = null, reminders = [], setReminders }) {
-  const MEMBERS = getMembers(userName, userColor, userPhoto);
+export function RemindersScreen({ userName = 'Sophie', userColor = COLORS.sophieColor, userPhoto = null, reminders = [], setReminders, members: supabaseMembers = [] }) {
+  const MEMBERS = getMembers(supabaseMembers, userName, userColor, userPhoto);
   const [modal, setModal] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [selectedReminder, setSelectedReminder] = useState(null);
@@ -432,16 +426,16 @@ export function RemindersScreen({ userName = 'Sophie', userColor = COLORS.sophie
   const thisWeek = reminders.filter(r => isThisWeek(r));
   const upcoming = reminders.filter(r => !isThisWeek(r) && (() => { const d = nextOccurrence(r); return d && d >= new Date(); })());
 
-  function toggleMember(reminderId, initials) {
+  function toggleMember(reminderId, name) {
     setReminders(prev => prev.map(r => {
       if (r.id !== reminderId) return r;
-      const has = r.members.includes(initials);
-      return { ...r, members: has ? r.members.filter(i => i !== initials) : [...r.members, initials] };
+      const has = r.members.includes(name);
+      return { ...r, members: has ? r.members.filter(i => i !== name) : [...r.members, name] };
     }));
     setSelectedReminder(prev => {
       if (!prev || prev.id !== reminderId) return prev;
-      const has = prev.members.includes(initials);
-      return { ...prev, members: has ? prev.members.filter(i => i !== initials) : [...prev.members, initials] };
+      const has = prev.members.includes(name);
+      return { ...prev, members: has ? prev.members.filter(i => i !== name) : [...prev.members, name] };
     });
   }
 
@@ -484,7 +478,7 @@ export function RemindersScreen({ userName = 'Sophie', userColor = COLORS.sophie
         date: toISODate(dateObj),
         recurrence: newRecur,
         cat: newCat,
-        created_by: MEMBERS[0].initials,
+        created_by: userName,
       });
     }
     resetForm(); setModal(false);
@@ -532,11 +526,10 @@ export function RemindersScreen({ userName = 'Sophie', userColor = COLORS.sophie
         {selectedReminder && <>
           <p style={{ fontSize: 12, fontFamily: FONTS.body, color: COLORS.textMuted, marginBottom: 16 }}>{selectedReminder.meta}</p>
           <p style={{ fontSize: 11, fontWeight: 700, color: COLORS.textMuted, textTransform: 'uppercase', letterSpacing: 0.8, fontFamily: FONTS.body, marginBottom: 10 }}>Notifications</p>
-          {BASE_MEMBERS.map(bm => {
-            const m = MEMBERS.find(x => x.initials === bm.initials) || bm;
-            const isIn = selectedReminder.members && selectedReminder.members.includes(m.initials);
+          {MEMBERS.map(m => {
+            const isIn = selectedReminder.members && selectedReminder.members.includes(m.name);
             return (
-              <div key={m.initials} onClick={() => toggleMember(selectedReminder.id, m.initials)} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 0', borderBottom: `1px solid ${COLORS.border}`, cursor: 'pointer' }}>
+              <div key={m.name} onClick={() => toggleMember(selectedReminder.id, m.name)} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 0', borderBottom: `1px solid ${COLORS.border}`, cursor: 'pointer' }}>
                 <Avatar initials={m.display || m.initials} color={m.color} size="sm" photo={m.photo} />
                 <span style={{ flex: 1, fontSize: 15, fontWeight: 700, fontFamily: FONTS.body, color: COLORS.text }}>{m.name}</span>
                 <div style={{ width: 46, height: 27, borderRadius: 14, background: isIn ? COLORS.greenMid : COLORS.border, position: 'relative', transition: 'background 0.2s' }}>
@@ -546,12 +539,12 @@ export function RemindersScreen({ userName = 'Sophie', userColor = COLORS.sophie
             );
           })}
           <button onClick={() => setSelectedReminder(null)} style={{ width: '100%', padding: '14px', borderRadius: 14, border: `2px solid ${COLORS.border}`, background: 'transparent', color: COLORS.textMuted, fontSize: 14, fontWeight: 700, fontFamily: FONTS.body, cursor: 'pointer', marginTop: 8 }}>Fermer</button>
-          {(!selectedReminder.createdBy || selectedReminder.createdBy === MEMBERS[0].initials) && (
+          {(!selectedReminder.createdBy || selectedReminder.createdBy === userName) && (
             <button onClick={() => openEdit(selectedReminder)} style={{ width: '100%', padding: '12px', borderRadius: 14, border: 'none', background: COLORS.purple, color: '#fff', fontSize: 14, fontWeight: 700, fontFamily: FONTS.body, cursor: 'pointer', marginTop: 6 }}>
               ✏️ Modifier ce rappel
             </button>
           )}
-          {(!selectedReminder.createdBy || selectedReminder.createdBy === MEMBERS[0].initials) && (
+          {(!selectedReminder.createdBy || selectedReminder.createdBy === userName) && (
             <button onClick={() => deleteReminder(selectedReminder.id)} style={{ width: '100%', padding: '12px', borderRadius: 14, border: `2px solid ${COLORS.pinkDark}`, background: 'transparent', color: COLORS.pinkDark, fontSize: 14, fontWeight: 700, fontFamily: FONTS.body, cursor: 'pointer', marginTop: 6 }}>
               🗑 Supprimer ce rappel
             </button>

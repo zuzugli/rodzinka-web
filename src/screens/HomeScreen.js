@@ -59,23 +59,21 @@ function remindersForDay(reminders, date) {
   });
 }
 
-function absencesForDay(date) {
-  try {
-    const abs = JSON.parse(localStorage.getItem('cal_absences') || '[]');
-    return abs.filter(a => a.dateStr === date.toDateString());
-  } catch { return []; }
+function absencesForDay(absences, date) {
+  return absences.filter(a => a.dateStr === date.toDateString());
 }
 
 function MrHappy() {
   return <img src="/mascot.png" alt="mascotte" style={{ width: 68, height: 68, objectFit: 'contain', marginRight: 8 }} />;
 }
 
-export default function HomeScreen({ navigate, userName = 'Sophie', userPhoto, userColor = '#FFD740', reminders = [] }) {
+export default function HomeScreen({ navigate, userName = 'Sophie', userPhoto, userColor = '#FFD740', reminders = [], members = [] }) {
   const [weekOffset, setWeekOffset] = useState(0);
   const [selectedDay, setSelectedDay] = useState(null);
   const [touchStartX, setTouchStartX] = useState(null);
   const [shoppingCount, setShoppingCount] = useState(null);
   const [absencesCount, setAbsencesCount] = useState(null);
+  const [absences, setAbsences] = useState([]);
 
   useEffect(() => {
     supabase.from('shopping_items').select('id').eq('checked', false)
@@ -84,11 +82,19 @@ export default function HomeScreen({ navigate, userName = 'Sophie', userPhoto, u
     const iso = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
     supabase.from('meals').select('id').eq('meal_type', 'absence').eq('date', iso)
       .then(({ data }) => setAbsencesCount(data ? data.length : 0));
+    supabase.from('meals').select('*').eq('meal_type', 'absence')
+      .then(({ data }) => {
+        if (data) setAbsences(data.map(a => ({
+          dateStr: new Date(a.date + 'T12:00:00').toDateString(),
+          meal: a.name === 'midi' ? 0 : 1,
+          memberName: a.created_by,
+        })));
+      });
   }, []);
 
   const week = getWeek(weekOffset);
   const thisWeek = getThisWeek(reminders, week);
-  const MEMBERS = getMembers(userName, userColor, userPhoto);
+  const MEMBERS = getMembers(members, userName, userColor, userPhoto);
 
   function handleTouchStart(e) { setTouchStartX(e.touches[0].clientX); }
   function handleTouchEnd(e) {
@@ -104,7 +110,7 @@ export default function HomeScreen({ navigate, userName = 'Sophie', userPhoto, u
 
   const dayDetail = selectedDay ? {
     rappels: remindersForDay(reminders, selectedDay),
-    absences: absencesForDay(selectedDay),
+    absences: absencesForDay(absences, selectedDay),
   } : null;
 
   return (
@@ -186,14 +192,17 @@ export default function HomeScreen({ navigate, userName = 'Sophie', userPhoto, u
                 {dayDetail.absences.length > 0 && (
                   <>
                     <p style={{ fontSize: 11, fontWeight: 700, color: COLORS.textMuted, textTransform: 'uppercase', letterSpacing: 0.8, fontFamily: FONTS.body, margin: '12px 0 10px' }}>Absences repas</p>
-                    {dayDetail.absences.map((a, i) => (
-                      <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 14px', borderRadius: 14, background: '#FFF0F5', marginBottom: 8 }}>
-                        <Avatar initials={userName.charAt(0).toUpperCase()} color={userColor} size="sm" photo={userPhoto} />
-                        <p style={{ fontSize: 14, fontWeight: 700, color: COLORS.text, fontFamily: FONTS.body }}>
-                          {userName} — {MEALS_LABEL[a.meal]}
-                        </p>
-                      </div>
-                    ))}
+                    {dayDetail.absences.map((a, i) => {
+                      const m = MEMBERS.find(mb => mb.name === a.memberName) || { initials: a.memberName?.charAt(0).toUpperCase() || '?', color: '#ccc', display: a.memberName?.charAt(0).toUpperCase() };
+                      return (
+                        <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 14px', borderRadius: 14, background: '#FFF0F5', marginBottom: 8 }}>
+                          <Avatar initials={m.display || m.initials} color={m.color} size="sm" photo={m.photo} />
+                          <p style={{ fontSize: 14, fontWeight: 700, color: COLORS.text, fontFamily: FONTS.body }}>
+                            {a.memberName} — {MEALS_LABEL[a.meal]}
+                          </p>
+                        </div>
+                      );
+                    })}
                   </>
                 )}
               </>

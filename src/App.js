@@ -78,6 +78,20 @@ export default function App() {
   const [userPhoto, setUserPhoto] = useState(() => localStorage.getItem('userPhoto') || null);
   const [userColor, setUserColor] = useState(() => localStorage.getItem('userColor') || '#FFD740');
   const [reminders, setReminders] = useState([]);
+  const [members, setMembers] = useState([]);
+
+  useEffect(() => {
+    if (!isLoggedIn) return;
+    async function loadMembers() {
+      const { data } = await supabase.from('members').select('*').order('created_at', { ascending: true });
+      if (data) setMembers(data);
+    }
+    loadMembers();
+    const memberSub = supabase.channel('members-ch')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'members' }, loadMembers)
+      .subscribe();
+    return () => supabase.removeChannel(memberSub);
+  }, [isLoggedIn]);
 
   useEffect(() => {
     if (!isLoggedIn) return;
@@ -141,9 +155,10 @@ async function handleLogin(name) {
     if (photo) localStorage.setItem('userPhoto', photo);
     else localStorage.removeItem('userPhoto');
   }
-  function handleSetUserColor(color) {
+  async function handleSetUserColor(color) {
     setUserColor(color);
     localStorage.setItem('userColor', color);
+    await supabase.from('members').update({ color }).eq('name', userName);
   }
 
   if (!isLoggedIn) {
@@ -155,10 +170,10 @@ async function handleLogin(name) {
   }
 
   const screens = {
-    home:      <HomeScreen navigate={setActiveTab} userName={userName} userPhoto={userPhoto} userColor={userColor} reminders={reminders} />,
+    home:      <HomeScreen navigate={setActiveTab} userName={userName} userPhoto={userPhoto} userColor={userColor} reminders={reminders} members={members} />,
     shopping:  <ShoppingScreen userName={userName} userPhoto={userPhoto} userColor={userColor} />,
-    calendar:  <CalendarScreen userName={userName} userPhoto={userPhoto} userColor={userColor} />,
-    reminders: <RemindersScreen userName={userName} userPhoto={userPhoto} userColor={userColor} reminders={reminders} setReminders={handleSetReminders} />,
+    calendar:  <CalendarScreen userName={userName} userPhoto={userPhoto} userColor={userColor} members={members} />,
+    reminders: <RemindersScreen userName={userName} userPhoto={userPhoto} userColor={userColor} reminders={reminders} setReminders={handleSetReminders} members={members} />,
     profile:   <ProfileScreen userName={userName} setUserName={handleSetUserName} userPhoto={userPhoto} setUserPhoto={handleSetUserPhoto} userColor={userColor} setUserColor={handleSetUserColor} />,
   };
 
