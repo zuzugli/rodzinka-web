@@ -182,7 +182,7 @@ async function handleLogin(name) {
       <div style={{ flex: 1, overflow: 'hidden', position: 'relative' }}>
         {screens[activeTab]}
       </div>
-      <div style={{ height: 80, background: '#fff', borderTop: `1px solid ${COLORS.border}`, display: 'flex', alignItems: 'center', justifyContent: 'space-around', padding: '0 4px 12px', flexShrink: 0 }}>
+      <div className="bottom-nav" style={{ background: '#fff', borderTop: `1px solid ${COLORS.border}`, display: 'flex', alignItems: 'center', justifyContent: 'space-around', padding: '0 4px 12px', flexShrink: 0 }}>
         {TABS.map(({ id, label, Icon }) => {
           const active = activeTab === id;
           const color = active ? COLORS.purpleDark : COLORS.textMuted;
