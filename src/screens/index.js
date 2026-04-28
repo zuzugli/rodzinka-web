@@ -20,7 +20,7 @@ export function getMembers(supabaseMembers, userName, userColor, userPhoto) {
   }));
 }
 
-const MONTH_NAMES = ['jan','fév','mar','avr','mai','juin','juil','aoû','sep','oct','nov','déc'];
+const MONTH_NAMES = ['jan','fév','mar','avr','mai','juin','juil','août','sep','oct','nov','déc'];
 
 function getWeek(offset) {
   const today = new Date();
@@ -495,7 +495,7 @@ export function RemindersScreen({ userName = 'Sophie', userColor = COLORS.sophie
         <div style={{ display: 'flex', alignItems: 'flex-start', marginBottom: 4 }}>
           <div style={{ flex: 1 }}>
             <h2 style={{ fontSize: 32, fontWeight: 800, fontFamily: FONTS.title, color: COLORS.text, letterSpacing: -0.5 }}>Rappels</h2>
-            <p style={{ fontSize: 13, fontFamily: FONTS.body, color: COLORS.textMuted, marginTop: 4 }}>{thisWeek.length} cette semaine</p>
+            <p style={{ fontSize: 13, fontFamily: FONTS.body, color: COLORS.textMuted, marginTop: 4 }}>{thisWeek.length} rappel{thisWeek.length !== 1 ? 's' : ''} cette semaine</p>
           </div>
           <img src="/chatouille.png" alt="mascotte" style={{ width: 115, height: 115, objectFit: 'contain' }} />
         </div>

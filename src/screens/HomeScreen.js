@@ -254,14 +254,14 @@ export default function HomeScreen({ navigate, userName = 'Sophie', userPhoto, u
         border: 'none', cursor: 'pointer', width: '100%', textAlign: 'left', marginBottom: 10,
       }}>
         <div style={{ fontSize: 15, fontWeight: 800, fontFamily: FONTS.title, color: '#fff' }}>Rappels</div>
-        <div style={{ fontSize: 12, fontWeight: 700, fontFamily: FONTS.body, color: '#fff', opacity: 0.85 }}>{thisWeek.length} cette semaine</div>
+        <div style={{ fontSize: 12, fontWeight: 700, fontFamily: FONTS.body, color: '#fff', opacity: 0.85 }}>{thisWeek.length} rappel{thisWeek.length !== 1 ? 's' : ''} cette semaine</div>
       </button>
 
       {/* Famille */}
       <SectionLabel>Famille</SectionLabel>
       <Card>
         <p style={{ fontSize: 13, fontWeight: 700, fontFamily: FONTS.body, color: COLORS.textMuted, marginBottom: 12 }}>
-          Les Tchenio-Gaubert · {MEMBERS.length} membres
+          Les Tchenio-Gaubert · {MEMBERS.length} membre{MEMBERS.length !== 1 ? 's' : ''}
         </p>
         <div style={{ display: 'flex', justifyContent: 'space-around' }}>
           {MEMBERS.map(m => (

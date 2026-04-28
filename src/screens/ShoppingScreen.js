@@ -94,7 +94,7 @@ export default function ShoppingScreen({ userName = 'Sophie', userPhoto, userCol
         <div style={{ display: 'flex', alignItems: 'flex-start', marginBottom: 16 }}>
           <div style={{ flex: 1 }}>
             <h2 style={{ fontSize: 32, fontWeight: 800, fontFamily: FONTS.title, color: COLORS.text, letterSpacing: -0.5 }}>Courses</h2>
-            <p style={{ fontSize: 13, color: COLORS.textMuted, fontFamily: FONTS.body, marginTop: 4 }}>{remaining} articles restants</p>
+            <p style={{ fontSize: 13, color: COLORS.textMuted, fontFamily: FONTS.body, marginTop: 4 }}>{remaining} article{remaining !== 1 ? 's' : ''} restant{remaining !== 1 ? 's' : ''}</p>
           </div>
           <img src="/littlemisstidy.png" alt="mascotte" style={{ width: 100, height: 100, objectFit: 'contain' }} />
         </div>
