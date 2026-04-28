@@ -106,7 +106,23 @@ export default function App() {
     return () => supabase.removeChannel(sub);
   }, [isLoggedIn]);
 
-  function handleLogin(name) {
+async function handleLogin(name) {
+    // Cherche si le membre existe déjà
+    const { data: existing } = await supabase
+      .from('members')
+      .select('*')
+      .eq('name', name)
+      .single();
+
+    if (existing) {
+      // Membre existant → on récupère sa couleur
+      setUserColor(existing.color || '#FFD740');
+      localStorage.setItem('userColor', existing.color || '#FFD740');
+    } else {
+      // Nouveau membre → on le crée
+      await supabase.from('members').insert({ name, color: '#FFD740' });
+    }
+
     setUserName(name);
     localStorage.setItem('userName', name);
     setIsLoggedIn(true);
