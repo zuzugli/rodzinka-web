@@ -60,7 +60,7 @@ function LoginScreen({ onLogin }) {
         value={code}
         onChange={e => { setCode(e.target.value.toUpperCase()); setError(''); }}
         onKeyDown={e => e.key === 'Enter' && handleSubmit()}
-        style={{ width: '100%', padding: '14px 16px', borderRadius: 14, border: `2px solid ${error ? '#E53935' : COLORS.border}`, fontSize: 16, fontFamily: FONTS.body, fontWeight: 700, letterSpacing: 4, outline: 'none', marginBottom: 8, boxSizing: 'border-box' }}
+        style={{ width: '100%', padding: '14px 16px', borderRadius: 14, border: `2px solid ${error ? '#E53935' : COLORS.border}`, fontSize: 16, fontFamily: FONTS.body, outline: 'none', marginBottom: 8, boxSizing: 'border-box' }}
       />
       {error && <p style={{ fontSize: 13, color: '#E53935', fontFamily: FONTS.body, marginBottom: 8, alignSelf: 'flex-start' }}>{error}</p>}
 
