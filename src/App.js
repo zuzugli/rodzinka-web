@@ -163,7 +163,7 @@ async function handleLogin(name) {
 
   if (!isLoggedIn) {
     return (
-      <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', background: '#fff' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', paddingTop: 'env(safe-area-inset-top)', background: '#fff' }}>
         <LoginScreen onLogin={handleLogin} />
       </div>
     );
@@ -178,7 +178,7 @@ async function handleLogin(name) {
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', background: '#fff' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', paddingTop: 'env(safe-area-inset-top)', background: '#fff' }}>
       <div style={{ flex: 1, overflow: 'hidden', position: 'relative' }}>
         {screens[activeTab]}
       </div>
