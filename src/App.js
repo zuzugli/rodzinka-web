@@ -182,17 +182,20 @@ async function handleLogin(name) {
       <div style={{ flex: 1, overflow: 'hidden', position: 'relative' }}>
         {screens[activeTab]}
       </div>
-      <div className="bottom-nav" style={{ background: '#fff', borderTop: `1px solid ${COLORS.border}`, display: 'flex', alignItems: 'center', justifyContent: 'space-around', padding: '0 4px 12px', flexShrink: 0 }}>
-        {TABS.map(({ id, label, Icon }) => {
-          const active = activeTab === id;
-          const color = active ? COLORS.purpleDark : COLORS.textMuted;
-          return (
-            <button key={id} onClick={() => setActiveTab(id)} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, padding: '8px 12px', borderRadius: 16, border: 'none', cursor: 'pointer', background: active ? COLORS.purpleLight : 'transparent' }}>
-              <Icon color={color} />
-              <span style={{ fontSize: 10, fontWeight: 700, color, fontFamily: FONTS.body }}>{label}</span>
-            </button>
-          );
-        })}
+      <div style={{ background: '#fff', borderTop: `1px solid ${COLORS.border}`, flexShrink: 0 }}>
+        <div style={{ height: 68, display: 'flex', alignItems: 'center', justifyContent: 'space-around', padding: '0 4px' }}>
+          {TABS.map(({ id, label, Icon }) => {
+            const active = activeTab === id;
+            const color = active ? COLORS.purpleDark : COLORS.textMuted;
+            return (
+              <button key={id} onClick={() => setActiveTab(id)} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, padding: '8px 12px', borderRadius: 16, border: 'none', cursor: 'pointer', background: active ? COLORS.purpleLight : 'transparent' }}>
+                <Icon color={color} />
+                <span style={{ fontSize: 10, fontWeight: 700, color, fontFamily: FONTS.body }}>{label}</span>
+              </button>
+            );
+          })}
+        </div>
+        <div style={{ height: 'env(safe-area-inset-bottom)' }} />
       </div>
     </div>
   );
